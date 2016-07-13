@@ -48,8 +48,8 @@ building the form description, and then calling a generic function
 
 ### Incompressible, nonstationary Navier-Stokes
 
-Solution by implicit Euler scheme and Newton's method. Code is needed
-for Newton residual and matrix-vector multiplication.
+Solution by implicit Euler scheme and Picard iteration. Code is needed
+for the nonlinear residual and matrix-vector multiplication for the linearized problem.
 
 #### Code for Newton residual
 
@@ -63,18 +63,20 @@ FEShapeVector shape_space_velocity(descr);
 FEShapeScalar shape_space_pressure(descr);
 
 // The current nonlinear iterate
-FEFunction u_n(shape_space_velocity, un_vector);
-FEFunction p_n(shape_space_pressure, pn_vector);
+FEFunction u(shape_space_velocity, un_vector);
+FEFunction p(shape_space_pressure, pn_vector);
 
 // The previous time step
 FEFunction u_t(shape_space_velocity, ut_vector);
-FEFunction p_t(shape_space_pressure, pt_vector);
 
 FETestVector v;
 FETestScalar q;
 
 // Set up form language function
-
 // Integrate over all cells
-
+integrate([&] {
+  v.grad()*u.grad()
+  + v.value()*(u.grad()*u.value() + 1./dt * u_t.value())
+  + v.div()*p.value() + q.value() * u.div();
+})
 ~~~~
