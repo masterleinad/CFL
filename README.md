@@ -75,8 +75,8 @@ FETestScalar q;
 // Set up form language function
 // Integrate over all cells
 integrate([&] {
-  v.grad()*u.grad()
-  + v.value()*(u.grad()*u.value() + 1./dt * u_t.value())
-  + v.div()*p.value() + q.value() * u.div();
+  grad (v)*grad(u)
+  + v*(grad (u)*u + 1./dt * u_t)
+  + div (v)*p + q * div(u);
 })
 ~~~~
