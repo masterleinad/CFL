@@ -21,6 +21,16 @@ has to be able to obtain these points inside the integration loop.
 A test function object must be able to compute inner products of a
 precomputed expression with a test function or its derivatives.
 
+At least the test and shape function objects for a single part of the
+form rely on the same quadrature. They must use the same quadrature point.
+How do we synchronize? The following optimizations should be possible
+
+- function values and test functions (1D) precomputed
+- recursive definition of polynomials computed  on the fly
+- "spectral" evaluation with quadrature in roots
+- different quadrature for different parts of the form?
+
+
 ## Examples for application code
 
 These are examples for possible forms of application codes. We develop
