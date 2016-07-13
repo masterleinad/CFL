@@ -35,22 +35,36 @@ All codes are for a function taking the necessary input parameters,
 building the form description, and then calling a generic function
 `integrate`, which does the actual work.
 
+
+### Incompressible, nonstationary Navier-Stokes
+
+Solution by implicit Euler scheme and Newton's method. Code is needed
+for Newton residual and matrix-vector multiplication.
+
+#### Code for Newton residual
+
+Incoming data:
+
+- `un_vector`, `pn_vector`: global finite element vectors, velocity and pressure at the current Newton step
+- `ut_vector`, `pt_vector`: global finite element vectors, velocity and pressure at previous time step
+
 ~~~~
 FEShapeVector shape_space_velocity(descr);
 FEShapeScalar shape_space_pressure(descr);
 
-// The current linear iterate
-FEFunction u_l(shape_space_velocity, u_vector);
-FEFunction p_l(shape_space_pressure, p_vector);
-
 // The current nonlinear iterate
-FEFunction u_n(shape_space_velocity, u_vector);
-FEFunction p_n(shape_space_pressure, p_vector);
+FEFunction u_n(shape_space_velocity, un_vector);
+FEFunction p_n(shape_space_pressure, pn_vector);
 
 // The previous time step
-FEFunction u_t(shape_space_velocity, u_vector);
-FEFunction p_t(shape_space_pressure, p_vector);
+FEFunction u_t(shape_space_velocity, ut_vector);
+FEFunction p_t(shape_space_pressure, pt_vector);
 
 FETestVector v;
 FETestScalar q;
+
+// Set up form language function
+
+// Integrate over all cells
+
 ~~~~
