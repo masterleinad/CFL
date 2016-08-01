@@ -80,3 +80,11 @@ integrate([&] {
   + div (v)*p + q * div(u);
 })
 ~~~~
+
+## Wishlist
+
+- Gather all terms multiplied with the same test function upon evaluation
+- Combine cell and face terms into one form
+- Automatic differentiation
+- Integration by parts
+- LaTeX backend
