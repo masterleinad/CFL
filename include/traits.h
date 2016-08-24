@@ -5,11 +5,11 @@ namespace CFL
 {
 namespace Traits
 {
-template <int rank, int dim>
+template <int rank_, int dim_>
 struct Tensor
 {
-  const unsigned int tensor_rank = rank;
-  const unsigned int tensor_dim = dim;
+  static const unsigned int rank = rank_;
+  static const unsigned int dim = dim_;
 };
 }
 }
