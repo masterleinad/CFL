@@ -33,7 +33,8 @@ main()
 
   TerminalString<2, 3> v("v");
   auto Dv = grad(v);
-
+  auto DDv = grad(Dv);
+  
   std::cout << "Traits   v: " << v.traits.rank << ' ' << v.traits.dim << std::endl;
   std::cout << "Traits  Dv: " << Dv.traits.rank << ' ' << Dv.traits.dim << std::endl;
   std::cout << "Traits DDv: " << DDv.traits.rank << ' ' << DDv.traits.dim << std::endl;

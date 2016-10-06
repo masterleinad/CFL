@@ -29,7 +29,14 @@ public:
     ++derivatives[d];
     return t.latex(derivatives, comp...);
   }
-};
+
+  template <typename... Comp>
+  std::string
+  latex(std::array<int, Traits::dim> derivatives) const
+  {
+    return std::string("\nabla ") + t.latex(derivatives);
+  }
+ };
 
 template <class T>
 Gradient<T>
