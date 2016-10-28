@@ -45,7 +45,7 @@ public:
   std::string
   latex(std::array<int, Traits::dim> derivatives) const
   {
-    return std::string("\nabla ") + t.latex(derivatives);
+    return std::string("\\nabla ") + t.latex(derivatives);
   }
 };
 
