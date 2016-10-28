@@ -21,6 +21,13 @@ compose_indices(int last, Components... comp)
   return compose_indices(comp...) + std::to_string(last);
 }
 
+template <typename... Components>
+std::string
+compose_indices(unsigned int last, Components... comp)
+{
+  return compose_indices(comp...) + std::to_string(last);
+}
+
 /**
  * A terminal object for expression templates producing LaTeX
  * output.
@@ -47,7 +54,31 @@ public:
   {
   }
 
-  template <typename... Components>
+  /**
+   * LaTeX output of this object, namely the name indexed by all
+   * tensor indices.
+   *
+   * The length of the component array must match the tensor rank,
+   * otherwise the <tt>enable_if</tt> will cause the compiler to
+   * throw an error message.
+   */
+  template <typename... Components,
+            typename std::enable_if<sizeof...(Components) == Traits::rank, int>::type = 0>
+  std::string latex(Components... comp) const
+  {
+    std::string result = value;
+    if (rank > 0)
+    {
+      result += std::string("_{") + compose_indices(comp...) + std::string("}");
+    }
+    return result;
+  }
+
+  /**
+   * This function should be used only by the derivative operators.
+   */
+  template <typename... Components,
+            typename std::enable_if<sizeof...(Components) == Traits::rank, int>::type = 0>
   std::string
   latex(std::array<int, dim> derivatives, Components... comp) const
   {
@@ -74,6 +105,12 @@ namespace Traits
   struct is_test_function_set<TerminalString<rank, dim, true>>
   {
     const static bool value = true;
+  };
+
+  template <int rank, int dim, bool is_test>
+  struct has_simple_derivative<TerminalString<rank, dim, is_test>>
+  {
+    static const bool value = true;
   };
 }
 }

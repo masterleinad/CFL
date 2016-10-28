@@ -1,12 +1,29 @@
 #ifndef cfl_derivatives_h
 #define cfl_derivatives_h
 
-#include <string>
 #include <array>
+#include <string>
 #include <traits.h>
 
 namespace CFL
 {
+template <class T>
+class Gradient;
+
+namespace Traits
+{
+  template <class T>
+  struct is_test_function_set<Gradient<T>>
+  {
+    const static bool value = is_test_function_set<T>::value;
+  };
+
+  template <class T>
+  struct has_simple_derivative<Gradient<T>>
+  {
+    static const bool value = true;
+  };
+}
 /**
  * \brief The gradient as a tensor as a tensor of higher rank
  *
@@ -30,6 +47,8 @@ public:
   Gradient(const T& t)
     : t(t)
   {
+    static_assert(CFL::Traits::has_simple_derivative<T>::value,
+                  "Gradient can only take derivatives if those are simple");
   }
 
   template <typename... Comp>
@@ -44,9 +63,11 @@ public:
 
   template <typename... Comp>
   std::string
-  latex(std::array<int, Traits::dim> derivatives) const
+  latex(int d, Comp... comp) const
   {
-    return std::string("\\nabla ") + t.latex(derivatives);
+    std::array<int, Traits::dim> derivatives({ 0 });
+    derivatives[d] = 1;
+    return t.latex(derivatives, comp...);
   }
 };
 
@@ -55,15 +76,6 @@ Gradient<T>
 grad(const T t)
 {
   return Gradient<T>(t);
-}
-
-namespace Traits
-{
-  template <class T>
-  struct is_test_function_set<Gradient<T>>
-  {
-    const static bool value = is_test_function_set<T>::value;
-  };
 }
 }
 

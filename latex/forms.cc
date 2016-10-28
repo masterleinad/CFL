@@ -11,8 +11,9 @@ void
 print_form(const T& t)
 {
   std::cout << "\\begin{gather*}" << std::endl
-	    << t.latex() << std::endl
-	    << "\\end{gather*}" << std::endl << std::endl;
+            << t.latex() << std::endl
+            << "\\end{gather*}" << std::endl
+            << std::endl;
 }
 
 template <class A, class B>
@@ -25,17 +26,19 @@ make_form(const A& a, const B& b)
 int
 main()
 {
-  TerminalString<0, 2> u("u");
-  TerminalString<0, 2, true> v("v");
+  TerminalString<0, 2> p("p");
+  TerminalString<0, 2, true> q("q");
+  TerminalString<1, 2> u("u");
+  TerminalString<1, 2, true> v("v");
 
-  auto f1 = make_form(v, u);
-  print_form(f1);
-
-  auto f2 = make_form(grad(v), grad(u));
-  print_form(f2);
-
-  auto f3 = make_form(grad(grad(v)), grad(grad(u)));
-  print_form(f3);
+  print_form(make_form(q, p));
+  print_form(make_form(v, u));
+  print_form(make_form(grad(q), u));
+  print_form(make_form(v, grad(p)));
+  print_form(make_form(grad(v), grad(u)));
+  print_form(make_form(grad(grad(q)), grad(u)));
+  print_form(make_form(grad(v), grad(grad(p))));
+  print_form(make_form(grad(grad(q)), grad(grad(p))));
 
   return 0;
 }

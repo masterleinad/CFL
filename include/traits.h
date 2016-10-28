@@ -23,6 +23,12 @@ namespace Traits
   {
     static const bool value = false;
   };
+
+  template <class T>
+  struct has_simple_derivative
+  {
+    static const bool value = false;
+  };
 }
 }
 
