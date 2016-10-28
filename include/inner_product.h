@@ -8,11 +8,13 @@ class InnerProduct
 {
   const A& a;
   const B& b;
+
 public:
-  InnerProduct(const A&a, const B&b)
-    : a(a), b(b)
-  {}
-  
+  InnerProduct(const A& a, const B& b)
+    : a(a)
+    , b(b)
+  {
+  }
 };
 }
 

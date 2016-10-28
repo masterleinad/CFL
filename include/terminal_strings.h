@@ -70,11 +70,11 @@ public:
 
 namespace Traits
 {
-template <int rank, int dim>
-struct is_test_function_set<TerminalString<rank, dim, true>>
-{
-  const static bool value = true;
-};
+  template <int rank, int dim>
+  struct is_test_function_set<TerminalString<rank, dim, true>>
+  {
+    const static bool value = true;
+  };
 }
 }
 

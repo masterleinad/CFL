@@ -58,11 +58,11 @@ grad(const T t)
 
 namespace Traits
 {
-template <class T>
-struct is_test_function_set<Gradient<T>>
-{
-  const static bool value = is_test_function_set<T>::value;
-};
+  template <class T>
+  struct is_test_function_set<Gradient<T>>
+  {
+    const static bool value = is_test_function_set<T>::value;
+  };
 }
 }
 
