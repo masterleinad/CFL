@@ -12,11 +12,17 @@ struct Tensor
   static const unsigned int dim = dim_;
 };
 
-  template <bool is_test>
-  struct FunctionType
-  {
-    static const bool is_test_function = is_test;
-  };
+template <class T>
+struct is_test_function_set
+{
+  static const bool value = false;
+};
+
+template <class T>
+struct is_form
+{
+  static const bool value = false;
+};
 }
 }
 

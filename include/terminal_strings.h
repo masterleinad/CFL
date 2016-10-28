@@ -1,8 +1,8 @@
 #ifndef cfl_terminal_strings_h
 #define cfl_terminal_strings_h
 
-#include <string>
 #include <array>
+#include <string>
 
 #include <traits.h>
 
@@ -21,7 +21,19 @@ compose_indices(int last, Components... comp)
   return compose_indices(comp...) + std::to_string(last);
 }
 
-template <int rank, int dim>
+/**
+ * A terminal object for expression templates producing LaTeX
+ * output.
+ *
+ * These objects have their tensor rank and dimension, such that
+ * expressions of the form $u_{i_1 i_2 \dots i_r}$ make sense, where
+ * $r$ is the rank and each index $i_k$ is between 0 and
+ * <tt>dim</tt>.
+ *
+ * The template argument <tt>is_test</tt> makes the object a test
+ * function set in order to output forms etc. correctly.
+ */
+template <int rank, int dim, bool is_test = false>
 class TerminalString
 {
   std::string value;
@@ -55,6 +67,15 @@ public:
     return result;
   }
 };
+
+namespace Traits
+{
+template <int rank, int dim>
+struct is_test_function_set<TerminalString<rank, dim, true>>
+{
+  const static bool value = true;
+};
+}
 }
 
 #endif
