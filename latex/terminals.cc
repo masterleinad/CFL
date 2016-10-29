@@ -22,8 +22,7 @@ main()
   std::cout << u.latex(std::array<int, 3>({ 1, 2, 3 })) << std::endl;
 
   TerminalString<1, 2> w("w");
-  std::cout << w.latex(0) << std::endl
-	    << w.latex(1) << std::endl;
+  std::cout << w.latex(0) << std::endl << w.latex(1) << std::endl;
 
   TerminalString<2, 3, true> v("v");
   print_test(v);
@@ -32,7 +31,6 @@ main()
   std::cout << v.latex(std::array<int, 3>({ 0, 1, 0 }), 2, 2) << std::endl;
   std::cout << v.latex(std::array<int, 3>({ 1, 1, 0 }), 0, 0) << std::endl;
   std::cout << v.latex(std::array<int, 3>({ 1, 2, 3 }), 2, 1) << std::endl;
-
 
   return 0;
 }

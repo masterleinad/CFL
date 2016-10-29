@@ -80,6 +80,12 @@ public:
   {
     static_assert(Traits::is_test_function_set<Test>::value,
                   "First argument must be test function set");
+    static_assert(!Traits::is_test_function_set<Expr>::value,
+                  "Second argument cannot be test function set");
+    static_assert(Test::Traits::rank == Expr::Traits::rank,
+                  "Test functions and expression must have same tensor rank");
+    static_assert(Test::Traits::dim == Expr::Traits::dim,
+                  "Test functions and expression must have same dimension");
   }
 
   std::string
@@ -96,6 +102,20 @@ namespace Traits
   {
     const static bool value = true;
   };
+}
+
+template <class Test, class Expr>
+typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+form(const Test& t, const Expr& e)
+{
+  return Form<Test, Expr>(t, e);
+}
+
+template <class Test, class Expr>
+typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+form(const Expr& e, const Test& t)
+{
+  return Form<Test, Expr>(t, e);
 }
 }
 

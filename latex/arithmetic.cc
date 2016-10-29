@@ -2,6 +2,7 @@
 #include <derivatives.h>
 #include <forms.h>
 #include <iostream>
+#include <products.h>
 #include <sums.h>
 #include <terminal_strings.h>
 
@@ -30,13 +31,15 @@ main()
   TerminalString<0, 2> p("p");
   TerminalString<0, 2> q("q");
   TerminalString<1, 2> u("u");
-  
+
   TerminalString<0, 2, true> phi("\\phi ");
 
   print_form(make_form(phi, p + q));
   print_form(make_form(grad(phi), grad(p) + grad(q)));
   print_form(make_form(grad(grad(phi)), grad(grad(p)) + grad(grad(q))));
   print_form(make_form(grad(phi), u + grad(q)));
+  print_form(make_form(grad(phi), p * grad(q)));
+  print_form(make_form(grad(phi), u * p));
 
   return 0;
 }

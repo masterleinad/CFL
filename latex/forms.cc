@@ -16,13 +16,6 @@ print_form(const T& t)
             << std::endl;
 }
 
-template <class A, class B>
-auto
-make_form(const A& a, const B& b)
-{
-  return Form<A, B>(a, b);
-}
-
 int
 main()
 {
@@ -31,14 +24,15 @@ main()
   TerminalString<1, 2> u("u");
   TerminalString<1, 2, true> v("v");
 
-  print_form(make_form(q, p));
-  print_form(make_form(v, u));
-  print_form(make_form(grad(q), u));
-  print_form(make_form(v, grad(p)));
-  print_form(make_form(grad(v), grad(u)));
-  print_form(make_form(grad(grad(q)), grad(u)));
-  print_form(make_form(grad(v), grad(grad(p))));
-  print_form(make_form(grad(grad(q)), grad(grad(p))));
+  print_form(form(q, p));
+  print_form(form(p, q));
+  print_form(form(v, u));
+  print_form(form(grad(q), u));
+  print_form(form(v, grad(p)));
+  print_form(form(grad(v), grad(u)));
+  print_form(form(grad(grad(q)), grad(u)));
+  print_form(form(grad(v), grad(grad(p))));
+  print_form(form(grad(grad(q)), grad(grad(p))));
 
   return 0;
 }
