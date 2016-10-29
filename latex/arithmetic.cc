@@ -1,4 +1,5 @@
 
+#include <constants.h>
 #include <derivatives.h>
 #include <forms.h>
 #include <iostream>
@@ -35,6 +36,8 @@ main()
   TerminalString<0, 2, true> phi("\\phi ");
 
   print_form(make_form(phi, p + q));
+  print_form(make_form(phi, p * q));
+  print_form(make_form(phi, scale(4., p) * q));
   print_form(make_form(grad(phi), grad(p) + grad(q)));
   print_form(make_form(grad(grad(phi)), grad(grad(p)) + grad(grad(q))));
   print_form(make_form(grad(phi), u + grad(q)));

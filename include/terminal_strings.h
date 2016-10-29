@@ -62,9 +62,9 @@ public:
    * otherwise the <tt>enable_if</tt> will cause the compiler to
    * throw an error message.
    */
-  template <typename... Components,
-            typename std::enable_if<sizeof...(Components) == Traits::rank, int>::type = 0>
-  std::string latex(Components... comp) const
+  template <typename... Components>
+  typename std::enable_if<sizeof...(Components) == Traits::rank, std::string>::type latex(
+    Components... comp) const
   {
     std::string result = value;
     if (rank > 0)
@@ -77,9 +77,8 @@ public:
   /**
    * This function should be used only by the derivative operators.
    */
-  template <typename... Components,
-            typename std::enable_if<sizeof...(Components) == Traits::rank, int>::type = 0>
-  std::string
+  template <typename... Components>
+  typename std::enable_if<sizeof...(Components) == Traits::rank, std::string>::type
   latex(std::array<int, dim> derivatives, Components... comp) const
   {
     std::string result;

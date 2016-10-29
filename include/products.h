@@ -1,6 +1,8 @@
 #ifndef cfl_products_h
 #define cfl_products_h
 
+#include <traits.h>
+
 namespace CFL
 {
 /**
@@ -41,7 +43,8 @@ multiply(const S& s, const T& t)
 }
 
 template <class S, class T>
-typename std::enable_if<S::Traits::rank == 0, ScalarMultiplication<S, T>>::type
+typename std::enable_if<S::Traits::rank == 0 && T::Traits::rank != 0,
+                        ScalarMultiplication<S, T>>::type
 multiply(const T& t, const S& s)
 {
   return ScalarMultiplication<S, T>(s, t);
