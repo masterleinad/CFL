@@ -1,7 +1,7 @@
 #ifndef cfl_products_h
 #define cfl_products_h
 
-#include <traits.h>
+#include <cfl/traits.h>
 
 namespace CFL
 {

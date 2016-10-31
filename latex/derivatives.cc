@@ -1,8 +1,8 @@
 
-#include <derivatives.h>
 #include <iostream>
 #include <stdexcept>
-#include <terminal_strings.h>
+#include <cfl/terminal_strings.h>
+#include <cfl/derivatives.h>
 
 using namespace CFL;
 

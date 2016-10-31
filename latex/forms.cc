@@ -1,8 +1,8 @@
 
-#include <derivatives.h>
-#include <forms.h>
 #include <iostream>
-#include <terminal_strings.h>
+#include <cfl/derivatives.h>
+#include <cfl/forms.h>
+#include <cfl/terminal_strings.h>
 
 using namespace CFL;
 

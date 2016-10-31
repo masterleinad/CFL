@@ -3,7 +3,7 @@
 
 #include <array>
 #include <string>
-#include <traits.h>
+#include <cfl/traits.h>
 
 namespace CFL
 {

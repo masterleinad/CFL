@@ -3,7 +3,7 @@
 #define cfl_constants_h
 
 #include <string>
-#include <traits.h>
+#include <cfl/traits.h>
 
 namespace CFL
 {

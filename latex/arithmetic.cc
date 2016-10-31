@@ -1,11 +1,11 @@
 
-#include <constants.h>
-#include <derivatives.h>
-#include <forms.h>
 #include <iostream>
-#include <products.h>
-#include <sums.h>
-#include <terminal_strings.h>
+#include <cfl/constants.h>
+#include <cfl/derivatives.h>
+#include <cfl/forms.h>
+#include <cfl/products.h>
+#include <cfl/sums.h>
+#include <cfl/terminal_strings.h>
 
 using namespace CFL;
 
