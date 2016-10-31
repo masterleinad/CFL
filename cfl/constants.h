@@ -2,8 +2,8 @@
 #ifndef cfl_constants_h
 #define cfl_constants_h
 
-#include <string>
 #include <cfl/traits.h>
+#include <string>
 
 namespace CFL
 {

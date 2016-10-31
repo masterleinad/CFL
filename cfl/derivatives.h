@@ -2,8 +2,8 @@
 #define cfl_derivatives_h
 
 #include <array>
-#include <string>
 #include <cfl/traits.h>
+#include <string>
 
 namespace CFL
 {
