@@ -2,12 +2,17 @@
 #include "meshworker_data.h"
 #include <deal.II/fe/fe_q.h>
 
+#include <cfl/dealii.h>
+
 template <int dim>
 void
 run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 {
   FE_Q<dim> fe(degree);
   MeshworkerData<dim> data(grid_index, refine, fe);
+
+  ScalarTestFunction<dim> v(0);
+  
 }
 
 int
@@ -19,3 +24,12 @@ main()
 
   return 0;
 }
+
+
+
+
+
+
+
+
+
