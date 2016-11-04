@@ -109,7 +109,32 @@ namespace dealii
     {
       return ScalarTestHessian<dim>(func);
     }
-    
+
+
+    template <int rank, int dim>
+    class FEFunction
+    {
+      const std::string data_name;
+      const unsigned int first_component;
+
+    public:
+      typedef Traits::Tensor<rank, dim> Traits;
+      FEFunction(const std::string& name, const unsigned int first)
+	: data_name(name), first_component(first)
+      {}
+
+      const std::string& name() const
+      {
+	return data_name;
+      }
+      
+      void bind (const ::dealii::MeshWorker::IntegrationInfo<dim,dim>& ii)
+      {
+	
+      }
+
+
+    };
   }
 }
   
