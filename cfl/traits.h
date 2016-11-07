@@ -66,6 +66,26 @@ namespace Traits
   };
 
   /**
+   * \brief True if the object is a CFL unary operator
+   */
+  template <class T>
+  struct is_unary_operator
+  {
+    static const bool value = false;
+  };
+  
+  
+  /**
+   * \brief True if the object is a CFL binary operator
+   */
+  template <class T>
+  struct is_binary_operator
+  {
+    static const bool value = false;
+  };
+  
+  
+  /**
    * \brief The object is already a form consisting of test function
    * set and tested expression
    */
@@ -74,6 +94,17 @@ namespace Traits
   {
     static const bool value = false;
   };
+
+  /**
+   * \brief Objectys need binding to mesh objects in loop
+   */
+  template <class T>
+  struct needs_binding
+  {
+    static const bool value = false;
+  };
+
+  
 }
 }
 

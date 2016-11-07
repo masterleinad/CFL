@@ -22,6 +22,11 @@ namespace Traits
   struct has_simple_derivative<Gradient<T>>
   {
     static const bool value = true;
+
+  template <class T>
+  struct is_unary_operator<Gradient<T>>
+  {
+    static const bool value = true;
   };
 }
 /**
@@ -37,10 +42,10 @@ namespace Traits
 template <class T>
 class Gradient
 {
+ public:
   typedef T BaseType;
   const T t;
 
-public:
   typedef Traits::Tensor<T::Traits::rank + 1, T::Traits::dim> Traits;
   Traits traits;
 

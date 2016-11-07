@@ -14,16 +14,16 @@ namespace CFL
 template <class S, class T>
 class ScalarMultiplication
 {
-  S scalar;
-  T other;
-
 public:
+  S a;
+  T b;
+
   typedef typename T::Traits Traits;
   Traits traits;
 
   ScalarMultiplication(const S& s, const T& t)
-    : scalar(s)
-    , other(t)
+    : a(s)
+    , b(t)
   {
     static_assert(S::Traits::rank == 0, "First argument must be a scalar with trensor rank zero");
   }
@@ -31,7 +31,7 @@ public:
   template <typename... Comp>
   std::string latex(Comp... comp) const
   {
-    return scalar.latex() + " " + other.latex(comp...);
+    return a.latex() + " " + b.latex(comp...);
   }
 };
 
@@ -55,6 +55,14 @@ auto operator*(const A& a, const B& b)
 {
   return multiply(a, b);
 }
+ 
+ namespace Traits
+ {
+   template <class S, class T>
+   struct is_binary_operator<ScalarMultiplication<S,T>>
+  {
+    static const bool value = true;
+  }
 }
 
 #endif

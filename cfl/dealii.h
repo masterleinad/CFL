@@ -120,7 +120,7 @@ namespace dealii
       const std::string data_name;
 	const unsigned int first_component;
 	unsigned int data_index;
-	const ::dealii::MeshWorker::LocalIntegrator<dim>& info;
+	const ::dealii::MeshWorker::LocalIntegrator<dim>* info;
 	
 	friend class FEGradient<rank, dim>;
 	friend class FEHessian<rank, dim>;
@@ -139,6 +139,7 @@ namespace dealii
 	void bind (const ::dealii::MeshWorker::IntegrationInfo<dim,dim>& ii,
 		   const ::dealii::MeshWorker::LocalIntegrator<dim>& li)
       {
+	info = &ii;
 	unsigned int i = 0;
 	
 	while (i<li.input_vector_names.size())
@@ -148,34 +149,98 @@ namespace dealii
 		data_index = i;
 		break;
 	      }
-	    ++i
+	    ++i;
 	  }
 	if (i==li.input_vector_names.size())
 	  throw std::invalid_argument(std::string("Vector name not found: ") + data_name);
       }
 	//TODO: only implemented for scalars yet
 	double evaluate (unsigned int quadrature_index)
-	  {}
-	
+	{
+	  return info->values[data_index][first_component][quadrature_index];
+	}	
     };
 
     template <int rank, int dim>
     class FEGradient
     {
-	const FEFunction<rank,dim>& base;
-      public:
+      const FEFunction<rank,dim>& base;
+      friend class FEHessian<rank,dim>;
+    public:
       typedef Traits::Tensor<rank+1, dim> Traits;
-	FEGradient(const FEFunction<rank,dim>& base)
-			:
-			base(base)
-	  {}
-	
+      FEGradient(const FEFunction<rank,dim>& base)
+	:
+	base(base)
+      {}
+      
+      //TODO: only implemented for scalars yet
+      double evaluate (unsigned int quadrature_index, unsigned int comp)
+      {
+	return base.info->gradients[base.data_index][base.first_component][quadrature_index][comp];
+      }
     };
     
+
+    template <int rank, int dim>
+    class FEHessian
+    {
+      const FEFunction<rank,dim>& base;
+    public:
+      typedef Traits::Tensor<rank+2, dim> Traits;
+      FEHessian(const FEGradient<rank,dim>& grad)
+	:
+	base(grad.base)
+      {}
+      
+      //TODO: only implemented for scalars yet
+      double evaluate (unsigned int quadrature_index,
+		       unsigned int comp1, unsigned int comp2)
+      {
+	return base.info->hessians[base.data_index][base.first_component][quadrature_index][comp1][comp2];
+      }
+    };
     
+    template <int rank, int dim>
+    FEGradient<rank,dim> grad(const FEFunction<rank,dim>& f)
+    {
+      return FEGradient<rank,dim>(f);
+    }
+    
+    template <int rank, int dim>
+    FEHessian<rank,dim> grad(const FEGradient<rank,dim>& f)
+    {
+      return FEHessian<rank,dim>(f);
+    }
+
+    template <class TEST, class EXPR>
+    void bind(Form<TEST,EXPR>& form,
+	      const ::dealii::MeshWorker::IntegrationInfo<dim,dim>& ii,
+	      const ::dealii::MeshWorker::LocalIntegrator<dim>& li)
+    {
+      form.test.bind(ii);
+    }
   }
 }
-  
+  namespace Traits
+  {
+  template <int dim>
+  struct is_test_function_set<dealii::MeshWorker::ScalarTestFunction<dim>>
+  {
+    static const bool value = true;
+  };
+ 
+  template <int dim>
+  struct is_test_function_set<dealii::MeshWorker::ScalarTestGradient<dim>>
+  {
+    static const bool value = true;
+  };
+ 
+  template <int dim>
+  struct is_test_function_set<dealii::MeshWorker::ScalarTestHessian<dim>>
+  {
+    static const bool value = true;
+  };
+  }
 }
 
 
