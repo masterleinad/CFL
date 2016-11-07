@@ -21,7 +21,10 @@ namespace dealii
     template <int dim> class ScalarTestFunction;
     template <int dim> class ScalarTestGradient;
     template <int dim> class ScalarTestHessian;
-    
+
+    template <int rank, int dim> class FEFunction;
+    template <int rank, int dim> class FEGradient;
+    template <int rank, int dim> class FEHessian;
     
     template <int dim>
     class ScalarTestFunction
@@ -115,8 +118,13 @@ namespace dealii
     class FEFunction
     {
       const std::string data_name;
-      const unsigned int first_component;
-
+	const unsigned int first_component;
+	unsigned int data_index;
+	const ::dealii::MeshWorker::LocalIntegrator<dim>& info;
+	
+	friend class FEGradient<rank, dim>;
+	friend class FEHessian<rank, dim>;
+	
     public:
       typedef Traits::Tensor<rank, dim> Traits;
       FEFunction(const std::string& name, const unsigned int first)
@@ -128,13 +136,43 @@ namespace dealii
 	return data_name;
       }
       
-      void bind (const ::dealii::MeshWorker::IntegrationInfo<dim,dim>& ii)
+	void bind (const ::dealii::MeshWorker::IntegrationInfo<dim,dim>& ii,
+		   const ::dealii::MeshWorker::LocalIntegrator<dim>& li)
       {
+	unsigned int i = 0;
 	
+	while (i<li.input_vector_names.size())
+	  {
+	    if (data_name == li.input_vector_names[i])
+	      {
+		data_index = i;
+		break;
+	      }
+	    ++i
+	  }
+	if (i==li.input_vector_names.size())
+	  throw std::invalid_argument(std::string("Vector name not found: ") + data_name);
       }
-
-
+	//TODO: only implemented for scalars yet
+	double evaluate (unsigned int quadrature_index)
+	  {}
+	
     };
+
+    template <int rank, int dim>
+    class FEGradient
+    {
+	const FEFunction<rank,dim>& base;
+      public:
+      typedef Traits::Tensor<rank+1, dim> Traits;
+	FEGradient(const FEFunction<rank,dim>& base)
+			:
+			base(base)
+	  {}
+	
+    };
+    
+    
   }
 }
   
