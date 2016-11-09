@@ -38,8 +38,7 @@ namespace dealii
 	friend class ScalarTestHessian<dim>;
 	
       public:
-	typedef Traits::Tensor<0, dim> Traits;
-	Traits traits;
+	typedef Traits::Tensor<0, dim> TensorTraits;
 
 	ScalarTestFunction(unsigned int index)
 			:
@@ -64,8 +63,7 @@ namespace dealii
 	friend class ScalarTestHessian<dim>;
 	
       public:
-	typedef Traits::Tensor<1, dim> Traits;
-	Traits traits;
+	typedef Traits::Tensor<1, dim> TensorTraits;
 
 	ScalarTestGradient (const ScalarTestFunction<dim>& base)
 			:
@@ -86,8 +84,7 @@ namespace dealii
 	const ScalarTestFunction<dim>& base;
 	
       public:
-	typedef Traits::Tensor<2, dim> Traits;
-	Traits traits;
+	typedef Traits::Tensor<2, dim> TensorTraits;
 
 	ScalarTestHessian (const ScalarTestGradient<dim>& grad)
 			:
@@ -126,7 +123,8 @@ namespace dealii
 	friend class FEHessian<rank, dim>;
 	
     public:
-      typedef Traits::Tensor<rank, dim> Traits;
+      typedef Traits::Tensor<rank, dim> TensorTraits;
+      
       FEFunction(const std::string& name, const unsigned int first)
 	: data_name(name), first_component(first)
       {}
@@ -167,7 +165,8 @@ namespace dealii
       const FEFunction<rank,dim>& base;
       friend class FEHessian<rank,dim>;
     public:
-      typedef Traits::Tensor<rank+1, dim> Traits;
+      typedef Traits::Tensor<rank+1, dim> TensorTraits;
+      
       FEGradient(const FEFunction<rank,dim>& base)
 	:
 	base(base)
@@ -186,7 +185,8 @@ namespace dealii
     {
       const FEFunction<rank,dim>& base;
     public:
-      typedef Traits::Tensor<rank+2, dim> Traits;
+      typedef Traits::Tensor<rank+2, dim> TensorTraits;
+      
       FEHessian(const FEGradient<rank,dim>& grad)
 	:
 	base(grad.base)

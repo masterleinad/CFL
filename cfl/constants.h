@@ -14,8 +14,7 @@ class ConstantScaled
   const T t;
 
 public:
-  typedef typename T::Traits Traits;
-  Traits traits;
+  typedef typename T::TensorTraits TensorTraits;
   constexpr ConstantScaled(const number& factor, const T& t)
     : factor(factor)
     , t(t)

@@ -36,7 +36,7 @@ struct form_latex_aux<1, Test, Expr>
   operator()(const Test& test, const Expr& expr)
   {
     std::string output;
-    for (unsigned int i = 0; i < Test::Traits::dim; ++i)
+    for (unsigned int i = 0; i < Test::TensorTraits::dim; ++i)
     {
       if (i > 0)
         output += " + ";
@@ -53,8 +53,8 @@ struct form_latex_aux<2, Test, Expr>
   operator()(const Test& test, const Expr& expr)
   {
     std::string output;
-    for (unsigned int i = 0; i < Test::Traits::dim; ++i)
-      for (unsigned int j = 0; j < Test::Traits::dim; ++j)
+    for (unsigned int i = 0; i < Test::TensorTraits::dim; ++i)
+      for (unsigned int j = 0; j < Test::TensorTraits::dim; ++j)
       {
         if (i > 0 || j > 0)
           output += " + ";
@@ -82,16 +82,16 @@ class Form
                   "First argument must be test function set");
     static_assert(!Traits::is_test_function_set<Expr>::value,
                   "Second argument cannot be test function set");
-    static_assert(Test::Traits::rank == Expr::Traits::rank,
+    static_assert(Test::TensorTraits::rank == Expr::TensorTraits::rank,
                   "Test functions and expression must have same tensor rank");
-    static_assert(Test::Traits::dim == Expr::Traits::dim,
+    static_assert(Test::TensorTraits::dim == Expr::TensorTraits::dim,
                   "Test functions and expression must have same dimension");
   }
 
   std::string
   latex() const
   {
-    return form_latex_aux<Test::Traits::rank, Test, Expr>()(test, expr);
+    return form_latex_aux<Test::TensorTraits::rank, Test, Expr>()(test, expr);
   }
 };
 

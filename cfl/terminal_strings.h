@@ -46,8 +46,7 @@ class TerminalString
   std::string value;
 
 public:
-  typedef Traits::Tensor<rank, dim> Traits;
-  Traits traits;
+  typedef Traits::Tensor<rank, dim> TensorTraits;
 
   TerminalString(const std::string val)
     : value(val)
@@ -63,7 +62,7 @@ public:
    * throw an error message.
    */
   template <typename... Components>
-  typename std::enable_if<sizeof...(Components) == Traits::rank, std::string>::type latex(
+  typename std::enable_if<sizeof...(Components) == TensorTraits::rank, std::string>::type latex(
     Components... comp) const
   {
     std::string result = value;
@@ -78,7 +77,7 @@ public:
    * This function should be used only by the derivative operators.
    */
   template <typename... Components>
-  typename std::enable_if<sizeof...(Components) == Traits::rank, std::string>::type
+  typename std::enable_if<sizeof...(Components) == TensorTraits::rank, std::string>::type
   latex(std::array<int, dim> derivatives, Components... comp) const
   {
     std::string result;

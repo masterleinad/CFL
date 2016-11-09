@@ -6,6 +6,13 @@
 
 using namespace CFL;
 
+template <int expected, class T>
+constexpr void check_rank(const T& t)
+{
+  static_assert(T::TensorTraits::rank == expected, "Rank not as expected");
+}
+
+
 int
 main()
 {
@@ -13,12 +20,9 @@ main()
   auto Du = grad(u);
   auto DDu = grad(Du);
 
-  if (u.traits.rank != 0)
-    throw std::logic_error("Rank not 0!");
-  if (Du.traits.rank != 1)
-    throw std::logic_error("Rank not 1!");
-  if (DDu.traits.rank != 2)
-    throw std::logic_error("Rank not 2!");
+  check_rank<0> (u);
+  check_rank<1> (Du);
+  check_rank<2> (DDu);
 
   std::cout << u.latex(std::array<int, 3>({ 0, 0, 0 })) << std::endl;
   std::cout << Du.latex(std::array<int, 3>({ 0, 0, 0 }), 0) << " = " << Du.latex(0) << std::endl;
@@ -42,12 +46,9 @@ main()
   auto Dv = grad(v);
   auto DDv = grad(Dv);
 
-  if (v.traits.rank != 2)
-    throw std::logic_error("Rank not 2!");
-  if (Dv.traits.rank != 3)
-    throw std::logic_error("Rank not 3!");
-  if (DDv.traits.rank != 4)
-    throw std::logic_error("Rank not 4!");
+  check_rank<2>(v);
+  check_rank<3>(Dv);
+  check_rank<4>(DDv);
 
   std::cout << v.latex(std::array<int, 3>({ 0, 0, 0 }), 1, 2) << " = " << v.latex(1, 2)
             << std::endl;
