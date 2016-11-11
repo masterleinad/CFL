@@ -3,8 +3,8 @@
 
 #include <cfl/constants.h>
 #include <cfl/derivatives.h>
+#include <cfl/forms.h>
 #include <cfl/products.h>
 #include <cfl/sums.h>
-#include <cfl/forms.h>
 
 #endif

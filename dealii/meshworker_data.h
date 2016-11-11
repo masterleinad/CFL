@@ -12,8 +12,8 @@
 #include <deal.II/meshworker/output.h>
 #include <deal.II/meshworker/simple.h>
 
-#include <cfl/forms.h>
 #include <cfl/dealii.h>
+#include <cfl/forms.h>
 
 #include <string>
 
@@ -21,22 +21,25 @@ using namespace dealii;
 using namespace CFL::dealii::MeshWorker;
 
 template <int dim, class FORM>
-class MeshworkerIntegrator : public ::dealii::MeshWorker::LocalIntegrator<dim>
+class MeshWorkerIntegrator : public ::dealii::MeshWorker::LocalIntegrator<dim>
 {
   const FORM& form;
-  public:
-  MeshworkerIntegrator(const FORM& form)
+
+public:
+  MeshWorkerIntegrator(const FORM& form)
     : form(form)
-    {
-      this->use_boundray = false;
-      this->use_faces = false;
-    }
-  
-  virtual void cell(MeshWorker::DoFInfo<dim>& dinfo, MeshWorker::IntegrationInfo<dim>& info) const
+  {
+    this->use_boundary = false;
+    this->use_face = false;
+    // TODO: Determine from form.
+    this->input_vector_names.push_back("u");
+  }
+
+  virtual void
+  cell(MeshWorker::DoFInfo<dim>& dinfo, MeshWorker::IntegrationInfo<dim>& info) const
   {
   }
 };
-
 
 template <int dim>
 class MeshworkerData
@@ -71,27 +74,39 @@ public:
 
   template <class Form>
   void
-  vmult(Vector<double>& dst, const Vector<double>& src, const Form& form)
+  vmult(Vector<double>& dst, const Vector<double>& src, Form& form)
   {
     AnyData in;
+    in.add<const Vector<double>*>(&src, "u");
     AnyData out;
+    out.add<Vector<double>*>(&dst, "result");
+
+    MeshWorkerIntegrator<dim, Form> integrator(form);
 
     UpdateFlags update_flags =
       update_values | update_gradients | update_hessians | update_JxW_values;
 
     MeshWorker::IntegrationInfoBox<dim> info_box;
     // Determine degree of form and adjust
-    info_box.cell_selector.add("u", true, true, true);
-    info_box.boundary_selector.add("u", true, true, true);
-    info_box.face_selector.add("u", true, true, true);
+    for (typename std::vector<std::string>::const_iterator i =
+           integrator.input_vector_names.begin();
+         i != integrator.input_vector_names.end();
+         ++i)
+    {
+      info_box.cell_selector.add(*i, true, true, false);
+      info_box.boundary_selector.add(*i, true, true, false);
+      info_box.face_selector.add(*i, true, true, false);
+    }
 
     info_box.add_update_flags_all(update_flags);
     info_box.initialize(dof.get_fe(), this->mapping, in, Vector<double>(), &dof.block_info());
 
+    anchor(form, info_box.cell, integrator);
+
     MeshWorker::DoFInfo<dim> dof_info(dof.block_info());
 
     MeshWorker::Assembler::ResidualSimple<Vector<double>> assembler;
-    assembler.initialize(this->constraints());
+    //    assembler.initialize(this->constraints());
     assembler.initialize(out);
 
     // Loop call

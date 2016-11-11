@@ -7,11 +7,11 @@
 using namespace CFL;
 
 template <int expected, class T>
-constexpr void check_rank(const T& t)
+constexpr void
+check_rank(const T& t)
 {
   static_assert(T::TensorTraits::rank == expected, "Rank not as expected");
 }
-
 
 int
 main()
@@ -20,9 +20,9 @@ main()
   auto Du = grad(u);
   auto DDu = grad(Du);
 
-  check_rank<0> (u);
-  check_rank<1> (Du);
-  check_rank<2> (DDu);
+  check_rank<0>(u);
+  check_rank<1>(Du);
+  check_rank<2>(DDu);
 
   std::cout << u.latex(std::array<int, 3>({ 0, 0, 0 })) << std::endl;
   std::cout << Du.latex(std::array<int, 3>({ 0, 0, 0 }), 0) << " = " << Du.latex(0) << std::endl;

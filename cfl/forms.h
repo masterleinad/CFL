@@ -70,7 +70,7 @@ struct form_latex_aux<2, Test, Expr>
 template <class Test, class Expr>
 class Form
 {
- public:
+public:
   const Test test;
   const Expr expr;
 

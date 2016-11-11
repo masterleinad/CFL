@@ -23,7 +23,7 @@ namespace Traits
   {
     static const bool value = true;
   };
-  
+
   template <class T>
   struct is_unary_operator<Gradient<T>>
   {
@@ -43,14 +43,14 @@ namespace Traits
 template <class T>
 class Gradient
 {
- public:
+public:
   typedef T BaseType;
-  const T t;
+  const T base;
 
   typedef Traits::Tensor<T::TensorTraits::rank + 1, T::TensorTraits::dim> TensorTraits;
 
   Gradient(const T& t)
-    : t(t)
+    : base(t)
   {
     static_assert(Traits::has_simple_derivative<T>::value,
                   "Gradient can only take derivatives if those are simple");
@@ -63,7 +63,7 @@ class Gradient
     // Discuss whether this copy is necessary, or if we want to hand
     // over derivatives by reference and screw it up for the caller
     ++derivatives[d];
-    return t.latex(derivatives, comp...);
+    return base.latex(derivatives, comp...);
   }
 
   template <typename... Comp>
@@ -72,7 +72,7 @@ class Gradient
   {
     std::array<int, TensorTraits::dim> derivatives({ 0 });
     derivatives[d] = 1;
-    return t.latex(derivatives, comp...);
+    return base.latex(derivatives, comp...);
   }
 };
 

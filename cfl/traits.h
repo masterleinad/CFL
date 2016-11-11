@@ -73,8 +73,7 @@ namespace Traits
   {
     static const bool value = false;
   };
-  
-  
+
   /**
    * \brief True if the object is a CFL binary operator
    */
@@ -83,8 +82,7 @@ namespace Traits
   {
     static const bool value = false;
   };
-  
-  
+
   /**
    * \brief The object is already a form consisting of test function
    * set and tested expression
@@ -99,12 +97,10 @@ namespace Traits
    * \brief Objectys need binding to mesh objects in loop
    */
   template <class T>
-  struct needs_binding
+  struct needs_anchor
   {
     static const bool value = false;
   };
-
-  
 }
 }
 
