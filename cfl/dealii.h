@@ -1,6 +1,7 @@
 #ifndef cfl_dealii_h
 #define cfl_dealii_h
 
+#include <cfl/forms.h>
 #include <cfl/traits.h>
 
 #include <deal.II/meshworker/dof_info.h>
@@ -115,7 +116,7 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index, unsigned int test_function_index, int comp) const
       {
-        return base->fe->shape_grad(test_function_index, quadrature_index)(comp);
+        return base.fe->shape_grad(test_function_index, quadrature_index)[comp];
       }
     };
 
@@ -212,7 +213,7 @@ namespace dealii
 
       // TODO: only implemented for scalars yet
       double
-      evaluate(unsigned int quadrature_index)
+      evaluate(unsigned int quadrature_index) const
       {
         return info->values[data_index][first_component][quadrature_index];
       }
@@ -241,7 +242,7 @@ namespace dealii
 
       // TODO: only implemented for scalars yet
       double
-      evaluate(unsigned int quadrature_index, unsigned int comp)
+      evaluate(unsigned int quadrature_index, unsigned int comp) const
       {
         return base.info->gradients[base.data_index][base.first_component][quadrature_index][comp];
       }
@@ -269,7 +270,7 @@ namespace dealii
 
       // TODO: only implemented for scalars yet
       double
-      evaluate(unsigned int quadrature_index, unsigned int comp1, unsigned int comp2)
+      evaluate(unsigned int quadrature_index, unsigned int comp1, unsigned int comp2) const
       {
         return base.info->hessians[base.data_index][base.first_component][quadrature_index][comp1]
                                   [comp2];

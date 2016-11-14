@@ -23,6 +23,8 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 
   Vector<double> x;
   Vector<double> b;
+  data.resize_vector(x);
+  data.resize_vector(b);
 
   data.vmult(x, b, f);
 }
@@ -32,7 +34,7 @@ main()
 {
   deallog.depth_console(10);
   run<2>(0, 2, 2);
-  run<2>(1, 2, 2);
+  //  run<2>(1, 2, 2);
 
   return 0;
 }

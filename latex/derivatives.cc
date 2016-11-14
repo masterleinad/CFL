@@ -24,23 +24,20 @@ main()
   check_rank<1>(Du);
   check_rank<2>(DDu);
 
-  std::cout << u.latex(std::array<int, 3>({ 0, 0, 0 })) << std::endl;
-  std::cout << Du.latex(std::array<int, 3>({ 0, 0, 0 }), 0) << " = " << Du.latex(0) << std::endl;
-  std::cout << Du.latex(std::array<int, 3>({ 0, 0, 0 }), 1) << " = " << Du.latex(1) << std::endl;
-  std::cout << Du.latex(std::array<int, 3>({ 0, 0, 0 }), 2) << " = " << Du.latex(2) << std::endl;
+  std::cout << u.latex() << std::endl;
+  std::cout << Du.latex(0) << " = " << Du.latex(0) << std::endl;
+  std::cout << Du.latex(1) << " = " << Du.latex(1) << std::endl;
+  std::cout << Du.latex(2) << " = " << Du.latex(2) << std::endl;
 
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 0, 0) << " = " << DDu.latex(0, 0)
-            << std::endl;
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 1, 0) << " = " << DDu.latex(1, 0)
-            << std::endl;
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 2, 0) << " = " << DDu.latex(2, 0)
-            << std::endl;
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 0, 1) << std::endl;
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 1, 1) << std::endl;
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 2, 1) << std::endl;
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 0, 2) << std::endl;
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 1, 2) << std::endl;
-  std::cout << DDu.latex(std::array<int, 3>({ 0, 0, 0 }), 2, 2) << std::endl;
+  std::cout << DDu.latex(0, 0) << " = " << DDu.latex(0, 0) << std::endl;
+  std::cout << DDu.latex(1, 0) << " = " << DDu.latex(1, 0) << std::endl;
+  std::cout << DDu.latex(2, 0) << " = " << DDu.latex(2, 0) << std::endl;
+  std::cout << DDu.latex(0, 1) << std::endl;
+  std::cout << DDu.latex(1, 1) << std::endl;
+  std::cout << DDu.latex(2, 1) << std::endl;
+  std::cout << DDu.latex(0, 2) << std::endl;
+  std::cout << DDu.latex(1, 2) << std::endl;
+  std::cout << DDu.latex(2, 2) << std::endl;
 
   TerminalString<2, 3, true> v("v");
   auto Dv = grad(v);

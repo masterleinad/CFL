@@ -64,10 +64,43 @@ struct form_latex_aux<2, Test, Expr>
   }
 };
 
+template <int rank, class Test, class Expr>
+struct form_evaluate_aux
+{
+  std::string
+  operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
+  {
+    return std::string("Not implemented for rank ") + std::to_string(rank);
+  }
+};
+
+template <class Test, class Expr>
+struct form_evaluate_aux<0, Test, Expr>
+{
+  std::string
+  operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
+  {
+    return test.evaluate(k, i) * expr.evaluate(k, i);
+  }
+};
+
+template <class Test, class Expr>
+struct form_evaluate_aux<1, Test, Expr>
+{
+  double
+  operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
+  {
+    double sum = 0.;
+    for (unsigned int d = 0; d < Test::TensorTraits::dim; ++d)
+      sum += test.evaluate(k, i, d) * expr.evaluate(k, d);
+    return sum;
+  }
+};
+
 /**
  * A Form is an expression tested by a test function set.
  */
-template <class Test, class Expr>
+template <class Test, class Expr, typename number = double>
 class Form
 {
 public:
@@ -92,6 +125,12 @@ public:
   latex() const
   {
     return form_latex_aux<Test::TensorTraits::rank, Test, Expr>()(test, expr);
+  }
+
+  number
+  evaluate(unsigned int k, unsigned int i) const
+  {
+    return form_evaluate_aux<Test::TensorTraits::rank, Test, Expr>()(k, i, test, expr);
   }
 };
 
