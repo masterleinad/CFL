@@ -38,12 +38,18 @@ public:
   virtual void
   cell(MeshWorker::DoFInfo<dim>& dinfo, MeshWorker::IntegrationInfo<dim>& info) const
   {
-    std::cerr << '*';
+    anchor(form, info, *this);
+    reinit(form, info);
     for (unsigned int k = 0; k < info.fe_values(0).n_quadrature_points; ++k)
+    {
+      // std::cerr << '<' << &info
+      // 	  << ',' << info.gradients[0][0][k]
+      // 	  << '>';
       for (unsigned int i = 0; i < info.fe_values(0).dofs_per_cell; ++i)
       {
         dinfo.vector(0).block(0)[i] += form.evaluate(k, i) * info.fe_values(0).JxW(k);
       }
+    }
   }
 };
 
@@ -105,6 +111,7 @@ public:
          i != integrator.input_vector_names.end();
          ++i)
     {
+      // std::cerr << "Vector " << *i << std::endl;
       info_box.cell_selector.add(*i, true, true, false);
       info_box.boundary_selector.add(*i, true, true, false);
       info_box.face_selector.add(*i, true, true, false);
@@ -113,15 +120,12 @@ public:
     info_box.add_update_flags_all(update_flags);
     info_box.initialize(dof.get_fe(), this->mapping, in, Vector<double>(), &dof.block_info());
 
-    anchor(form, info_box.cell, integrator);
-
     MeshWorker::DoFInfo<dim> dof_info(dof.block_info());
 
     MeshWorker::Assembler::ResidualSimple<Vector<double>> assembler;
     //    assembler.initialize(this->constraints());
     assembler.initialize(out);
 
-    std::cerr << "Norms pre: " << dst.l2_norm() << ' ' << src.l2_norm() << std::endl;
     // Loop call
     MeshWorker::integration_loop(
       dof.begin_active(), dof.end(), dof_info, info_box, integrator, assembler);

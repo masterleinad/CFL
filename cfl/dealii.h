@@ -66,7 +66,7 @@ namespace dealii
       /// Index of the dealii::FEValues object in IntegrationInfo
       unsigned int index;
 
-      const ::dealii::FEValuesBase<dim, dim>* fe;
+      const ::dealii::MeshWorker::IntegrationInfo<dim, dim>* ii;
 
       friend class ScalarTestGradient<dim>;
       friend class ScalarTestHessian<dim>;
@@ -76,20 +76,20 @@ namespace dealii
 
       ScalarTestFunction(unsigned int index)
         : index(index)
-        , fe(nullptr)
+        , ii(nullptr)
       {
       }
 
       void
-      anchor(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
+      reinit(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
       {
-        const_cast<ScalarTestFunction<dim>*>(this)->fe = &ii.fe_values(index);
+        const_cast<ScalarTestFunction<dim>*>(this)->ii = &ii;
       }
 
       double
       evaluate(unsigned int quadrature_index, unsigned int test_function_index) const
       {
-        return fe->shape_function_value(test_function_index, quadrature_index);
+        return ii->fe_values(index).shape_function_value(test_function_index, quadrature_index);
       }
     };
 
@@ -108,15 +108,16 @@ namespace dealii
       }
 
       void
-      anchor(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
+      reinit(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
       {
-        base.anchor(ii);
+        base.reinit(ii);
       }
 
       double
       evaluate(unsigned int quadrature_index, unsigned int test_function_index, int comp) const
       {
-        return base.fe->shape_grad(test_function_index, quadrature_index)[comp];
+        return base.ii->fe_values(base.index)
+          .shape_grad(test_function_index, quadrature_index)[comp];
       }
     };
 
@@ -134,16 +135,17 @@ namespace dealii
       }
 
       void
-      anchor(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
+      reinit(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
       {
-        base.anchor(ii);
+        base.reinit(ii);
       }
 
       double
       evaluate(unsigned int quadrature_index, unsigned int test_function_index, int comp1,
                int comp2) const
       {
-        return base->fe->shape_hessian(test_function_index, quadrature_index)(comp1, comp2);
+        return base.ii->fe_values(base.index)
+          .shape_hessian(test_function_index, quadrature_index)(comp1, comp2);
       }
     };
 
@@ -244,6 +246,14 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index, unsigned int comp) const
       {
+        // std::cerr << '['
+        // 	  << base.info << ','
+        // 	  << base.data_index << ',' << base.first_component << ';'
+        // 	  << quadrature_index << ','
+        // 	  << comp << ','
+        // 	  <<
+        // base.info->gradients[base.data_index][base.first_component][quadrature_index][comp] <<
+        // ']';
         return base.info->gradients[base.data_index][base.first_component][quadrature_index][comp];
       }
     };
@@ -293,18 +303,26 @@ namespace dealii
 
     template <class TEST, class EXPR>
     void
-    anchor(Form<TEST, EXPR>& form,
+    anchor(const Form<TEST, EXPR>& form,
            const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim,
                                                        TEST::TensorTraits::dim>& ii,
            const ::dealii::MeshWorker::LocalIntegrator<TEST::TensorTraits::dim>& li)
     {
-      form.test.anchor(ii);
       form.expr.anchor(ii, li);
+    }
+
+    template <class TEST, class EXPR>
+    void
+    reinit(const Form<TEST, EXPR>& form,
+           const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim,
+                                                       TEST::TensorTraits::dim>& ii)
+    {
+      form.test.reinit(ii);
     }
 
     template <class T, int dim = T::TensorTraits::dim>
     std::enable_if<Traits::needs_anchor<T>::type>
-    anchor(T& t, const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
+    anchor(const T& t, const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
            const ::dealii::MeshWorker::LocalIntegrator<dim>& li)
     {
       t.anchor(ii, li);
@@ -312,7 +330,7 @@ namespace dealii
 
     template <class T, int dim = T::TensorTraits::dim>
     std::enable_if<Traits::is_unary_operator<T>::type>
-    anchor(T& t, const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
+    anchor(const T& t, const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
            const ::dealii::MeshWorker::LocalIntegrator<dim>& li)
     {
       anchor(t.base, ii, li);
