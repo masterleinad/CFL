@@ -44,7 +44,7 @@ public:
     {
       // std::cerr << '<' << &info
       // 	  << ',' << info.gradients[0][0][k]
-      // 	  << '>';
+      // << '>';
       for (unsigned int i = 0; i < info.fe_values(0).dofs_per_cell; ++i)
       {
         dinfo.vector(0).block(0)[i] += form.evaluate(k, i) * info.fe_values(0).JxW(k);

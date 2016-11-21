@@ -194,8 +194,8 @@ namespace dealii
       anchor(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
              const ::dealii::MeshWorker::LocalIntegrator<dim>& li) const
       {
-        if (info != nullptr)
-          return;
+        // if (info != nullptr)
+        //   return;
         FEFunction<rank, dim>* ptr = const_cast<FEFunction<rank, dim>*>(this);
         ptr->info = &ii;
         unsigned int i = 0;
@@ -246,14 +246,15 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index, unsigned int comp) const
       {
-        // std::cerr << '['
-        // 	  << base.info << ','
+	// std::cerr << '['
+	// 	  << base.info
+	// 	  << ','
         // 	  << base.data_index << ',' << base.first_component << ';'
         // 	  << quadrature_index << ','
         // 	  << comp << ','
         // 	  <<
-        // base.info->gradients[base.data_index][base.first_component][quadrature_index][comp] <<
-        // ']';
+        // base.info->gradients[base.data_index][base.first_component][quadrature_index][comp]
+	  // << ']';
         return base.info->gradients[base.data_index][base.first_component][quadrature_index][comp];
       }
     };

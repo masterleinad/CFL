@@ -70,7 +70,7 @@ struct form_evaluate_aux
   double
   operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
   {
-    static_assert(false, "Not implemented for this rank");
+    static_assert(rank<2, "Not implemented for this rank");
     return 0.;
   }
 };
