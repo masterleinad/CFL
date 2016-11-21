@@ -89,7 +89,7 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index, unsigned int test_function_index) const
       {
-        return ii->fe_values(index).shape_function_value(test_function_index, quadrature_index);
+        return ii->fe_values(index).shape_value(test_function_index, quadrature_index);
       }
     };
 

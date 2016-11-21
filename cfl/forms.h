@@ -67,20 +67,21 @@ struct form_latex_aux<2, Test, Expr>
 template <int rank, class Test, class Expr>
 struct form_evaluate_aux
 {
-  std::string
+  double
   operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
   {
-    return std::string("Not implemented for rank ") + std::to_string(rank);
+    static_assert(false, "Not implemented for this rank");
+    return 0.;
   }
 };
 
 template <class Test, class Expr>
 struct form_evaluate_aux<0, Test, Expr>
 {
-  std::string
+  double
   operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
   {
-    return test.evaluate(k, i) * expr.evaluate(k, i);
+    return test.evaluate(k, i) * expr.evaluate(k);
   }
 };
 
