@@ -152,7 +152,7 @@ form(const Test& t, const Expr& e)
 }
 
 template <class Test, class Expr>
-typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr> >::type
 form(const Expr& e, const Test& t)
 {
   return Form<Test, Expr>(t, e);

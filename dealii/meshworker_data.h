@@ -92,7 +92,7 @@ public:
 
   template <class Form>
   void
-  vmult(Vector<double>& dst, const Vector<double>& src, Form& form)
+  vmult(Vector<double>& dst, const Vector<double>& src, Form& form) const
   {
     AnyData in;
     in.add<const Vector<double>*>(&src, "u");
