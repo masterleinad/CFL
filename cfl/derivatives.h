@@ -70,7 +70,7 @@ public:
   std::string
   latex(int d, Comp... comp) const
   {
-    std::array<int, TensorTraits::dim> derivatives({ 0 });
+    std::array<int, TensorTraits::dim> derivatives({ {0} });
     derivatives[d] = 1;
     return base.latex(derivatives, comp...);
   }
