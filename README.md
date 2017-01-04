@@ -88,3 +88,5 @@ integrate([&] {
 - Automatic differentiation
 - Integration by parts
 - LaTeX backend
+- Functions (exp, sin, cos,...) of FEFunctions or coordinates
+- Cell-wise parameters (mean value, penalty)

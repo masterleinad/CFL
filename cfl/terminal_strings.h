@@ -62,8 +62,8 @@ public:
    * throw an error message.
    */
   template <typename... Components>
-  typename std::enable_if<sizeof...(Components) == TensorTraits::rank, std::string>::type latex(
-    Components... comp) const
+  typename std::enable_if<sizeof...(Components) == TensorTraits::rank, std::string>::type
+  latex(Components... comp) const
   {
     std::string result = value;
     if (rank > 0)
