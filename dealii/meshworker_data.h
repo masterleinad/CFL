@@ -1,3 +1,5 @@
+#ifndef MESHWORKER_DATA_H
+#define MESHWORKER_DATA_H
 
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/fe/fe.h>
@@ -26,7 +28,7 @@ class MeshWorkerIntegrator : public ::dealii::MeshWorker::LocalIntegrator<dim>
   const FORM& form;
 
 public:
-  MeshWorkerIntegrator(const FORM& form)
+  explicit MeshWorkerIntegrator(const FORM& form)
     : form(form)
   {
     this->use_boundary = false;
@@ -43,7 +45,7 @@ public:
     for (unsigned int k = 0; k < info.fe_values(0).n_quadrature_points; ++k)
     {
       // std::cerr << '<' << &info
-      // 	  << ',' << info.gradients[0][0][k]
+      //    << ',' << info.gradients[0][0][k]
       // << '>';
       for (unsigned int i = 0; i < info.fe_values(0).dofs_per_cell; ++i)
       {
@@ -131,3 +133,5 @@ public:
       dof.begin_active(), dof.end(), dof_info, info_box, integrator, assembler);
   }
 };
+
+#endif // MESHWORKER_DATA_H

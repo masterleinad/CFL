@@ -29,8 +29,7 @@ public:
 };
 
 template <typename number, class T>
-auto
-scale(number factor, const T& t)
+auto scale(number factor, const T& t)
 {
   return ConstantScaled<number, T>(factor, t);
 }

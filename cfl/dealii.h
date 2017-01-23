@@ -4,15 +4,17 @@
 #include <cfl/forms.h>
 #include <cfl/traits.h>
 
+#include <deal.II/meshworker/loop.h>
+#include <deal.II/meshworker/output.h>
+#include <deal.II/meshworker/simple.h>
 #include <deal.II/meshworker/dof_info.h>
 #include <deal.II/meshworker/integration_info.h>
 
 // This is an ugly workaround to be able to use AssertIndexRange
 // because we are always in the wrong namespace.
 #undef AssertIndexRange
-#define AssertIndexRange(index,range) Assert((index) < (range), \
-                                             ::dealii::ExcIndexRange((index),0,(range)))
-
+#define AssertIndexRange(index, range)                                                             \
+  Assert((index) < (range), ::dealii::ExcIndexRange((index), 0, (range)))
 
 namespace CFL
 {
@@ -96,7 +98,7 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index, unsigned int test_function_index) const
       {
-        Assert(ii!=nullptr, ::dealii::ExcInternalError());
+        Assert(ii != nullptr, ::dealii::ExcInternalError());
         return ii->fe_values(index).shape_value(test_function_index, quadrature_index);
       }
     };
@@ -124,8 +126,9 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index, unsigned int test_function_index, int comp) const
       {
-        Assert(base.ii!=nullptr, ::dealii::ExcInternalError());
-        return base.ii->fe_values(base.index).shape_grad(test_function_index, quadrature_index)[comp];
+        Assert(base.ii != nullptr, ::dealii::ExcInternalError());
+        return base.ii->fe_values(base.index)
+          .shape_grad(test_function_index, quadrature_index)[comp];
       }
     };
 
@@ -152,9 +155,9 @@ namespace dealii
       evaluate(unsigned int quadrature_index, unsigned int test_function_index, int comp1,
                int comp2) const
       {
-        Assert (base.ii != nullptr, ::dealii::ExcInternalError());
-        return base.ii->fe_values(base.index).shape_hessian
-        (test_function_index, quadrature_index)(comp1, comp2);
+        Assert(base.ii != nullptr, ::dealii::ExcInternalError());
+        return base.ii->fe_values(base.index)
+          .shape_hessian(test_function_index, quadrature_index)(comp1, comp2);
       }
     };
 
@@ -206,9 +209,9 @@ namespace dealii
       {
         info = &ii;
 
-        //short cut
-        if (data_index < li.input_vector_names.size() 
-            && data_name == li.input_vector_names[data_index])
+        // short cut
+        if (data_index < li.input_vector_names.size() &&
+            data_name == li.input_vector_names[data_index])
           return;
 
         unsigned int i = 0;
@@ -230,7 +233,7 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index) const
       {
-        Assert(info!=nullptr && data_index != ::dealii::numbers::invalid_unsigned_int,
+        Assert(info != nullptr && data_index != ::dealii::numbers::invalid_unsigned_int,
                ::dealii::ExcInternalError());
         return info->values[data_index][first_component][quadrature_index];
       }
@@ -261,13 +264,14 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index, unsigned int comp) const
       {
-        Assert(base.info!=nullptr, ::dealii::ExcInternalError());
+        Assert(base.info != nullptr, ::dealii::ExcInternalError());
 
         AssertIndexRange(base.data_index, base.info->gradients.size());
 
         AssertIndexRange(base.first_component, base.info->gradients[base.data_index].size());
-        AssertIndexRange(quadrature_index,base.info->gradients[base.data_index][base.first_component].size());
-        AssertIndexRange(comp,dim);
+        AssertIndexRange(quadrature_index,
+                         base.info->gradients[base.data_index][base.first_component].size());
+        AssertIndexRange(comp, dim);
         return base.info->gradients[base.data_index][base.first_component][quadrature_index][comp];
       }
     };
@@ -296,9 +300,9 @@ namespace dealii
       double
       evaluate(unsigned int quadrature_index, unsigned int comp1, unsigned int comp2) const
       {
-        Assert(base.info!=nullptr, ::dealii::ExcInternalError());
-        return base.info->hessians[base.data_index][base.first_component][quadrature_index][comp1]
-                                  [comp2];
+        Assert(base.info != nullptr, ::dealii::ExcInternalError());
+        return base.info
+          ->hessians[base.data_index][base.first_component][quadrature_index][comp1][comp2];
       }
     };
 
