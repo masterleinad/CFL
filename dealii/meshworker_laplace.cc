@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include "meshworker_data.h"
 #include <deal.II/fe/fe_q.h>
@@ -40,46 +42,44 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
     for (unsigned int j = 0; j < x_new.size(); ++j)
       if (x_new[j] != 0.)
         std::cout << i << '\t' << j << '\t' << x_new[j] << std::endl;
-    Assert (i==0||x_new == x_old, ExcInternalError());
+    Assert(i == 0 || x_new == x_old, ExcInternalError());
     std::cout << std::endl;
   }
 }
 
 int
-main(int argc, char *argv[])
+main(int argc, char* argv[])
 {
   deallog.depth_console(10);
-  ::dealii::MultithreadInfo::set_thread_limit( (argc > 1) ? atoi(argv[1]) : 1);
+  ::dealii::MultithreadInfo::set_thread_limit((argc > 1) ? atoi(argv[1]) : 1);
   std::cout << ::dealii::MultithreadInfo::n_threads() << std::endl;
-  try 
+  try
   {
     run<2>(0, 0, 1);
     //  run<2>(1, 2, 2);
   }
-  catch (std::exception &exc)
-    {
-      std::cerr << std::endl << std::endl
-                << "----------------------------------------------------"
-                << std::endl;
-      std::cerr << "Exception on processing: " << std::endl
-                << exc.what() << std::endl
-                << "Aborting!" << std::endl
-                << "----------------------------------------------------"
-                << std::endl;
+  catch (std::exception& exc)
+  {
+    std::cerr << std::endl
+              << std::endl
+              << "----------------------------------------------------" << std::endl;
+    std::cerr << "Exception on processing: " << std::endl
+              << exc.what() << std::endl
+              << "Aborting!" << std::endl
+              << "----------------------------------------------------" << std::endl;
 
-      return 1;
-    }
+    return 1;
+  }
   catch (...)
-    {
-      std::cerr << std::endl << std::endl
-                << "----------------------------------------------------"
-                << std::endl;
-      std::cerr << "Unknown exception!" << std::endl
-                << "Aborting!" << std::endl
-                << "----------------------------------------------------"
-                << std::endl;
-      return 1;
-    }
+  {
+    std::cerr << std::endl
+              << std::endl
+              << "----------------------------------------------------" << std::endl;
+    std::cerr << "Unknown exception!" << std::endl
+              << "Aborting!" << std::endl
+              << "----------------------------------------------------" << std::endl;
+    return 1;
+  }
 
   return 0;
 }
