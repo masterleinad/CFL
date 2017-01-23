@@ -1,0 +1,17 @@
+Ideas used in the current MatrixFree implementation:
+- FEData templates save the type of a FEEvaluation appropriate for a given FiniteElement but are empty otherwise.
+- FEDatas is a container collecting all the FEData objects and having a std::unique_ptr of the correct FEEValuation type for each block.
+- Similarly sums of FEFunction objects and Form objects are collected in container objects SumFEFunctions and Forms.
+- In the constructor of MatrixFreeData all FEEValuation objects are initialized by an appropriate MatrixFree object and can be used for a vmult operation.
+- MatrixFreeIntegrator is based on a modified version of MatrixFreeOperators::Base and controls the FEDatas object that performs the actual operations.
+- The information which block and which type of value has to be used is contained in the FEFunction and TestFunction objects that are otherwise empty and don't store any data.
+- The logic for performing a vmult operation on a cell  follows (naturally) closely the way this is done in the MatrixFree context:
+  1.) The FEDatas object is initialized in the cell.
+  2.) The FEDatas object receives all values of the source vector via FEDatas::read_dof_values.
+  3.) We evaluate the Forms object (do_operation_on_cell) )via the following steps
+    i) The necessary derivatives of the input data is computed for each FEData object.
+    ii) The Forms object evaluates the FEFunction values for each Form and saves the result in the appropraite FEData object.
+    iii) The Forms object tests the values obtained in the previous step with the appropriate TestFunction object.
+  4.) The FEDatas object distributed the local values to the destination vector  for each Form.
+- Operations on any of the container objects trigger the respective operation on all the stored objects.
+- All additional information is known at compile time. Therefore, the resulting code should be as optimal as a (native) MatrixFree code.
