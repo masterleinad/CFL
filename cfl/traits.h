@@ -5,6 +5,12 @@ namespace CFL
 {
 namespace Traits
 {
+  template <class VectorType>
+  struct is_block_vector
+  {
+    static constexpr bool value = false;
+  };
+
   /**
    * \brief The tensor rank and dimension of an object.
    *
@@ -18,8 +24,8 @@ namespace Traits
   template <int rank_, int dim_>
   struct Tensor
   {
-    static const unsigned int rank = rank_;
-    static const unsigned int dim = dim_;
+    static constexpr unsigned int rank = rank_;
+    static constexpr unsigned int dim = dim_;
   };
 
   /**
@@ -30,23 +36,23 @@ namespace Traits
    * their tensor rank and dimension. If these expressions involve
    * Gradient or higher derivatives, some of these indices refer to
    * partial derivatives. Gradient does not actually compute the
-   * derivative of its argument, but jsut converts the index with
+   * derivative of its argument, but just converts the index with
    * respect to the first tensor component into a derivative
    * flag. Terminal classes then have to be able to compute these
    * derivatives, and they do not only evaluate their values, but also
    * derivatives, using a second evaluation function. This evaluation
-   * function is calles "simple derivative", as opposed to using product
+   * function is called "simple derivative", as opposed to using product
    * and chain rules etc.
    *
    * This class must be specialized for all terminal expressions, such
-   * that hassimple_derivative::value is true for such classes. This
+   * that has simple_derivative::value is true for such classes. This
    * property is then inherited by their derivatives and also their
    * sums.
    */
   template <class T>
   struct has_simple_derivative
   {
-    static const bool value = false;
+    static constexpr bool value = false;
   };
 
   /**
@@ -62,7 +68,59 @@ namespace Traits
   template <class T>
   struct is_test_function_set
   {
-    static const bool value = false;
+    static constexpr bool value = false;
+  };
+
+  template <class T>
+  struct is_cfl_object
+  {
+    static constexpr bool value = false;
+  };
+
+  template <class T>
+  struct is_terminal_string
+  {
+    static constexpr bool value = false;
+  };
+
+  template <class T, class U, class Enable = void>
+  struct is_summable
+  {
+    static constexpr bool value = false;
+  };
+
+  template <class A, class B>
+  struct is_compatible
+  {
+    static constexpr bool value = false;
+  };
+
+  template <class A>
+  struct is_compatible<A, A>
+  {
+    static constexpr bool value = true;
+  };
+
+  template <class T>
+  struct is_fe_data
+  {
+    static constexpr bool value = false;
+  };
+
+  /**
+   * \brief Indicator for test functions used in forms
+   *
+   * This trait is used to ensure that a Form has only one set of test
+   * functions and that this set is in first position, such that
+   * integrators know where to find it.
+   *
+   * Test function sets are the exception from the rule, thus most
+   * classes have a <tt>false</tt> here.
+   */
+  template <class T>
+  struct is_fe_function_set
+  {
+    static constexpr bool value = false;
   };
 
   /**
@@ -71,7 +129,7 @@ namespace Traits
   template <class T>
   struct is_unary_operator
   {
-    static const bool value = false;
+    static constexpr bool value = false;
   };
 
   /**
@@ -80,7 +138,7 @@ namespace Traits
   template <class T>
   struct is_binary_operator
   {
-    static const bool value = false;
+    static constexpr bool value = false;
   };
 
   /**
@@ -90,7 +148,7 @@ namespace Traits
   template <class T>
   struct is_form
   {
-    static const bool value = false;
+    static constexpr bool value = false;
   };
 
   /**
@@ -99,8 +157,24 @@ namespace Traits
   template <class T>
   struct needs_anchor
   {
-    static const bool value = false;
+    static constexpr bool value = false;
   };
+}
+
+template <class A, class B>
+void
+assert_is_summable(const A&, const B&)
+{
+  static_assert(CFL::Traits::is_summable<A, B>::value, "The sum of these objects is not defined!");
+}
+
+template <class A, class B>
+void
+assert_is_compatible(const A&, const B&)
+{
+  static_assert(CFL::Traits::is_compatible<A, B>::value,
+                "Types must be compatible to be added! "
+                "Probably, the ansatz functions don't match the bilinear form!");
 }
 }
 

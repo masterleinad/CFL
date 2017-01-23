@@ -5,6 +5,7 @@
 #include <string>
 
 #include <cfl/traits.h>
+#include <cfl/sums.h>
 
 namespace CFL
 {
@@ -48,7 +49,7 @@ class TerminalString
 public:
   typedef Traits::Tensor<rank, dim> TensorTraits;
 
-  TerminalString(const std::string val)
+  TerminalString(const std::string& val)
     : value(val)
   {
   }
@@ -62,8 +63,8 @@ public:
    * throw an error message.
    */
   template <typename... Components>
-  typename std::enable_if<sizeof...(Components) == TensorTraits::rank, std::string>::type
-  latex(Components... comp) const
+  typename std::enable_if<sizeof...(Components) == TensorTraits::rank, std::string>::type latex(
+    Components... comp) const
   {
     std::string result = value;
     if (rank > 0)
@@ -97,6 +98,14 @@ public:
   }
 };
 
+template <class T, class U>
+typename std::enable_if<
+  Traits::is_terminal_string<T>::value && Traits::is_terminal_string<U>::value, Sum<T, U>>::type
+operator+(const T& string1, const U& string2)
+{
+  return Sum<T, U>(string1, string2);
+}
+
 namespace Traits
 {
   template <int rank, int dim>
@@ -107,6 +116,25 @@ namespace Traits
 
   template <int rank, int dim, bool is_test>
   struct has_simple_derivative<TerminalString<rank, dim, is_test>>
+  {
+    static const bool value = true;
+  };
+
+  template <int rank, int dim, bool is_test>
+  struct is_cfl_object<TerminalString<rank, dim, is_test>>
+  {
+    static const bool value = true;
+  };
+
+  template <int rank, int dim, bool is_test>
+  struct is_terminal_string<TerminalString<rank, dim, is_test>>
+  {
+    static const bool value = true;
+  };
+
+  template <class A, class B>
+  struct is_summable<A, B, typename std::enable_if<is_terminal_string<A>::value &&
+                                                   is_terminal_string<B>::value>::type>
   {
     static const bool value = true;
   };

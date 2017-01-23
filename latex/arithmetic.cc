@@ -1,3 +1,5 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include <cfl/constants.h>
 #include <cfl/derivatives.h>
@@ -20,8 +22,7 @@ print_form(const T& t)
 }
 
 template <class A, class B>
-auto
-make_form(const A& a, const B& b)
+auto make_form(const A& a, const B& b)
 {
   return Form<A, B>(a, b);
 }
@@ -35,6 +36,7 @@ main()
 
   TerminalString<0, 2, true> phi("\\phi ");
 
+  assert_is_summable(p, q);
   print_form(make_form(phi, p + q));
   print_form(make_form(phi, p * q));
   print_form(make_form(phi, scale(4., p) * q));

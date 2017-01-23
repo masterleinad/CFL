@@ -29,6 +29,18 @@ namespace Traits
   {
     static const bool value = true;
   };
+
+  template <class T>
+  struct is_cfl_object<Gradient<T>>
+  {
+    static const bool value = true;
+  };
+
+  template <class T>
+  struct is_terminal_string<Gradient<T>>
+  {
+    static const bool value = is_terminal_string<T>::value;
+  };
 }
 /**
  * \brief The gradient as a tensor as a tensor of higher rank
@@ -70,7 +82,7 @@ public:
   std::string
   latex(int d, Comp... comp) const
   {
-    std::array<int, TensorTraits::dim> derivatives({ {0} });
+    std::array<int, TensorTraits::dim> derivatives({ { 0 } });
     derivatives[d] = 1;
     return base.latex(derivatives, comp...);
   }

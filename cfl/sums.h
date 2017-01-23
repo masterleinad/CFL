@@ -7,15 +7,14 @@
 
 namespace CFL
 {
-
 template <class A, class B>
 class Sum
 {
-  const A a;
-  const B b;
+  const A& a;
+  const B& b;
 
 public:
-  typedef Traits::Tensor<A::TensorTraits::rank, A::TensorTraits::dim> TensorTraits;
+  typedef typename Traits::Tensor<A::TensorTraits::rank, A::TensorTraits::dim> TensorTraits;
 
   Sum(const A& a, const B& b)
     : a(a)
@@ -36,13 +35,37 @@ public:
     std::string output = a.latex(comp...) + "+" + b.latex(comp...);
     return output;
   }
+
+  template <class FEEvaluation>
+  auto value(const FEEvaluation& phi, unsigned int q) const;
 };
 
 template <class A, class B>
-Sum<A, B>
+template <class FEEvaluation>
+auto Sum<A, B>::value(const FEEvaluation& phi, unsigned int q) const
+{
+  return a.value(phi, q) + b.value(phi, q);
+}
+
+namespace Traits
+{
+  template <class T, class U>
+  struct is_terminal_string<Sum<T, U>>
+  {
+    static const bool value = is_terminal_string<T>::value && is_terminal_string<U>::value;
+  };
+}
+
+template <class A, class B>
+typename std::enable_if<((CFL::Traits::is_cfl_object<A>::value ||
+                          CFL::Traits::is_cfl_object<B>::value) &&
+                         !CFL::Traits::is_summable<A, B>::value),
+                        A>::type
 operator+(const A& a, const B& b)
 {
-  return Sum<A, B>(a, b);
+  assert_is_summable(a, b);
+  throw std::runtime_error("Internal error! This line should never be invoked!");
+  return a;
 }
 }
 
