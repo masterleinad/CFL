@@ -133,8 +133,8 @@ public:
   vmult(LinearAlgebra::distributed::Vector<Number>& dst,
         const LinearAlgebra::distributed::Vector<Number>& src, Form& form) const
   {
-    MatrixFreeIntegrator<dim, Number, Form, FEDatas> integrator(form, *fe_datas);
-    integrator.initialize(mf);
+    MatrixFreeIntegrator<dim, Number, Form, FEDatas> integrator;
+    integrator.initialize(mf, std::make_shared<Form>(form), fe_datas);
     integrator.vmult(dst, src);
   }
 
@@ -143,8 +143,8 @@ public:
   vmult(LinearAlgebra::distributed::BlockVector<Number>& dst,
         const LinearAlgebra::distributed::BlockVector<Number>& src, Form& form) const
   {
-    MatrixFreeIntegrator<dim, Number, Form, FEDatas> integrator(form, *fe_datas);
-    integrator.initialize(mf);
+    MatrixFreeIntegrator<dim, Number, Form, FEDatas> integrator;
+    integrator.initialize(mf, std::make_shared<Form>(form), fe_datas);
     integrator.vmult(dst, src);
   }
 
