@@ -319,7 +319,9 @@ namespace dealii
                       "and the TestFunction is vector valued or "
                       "the TestFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
+#ifdef DEBUG_OUTPUT
         std::cout << "submit TestFunction " << index << " " << q << std::endl;
+#endif
         phi.template submit_value<index>(value, q);
       }
     };
@@ -340,7 +342,9 @@ namespace dealii
         static_assert(FEEvaluation::template rank<index>() > 0,
                       "The proposed FiniteElement has to be "
                       "vector valued for using TestDivergence!");
+#ifdef DEBUG_OUTPUT
         std::cout << "submit TestDivergence " << index << " " << q << std::endl;
+#endif
         phi.template submit_divergence<index>(value, q);
       }
     };
@@ -363,7 +367,9 @@ namespace dealii
                       "and the TestGradient is vector valued or "
                       "the TestGradient is scalar valued and "
                       "the FiniteElement is vector valued!");
+#ifdef DEBUG_OUTPUT
         std::cout << "submit SymmetricGradient " << index << " " << q << std::endl;
+#endif
         phi.template submit_symmetric_gradient<index>(value, q);
       }
     };
@@ -386,7 +392,9 @@ namespace dealii
                       "and the TestCurl is vector valued or "
                       "the TestCurl is scalar valued and "
                       "the FiniteElement is vector valued!");
+#ifdef DEBUG_OUTPUT
         std::cout << "submit TestCurl " << index << " " << q << std::endl;
+#endif
         phi.template submit_curl<index>(value, q);
       }
     };
@@ -417,7 +425,9 @@ namespace dealii
                       "and the TestGradient is vector valued or "
                       "the TestGradient is scalar valued and "
                       "the FiniteElement is vector valued!");
+#ifdef DEBUG_OUTPUT
         std::cout << "submit TestGradient " << index << " " << q << std::endl;
+#endif
         phi.template submit_gradient<index>(value, q);
       }
     };

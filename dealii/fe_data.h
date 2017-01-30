@@ -11,6 +11,7 @@ class FEData
 public:
   typedef typename dealii::FEEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>
     FEEvaluationType;
+  typedef Number NumberType;
   typedef CFL::Traits::Tensor<(n_components > 1 ? 1 : 0), dim> TensorTraits;
   static constexpr unsigned int fe_number = fe_no;
   static constexpr unsigned int max_degree = max_fe_degree;
@@ -58,6 +59,7 @@ class FEDatas<FEData>
 public:
   typedef typename FEData::FEEvaluationType FEEvaluationType;
   typedef typename FEData::TensorTraits TensorTraits;
+  typedef typename FEData::NumberType NumberType;
   static constexpr unsigned int fe_number = FEData::fe_number;
   static constexpr unsigned int max_degree = FEData::max_degree;
 
@@ -116,7 +118,9 @@ public:
   void
   reinit(const Cell& cell)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Reinit FEDatas " << fe_number << std::endl;
+#endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
     fe_evaluation->reinit(cell);
   }
@@ -125,7 +129,9 @@ public:
   typename std::enable_if<CFL::Traits::is_block_vector<VectorType>::value, void>::type
   read_dof_values(const VectorType& vector)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Read DoF values " << fe_number << std::endl;
+#endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
     fe_evaluation->read_dof_values(vector.block(fe_number));
   }
@@ -134,7 +140,9 @@ public:
   typename std::enable_if<!CFL::Traits::is_block_vector<VectorType>::value, void>::type
   read_dof_values(const VectorType& vector)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Read DoF values " << fe_number << std::endl;
+#endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
     fe_evaluation->read_dof_values(vector);
   }
@@ -146,10 +154,12 @@ public:
     static_assert(fe_number == fe_number_extern, "Component not found!");
     integrate_values |= integrate_value;
     integrate_gradients |= integrate_gradient;
+#ifdef DEBUG_OUTPUT
     std::cout << "integrate value end: " << fe_number << " " << integrate_values << " "
               << integrate_value << std::endl;
     std::cout << "integrate gradients end: " << fe_number << " " << integrate_gradients << " "
               << integrate_gradient << std::endl;
+#endif
   }
 
   template <unsigned int fe_number_extern>
@@ -168,7 +178,9 @@ public:
   {
     if (integrate_values | integrate_gradients)
     {
+#ifdef DEBUG_OUTPUT
       std::cout << "Distribute DoF values " << fe_number << std::endl;
+#endif
       Assert(fe_evaluation.get() != nullptr, ExcInternalError());
       fe_evaluation->distribute_local_to_global(vector.block(fe_number));
     }
@@ -180,26 +192,34 @@ public:
   {
     if (integrate_values | integrate_gradients)
     {
+#ifdef DEBUG_OUTPUT
       std::cout << "Distribute DoF values " << fe_number << std::endl;
+#endif
       Assert(fe_evaluation.get() != nullptr, ExcInternalError());
       fe_evaluation->distribute_local_to_global(vector);
     }
   }
 
-  template <int dim, typename Number>
+  template <int dim, typename OtherNumber>
   void
-  initialize(const MatrixFree<dim, Number>& mf)
+  initialize(const MatrixFree<dim, OtherNumber>& mf)
   {
-    initialized = true;
+#ifdef DEBUG_OUTPUT
     std::cout << "Initialize FEDatas " << fe_number << std::endl;
+#endif
+    static_assert(std::is_same<NumberType, OtherNumber>::value,
+                  "Number type of MatrixFree and FEDatas has to match!");
     fe_evaluation.reset(new typename FEData::FEEvaluationType(mf, fe_number));
+    initialized = true;
   }
 
   void
   evaluate()
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
               << evaluate_gradients << " " << evaluate_hessians << std::endl;
+#endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
     fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
   }
@@ -215,7 +235,9 @@ public:
   template <unsigned int fe_number_extern>
   auto get_gradient(unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->get_gradient(q);
   }
@@ -223,7 +245,9 @@ public:
   template <unsigned int fe_number_extern>
   auto get_symmetric_gradient(unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->get_symmetric_gradient(q);
   }
@@ -231,7 +255,9 @@ public:
   template <unsigned int fe_number_extern>
   auto get_divergence(unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get divergence FEDatas " << fe_number << " " << q << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->get_divergence(q);
   }
@@ -239,7 +265,9 @@ public:
   template <unsigned int fe_number_extern>
   auto get_laplacian(unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get laplacian FEDatas " << fe_number << " " << q << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->get_laplacian(q);
   }
@@ -247,7 +275,9 @@ public:
   template <unsigned int fe_number_extern>
   auto get_hessian_diagonal(unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get hessian_diagonal FEDatas " << fe_number << " " << q << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->get_hessian_diagonal(q);
   }
@@ -255,7 +285,9 @@ public:
   template <unsigned int fe_number_extern>
   auto get_hessian(unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get hessian FEDatas " << fe_number << " " << q << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->get_hessian(q);
   }
@@ -263,7 +295,9 @@ public:
   template <unsigned int fe_number_extern>
   auto get_value(unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->get_value(q);
   }
@@ -272,10 +306,12 @@ public:
   void
   submit_gradient(const ValueType& value, unsigned int q)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
-    //    for (unsigned int i=0; i<2; ++i)
-    //      std::cout << " " << value[i][0];
-    //    std::cout << std::endl;
+//    for (unsigned int i=0; i<2; ++i)
+//      std::cout << " " << value[i][0];
+//    std::cout << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_evaluation->submit_gradient(value, q);
   }
@@ -284,10 +320,12 @@ public:
   void
   submit_curl(const ValueType& value, unsigned int q)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "submit curl FEDatas " << fe_number << " " << q << std::endl;
     for (unsigned int i = 0; i < 2; ++i)
       std::cout << " " << value[i][0];
     std::cout << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_evaluation->submit_curl(value, q);
   }
@@ -296,10 +334,12 @@ public:
   void
   submit_divergence(const ValueType& value, unsigned int q)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "submit divergence FEDatas " << fe_number << " " << q << std::endl;
     for (unsigned int i = 0; i < 2; ++i)
       std::cout << " " << value[i][0];
     std::cout << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_evaluation->submit_divergence(value, q);
   }
@@ -308,10 +348,12 @@ public:
   void
   submit_symmetric_gradient(const ValueType& value, unsigned int q)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "submit symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
     for (unsigned int i = 0; i < 2; ++i)
       std::cout << " " << value[i][0];
     std::cout << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_evaluation->submit_symmetric_gradient(value, q);
   }
@@ -320,10 +362,12 @@ public:
   void
   submit_value(const ValueType& value, unsigned int q)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "submit value FEDatas" << fe_number << " " << q << std::endl;
-    //    for (unsigned int i=0; i<2; ++i)
-    //      std::cout << " " << value[i][0];
-    //    std::cout << std::endl;
+//    for (unsigned int i=0; i<2; ++i)
+//      std::cout << " " << value[i][0];
+//    std::cout << std::endl;
+#endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_evaluation->submit_value(value, q);
   }
@@ -331,8 +375,10 @@ public:
   void
   integrate()
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "integrate FEDatas " << fe_number << " " << integrate_values << " "
               << integrate_gradients << std::endl;
+#endif
     if (integrate_values | integrate_gradients)
       fe_evaluation->integrate(integrate_values, integrate_gradients);
   }
@@ -359,6 +405,7 @@ class FEDatas<FEData, Types...> : public FEDatas<Types...>
 public:
   typedef typename FEData::FEEvaluationType FEEvaluationType;
   typedef typename FEData::TensorTraits TensorTraits;
+  typedef typename FEData::NumberType NumberType;
   static constexpr unsigned int fe_number = FEData::fe_number;
   static constexpr unsigned int max_degree = FEDatas<Types...>::max_degree;
 
@@ -376,22 +423,27 @@ public:
     return FEDatas<Types...>::template rank<fe_number_extern>();
   }
 
-  template <int dim, typename Number>
-  auto initialize(const MatrixFree<dim, Number>& mf)
+  template <int dim, typename OtherNumber>
+  auto initialize(const MatrixFree<dim, OtherNumber>& mf)
   {
-    initialized = true;
+#ifdef DEBUG_OUTPUT
     std::cout << "Initialize FEDatas " << fe_number << std::endl;
     std::cout << "integrate_valus at initialize: " << integrate_values << std::endl;
-
+#endif
+    static_assert(std::is_same<NumberType, OtherNumber>::value,
+                  "Number type of MatrixFree and FEDatas do not match!");
     fe_evaluation.reset(new typename FEData::FEEvaluationType(mf, fe_number));
     FEDatas<Types...>::initialize(mf);
+    initialized = true;
   }
 
   template <typename Cell>
   void
   reinit(const Cell& cell)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Reinit FEDatas " << fe_number << std::endl;
+#endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
     fe_evaluation->reinit(cell);
     FEDatas<Types...>::reinit(cell);
@@ -401,7 +453,9 @@ public:
   typename std::enable_if<CFL::Traits::is_block_vector<VectorType>::value, void>::type
   read_dof_values(const VectorType& vector)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Read DoF values " << fe_number << std::endl;
+#endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
     fe_evaluation->read_dof_values(vector.block(fe_number));
     FEDatas<Types...>::read_dof_values(vector);
@@ -422,7 +476,9 @@ public:
   {
     if (integrate_values | integrate_gradients)
     {
+#ifdef DEBUG_OUTPUT
       std::cout << "Distribute DoF values " << fe_number << std::endl;
+#endif
       Assert(fe_evaluation.get() != nullptr, ExcInternalError());
       fe_evaluation->distribute_local_to_global(vector.block(fe_number));
     }
@@ -442,8 +498,10 @@ public:
   void
   evaluate()
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
               << evaluate_gradients << " " << evaluate_hessians << std::endl;
+#endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
     fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
     FEDatas<Types...>::evaluate();
@@ -452,8 +510,10 @@ public:
   void
   integrate()
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "integrate FEDatas " << fe_number << " " << integrate_values << " "
               << integrate_gradients << std::endl;
+#endif
     if (integrate_values | integrate_gradients)
       fe_evaluation->integrate(integrate_values, integrate_gradients);
     FEDatas<Types...>::integrate();
@@ -465,10 +525,12 @@ public:
   {
     integrate_values |= integrate_value;
     integrate_gradients |= integrate_gradient;
+#ifdef DEBUG_OUTPUT
     std::cout << "integrate value: " << fe_number << " " << integrate_values << " "
               << integrate_value << std::endl;
     std::cout << "integrate gradients: " << fe_number << " " << integrate_gradients << " "
               << integrate_gradient << std::endl;
+#endif
   }
 
   template <unsigned int fe_number_extern>
@@ -516,7 +578,9 @@ public:
     unsigned int q,
     typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
+#endif
     return fe_evaluation->get_gradient(q);
   }
 
@@ -535,7 +599,9 @@ public:
     unsigned int q,
     typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
+#endif
     return fe_evaluation->get_symmetric_gradient(q);
   }
 
@@ -554,7 +620,9 @@ public:
     unsigned int q,
     typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get divergence FEDatas " << fe_number << " " << q << std::endl;
+#endif
     return fe_evaluation->get_divergence(q);
   }
 
@@ -573,7 +641,9 @@ public:
     unsigned int q,
     typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get laplacian FEDatas " << fe_number << " " << q << std::endl;
+#endif
     return fe_evaluation->get_laplacian(q);
   }
 
@@ -592,7 +662,9 @@ public:
     unsigned int q,
     typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get hessian_diagonal FEDatas " << fe_number << " " << q << std::endl;
+#endif
     return fe_evaluation->get_hessian_diagonal(q);
   }
 
@@ -611,7 +683,9 @@ public:
     unsigned int q,
     typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get hessian FEDatas " << fe_number << " " << q << std::endl;
+#endif
     return fe_evaluation->get_hessian(q);
   }
 
@@ -630,7 +704,9 @@ public:
     unsigned int q,
     typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
+#endif
     return fe_evaluation->get_value(q);
   }
 
@@ -689,10 +765,12 @@ public:
   typename std::enable_if<fe_number == fe_number_extern, void>::type
   submit_gradient(const ValueType& value, unsigned int q)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
-    //    for (unsigned int i=0; i<2; ++i)
-    //      std::cout << " " << value[i][0];
-    //    std::cout << std::endl;
+//    for (unsigned int i=0; i<2; ++i)
+//      std::cout << " " << value[i][0];
+//    std::cout << std::endl;
+#endif
     fe_evaluation->submit_gradient(value, q);
   }
 
@@ -707,9 +785,11 @@ public:
   typename std::enable_if<fe_number == fe_number_extern, void>::type
   submit_value(const ValueType& value, unsigned int q)
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
-    //    for (unsigned int i=0; i<value.size(); ++i)
-    //      std::cout << "value: " << value[i][0] << std::endl;
+//    for (unsigned int i=0; i<value.size(); ++i)
+//      std::cout << "value: " << value[i][0] << std::endl;
+#endif
     fe_evaluation->submit_value(value, q);
   }
 
