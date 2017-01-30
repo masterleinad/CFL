@@ -490,19 +490,18 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      ::dealii::VectorizedArray<double> factor;
+      double factor = 1.;
 
       FEFunction(const std::string& name)
         : data_name(name)
       {
-        factor = 1.;
       }
 
       FEFunction(double new_factor = 1.) { factor = new_factor; }
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor[0]);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
         return newfunction;
       }
 
@@ -537,13 +536,16 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      ::dealii::VectorizedArray<double> factor;
+      double factor = 1.;
 
-      explicit FEDivergence(const double new_factor = 1.) { factor = new_factor; }
+      explicit FEDivergence(const double new_factor = 1.)
+        : factor(new_factor)
+      {
+      }
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor[0]);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
         return newfunction;
       }
 
@@ -606,13 +608,13 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      ::dealii::VectorizedArray<double> factor;
+      double factor = 1;
 
-      FESymmetricGradient() { factor = 1.; }
+      FESymmetricGradient() = default;
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor[0]);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
         return newfunction;
       }
 
@@ -641,13 +643,13 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      ::dealii::VectorizedArray<double> factor;
+      double factor = 1.;
 
-      FECurl(const FEFunction<rank - 1, dim, idx>&) { factor = 1.; }
+      FECurl(const FEFunction<rank - 1, dim, idx>&) {}
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor[0]);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
         return newfunction;
       }
 
@@ -676,13 +678,13 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      ::dealii::VectorizedArray<double> factor;
+      double factor = 1.;
 
-      FEGradient(const FEFunction<rank - 1, dim, idx>&) { factor = 1.; }
+      FEGradient(const FEFunction<rank - 1, dim, idx>&) {}
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor[0]);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
         return newfunction;
       }
 
@@ -711,13 +713,13 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      ::dealii::VectorizedArray<double> factor;
+      double factor = 1.;
 
-      FELaplacian() { factor = 1.; }
+      FELaplacian() = default;
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor[0]);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
         return newfunction;
       }
 
@@ -746,13 +748,13 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      ::dealii::VectorizedArray<double> factor;
+      double factor = 1.;
 
-      FEDiagonalHessian() { factor = 1.; }
+      FEDiagonalHessian() = default;
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor[0]);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
         return newfunction;
       }
 
@@ -783,17 +785,13 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      ::dealii::VectorizedArray<double> factor;
+      double factor = 1.;
 
-      FEHessian(const FEGradient<rank - 1, dim, idx>& grad)
-        : base(grad.base)
-      {
-        factor = 1.;
-      }
+      FEHessian(const FEGradient<rank - 1, dim, idx>&) {}
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor[0]);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
         return newfunction;
       }
 
