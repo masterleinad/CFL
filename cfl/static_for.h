@@ -1,9 +1,31 @@
 #ifndef STATIC_FOR_H
 #define STATIC_FOR_H
 
+template <int First, int Last, template <int> class FunctorT>
+struct static_for_new
+{
+  // iterator count as template parameter
+  inline void operator()() const
+  {
+    if (First < Last)
+    {
+      FunctorT<First>();
+      static_for_new<First + 1, Last, FunctorT>()();
+    }
+  }
+};
+
+template <int N, template <int> class FunctorT>
+struct static_for_new<N, N, FunctorT>
+{
+  // iterator count as template parameter
+  inline void operator()() const {}
+};
+
 template <int First, int Last>
 struct static_for_old
 {
+  // iterator count as regular parameter
   template <typename Fn>
   inline void operator()(Fn const& fn) const
   {
@@ -18,6 +40,7 @@ struct static_for_old
 template <int N>
 struct static_for_old<N, N>
 {
+  // iterator count as regular parameter
   template <typename Fn>
   inline void operator()(Fn const&) const
   {
