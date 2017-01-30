@@ -311,8 +311,8 @@ namespace dealii
       static constexpr bool scalar_valued = (TensorTraits::rank > 0);
 
       template <class FEEvaluation, typename ValueType>
-      void
-      submit(FEEvaluation& phi, unsigned int q, const ValueType& value) const
+      static void
+      submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 0),
                       "Either the proposed FiniteElement is scalar valued "
@@ -336,8 +336,8 @@ namespace dealii
       typedef Traits::Tensor<rank, dim> TensorTraits;
 
       template <class FEEvaluation, typename ValueType>
-      void
-      submit(FEEvaluation& phi, unsigned int q, const ValueType& value) const
+      static void
+      submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
         static_assert(FEEvaluation::template rank<index>() > 0,
                       "The proposed FiniteElement has to be "
@@ -359,8 +359,8 @@ namespace dealii
       typedef Traits::Tensor<rank, dim> TensorTraits;
 
       template <class FEEvaluation, typename ValueType>
-      void
-      submit(FEEvaluation& phi, unsigned int q, const ValueType& value) const
+      static void
+      submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
@@ -384,8 +384,8 @@ namespace dealii
       typedef Traits::Tensor<rank, dim> TensorTraits;
 
       template <class FEEvaluation, typename ValueType>
-      void
-      submit(FEEvaluation& phi, unsigned int q, const ValueType& value) const
+      static void
+      submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
@@ -402,23 +402,15 @@ namespace dealii
     template <int rank, int dim, unsigned int idx>
     class TestGradient
     {
-      const TestFunction<rank - 1, dim, idx>& base;
-      friend class TestHessian<rank + 1, dim, idx>;
-
     public:
       static constexpr unsigned int index = idx;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
       typedef Traits::Tensor<rank, dim> TensorTraits;
 
-      TestGradient(const TestFunction<rank - 1, dim, idx>& base)
-        : base(base)
-      {
-      }
-
       template <class FEEvaluation, typename ValueType>
-      void
-      submit(FEEvaluation& phi, unsigned int q, const ValueType& value) const
+      static void
+      submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
@@ -435,22 +427,15 @@ namespace dealii
     template <int rank, int dim, unsigned int idx>
     class TestHessian
     {
-      const TestFunction<rank - 2, dim, idx>& base;
-
     public:
       static constexpr unsigned int index = idx;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = false;
       typedef Traits::Tensor<rank, dim> TensorTraits;
 
-      TestHessian(const TestGradient<rank - 1, dim, idx>& grad)
-        : base(grad.base)
-      {
-      }
-
       template <class FEEvaluation, typename ValueType>
-      void
-      submit(FEEvaluation& /*phi*/, unsigned int /*q*/, const ValueType& /*value*/) const
+      static void
+      submit(FEEvaluation& /*phi*/, unsigned int /*q*/, const ValueType& /*value*/)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 2),
                       "Either the proposed FiniteElement is scalar valued "
@@ -463,23 +448,23 @@ namespace dealii
 
     template <int rank, int dim, unsigned int idx>
     TestDivergence<rank - 1, dim, idx>
-    div(const TestFunction<rank, dim, idx>& /*func*/)
+    div(const TestFunction<rank, dim, idx>&)
     {
       return TestDivergence<rank - 1, dim, idx>();
     }
 
     template <int rank, int dim, unsigned int idx>
     TestGradient<rank + 1, dim, idx>
-    grad(const TestFunction<rank, dim, idx>& func)
+    grad(const TestFunction<rank, dim, idx>&)
     {
-      return TestGradient<rank + 1, dim, idx>(func);
+      return TestGradient<rank + 1, dim, idx>();
     }
 
     template <int rank, int dim, unsigned int idx>
     TestHessian<rank + 1, dim, idx>
-    grad(const TestGradient<rank, dim, idx>& func)
+    grad(const TestGradient<rank, dim, idx>&)
     {
-      return TestHessian<rank + 1, dim, idx>(func);
+      return TestHessian<rank + 1, dim, idx>();
     }
 
     template <int rank, int dim, unsigned int idx>
@@ -518,8 +503,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 0),
                       "Either the proposed FiniteElement is scalar valued "
@@ -556,8 +541,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
         static_assert(FEEvaluation::template rank<index>() > 0,
                       "The proposed FiniteElement has to be "
@@ -595,10 +580,10 @@ namespace dealii
       auto operator-() const { return FELiftDivergence(-fefunction); }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
-        fefunction.set_evaluation_flags(phi);
+        FEFunctionType::set_evaluation_flags(phi);
       }
     };
 
@@ -625,8 +610,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
@@ -660,8 +645,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
@@ -695,8 +680,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
@@ -730,8 +715,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 2),
                       "Either the proposed FiniteElement is scalar valued "
@@ -765,8 +750,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 2),
                       "Either the proposed FiniteElement is scalar valued "
@@ -802,8 +787,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
         static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 2),
                       "Either the proposed FiniteElement is scalar valued "
@@ -905,10 +890,10 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
-        summand.set_evaluation_flags(phi);
+        FEFunction::set_evaluation_flags(phi);
       }
 
       const FEFunction&
@@ -938,10 +923,10 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      void
-      set_evaluation_flags(FEEvaluation& phi) const
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
       {
-        summand.set_evaluation_flags(phi);
+        FEFunction::set_evaluation_flags(phi);
         SumFEFunctions<Types...>::set_evaluation_flags(phi);
       }
 

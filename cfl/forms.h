@@ -130,16 +130,16 @@ public:
   }
 
   template <class FEEvaluation>
-  void
-  integrate(FEEvaluation& phi) const
+  static void
+  integrate(FEEvaluation& phi)
   {
     // only to be used if there is only one form!
     phi.template integrate<fe_number>(integrate_value, integrate_gradient);
   }
 
   template <class FEEvaluation>
-  void
-  set_integration_flags(FEEvaluation& phi) const
+  static void
+  set_integration_flags(FEEvaluation& phi)
   {
     // only to be used if there is only one form!
     phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
@@ -165,7 +165,7 @@ public:
   {
     // only to be used if there is only one form!
     const auto value = expr.value(phi, q);
-    test.submit(phi, q, value);
+    Test::submit(phi, q, value);
   }
 
   template <class FEEvaluation>
@@ -175,10 +175,10 @@ public:
   }
 
   template <class FEEvaluation, typename ValueType>
-  void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value) const
+  static void
+  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
   {
-    test.submit(phi, q, value);
+    Test::submit(phi, q, value);
   }
 
   template <class TestNew, class ExprNew>
@@ -274,8 +274,8 @@ public:
   }
 
   template <class FEEvaluation>
-  void
-  set_integration_flags(FEEvaluation& phi) const
+  static void
+  set_integration_flags(FEEvaluation& phi)
   {
     phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
   }
@@ -298,8 +298,8 @@ public:
   }
 
   template <class FEEvaluation>
-  void
-  integrate(FEEvaluation& phi) const
+  static void
+  integrate(FEEvaluation& phi)
   {
     phi.template integrate<fe_number>(integrate_value, integrate_gradient);
   }
@@ -342,8 +342,8 @@ public:
   }
 
   template <class FEEvaluation>
-  void
-  set_integration_flags(FEEvaluation& phi) const
+  static void
+  set_integration_flags(FEEvaluation& phi)
   {
     phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
     Forms<Types...>::set_integration_flags(phi);
@@ -370,8 +370,8 @@ public:
   }
 
   template <class FEEvaluation>
-  void
-  integrate(FEEvaluation& phi) const
+  static void
+  integrate(FEEvaluation& phi)
   {
     phi.template integrate<fe_number>(integrate_value, integrate_gradient);
     Forms<Types...>::integrate(phi);
