@@ -50,7 +50,65 @@ public:
   virtual void
   compute_diagonal() override
   {
-    Assert(false, ExcNotImplemented());
+    Assert((::dealii::MatrixFreeOperators::Base<dim, Number>::data != NULL), ExcNotInitialized());
+
+    unsigned int dummy = 0;
+    this->inverse_diagonal_entries.reset(
+      new DiagonalMatrix<LinearAlgebra::distributed::Vector<Number>>());
+    LinearAlgebra::distributed::Vector<Number>& inverse_diagonal_vector =
+      this->inverse_diagonal_entries->get_vector();
+    this->initialize_dof_vector(inverse_diagonal_vector);
+    // LinearAlgebra::distributed::Vector<Number> ones;
+    // this->initialize_dof_vector(ones);
+    // ones = Number(1.);
+    // apply_add(inverse_diagonal_vector, ones);
+
+    this->data->cell_loop(
+      &MatrixFreeIntegrator::local_diagonal_cell, this, inverse_diagonal_vector, dummy);
+
+    this->set_constrained_entries_to_one(inverse_diagonal_vector);
+
+    const unsigned int local_size = inverse_diagonal_vector.local_size();
+    for (unsigned int i = 0; i < local_size; ++i)
+      if (std::abs(inverse_diagonal_vector.local_element(i)) >
+          std::sqrt(std::numeric_limits<Number>::epsilon()))
+        inverse_diagonal_vector.local_element(i) = 1. / inverse_diagonal_vector.local_element(i);
+      else
+        inverse_diagonal_vector.local_element(i) = 1.;
+
+    inverse_diagonal_vector.update_ghost_values();
+    // inverse_diagonal_vector.print(std::cout);
+  }
+
+  // TODO this is hacky and just tries to get comparable output w.r.t. step-37
+  void
+  local_diagonal_cell(const MatrixFree<dim, Number>& data_,
+                      LinearAlgebra::distributed::Vector<Number>& dst, const unsigned int&,
+                      const std::pair<unsigned int, unsigned int>& cell_range) const
+  {
+    (void)data_;
+    Assert(&data_ == &(this->get_matrix_free()), ExcInternalError());
+    for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
+    {
+      fe_datas->reinit(cell);
+      const /*expr*/ unsigned int tensor_dofs_per_cell =
+        fe_datas->template tensor_dofs_per_cell<0>();
+      std::vector<VectorizedArray<Number>> local_diagonal_vector(tensor_dofs_per_cell);
+
+      AssertThrow(data_.n_components() == 1, ExcNotImplemented());
+
+      for (unsigned int i = 0; i < fe_datas->template dofs_per_cell<0>(); ++i)
+      {
+        for (unsigned int j = 0; j < fe_datas->template dofs_per_cell<0>(); ++j)
+          fe_datas->template begin_dof_values<0>()[j] = VectorizedArray<Number>();
+        fe_datas->template begin_dof_values<0>()[i] = 1.;
+        do_operation_on_cell(*fe_datas, cell);
+        local_diagonal_vector[i] = fe_datas->template begin_dof_values<0>()[i];
+      }
+      for (unsigned int i = 0; i < fe_datas->template tensor_dofs_per_cell<0>(); ++i)
+        fe_datas->template begin_dof_values<0>()[i] = local_diagonal_vector[i];
+      fe_datas->distribute_local_to_global(dst);
+    }
   }
 
 private:

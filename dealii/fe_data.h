@@ -95,6 +95,7 @@ public:
     , evaluate_hessians(false)
     , initialized(false)
   {
+    (void)fe_datas;
     Assert(!fe_datas.initialized, ExcNotImplemented());
   }
 
@@ -389,14 +390,37 @@ public:
     return fe_evaluation();
   }
 
+  template <unsigned int fe_number_extern>
+  unsigned int
+  dofs_per_cell()
+  {
+    static_assert(fe_number == fe_number_extern, "Component not found!");
+    return fe_evaluation->dofs_per_cell;
+  }
+
+  template <unsigned int fe_number_extern>
+  static constexpr unsigned int
+  tensor_dofs_per_cell()
+  {
+    static_assert(fe_number == fe_number_extern, "Component not found!");
+    return FEData::FEEvaluationType::tensor_dofs_per_cell;
+  }
+
+  template <unsigned int fe_number_extern>
+  auto begin_dof_values()
+  {
+    static_assert(fe_number == fe_number_extern, "Component not found!");
+    return fe_evaluation->begin_dof_values();
+  }
+
 private:
-  std::unique_ptr<typename FEData::FEEvaluationType> fe_evaluation;
-  bool integrate_values;
-  bool integrate_gradients;
-  bool evaluate_values;
-  bool evaluate_gradients;
-  bool evaluate_hessians;
-  bool initialized = true;
+  std::unique_ptr<typename FEData::FEEvaluationType> fe_evaluation = nullptr;
+  bool integrate_values = false;
+  bool integrate_gradients = false;
+  bool evaluate_values = false;
+  bool evaluate_gradients = false;
+  bool evaluate_hessians = false;
+  bool initialized = false;
 };
 
 template <class FEData, typename... Types>
@@ -800,6 +824,50 @@ public:
     FEDatas<Types...>::template submit_value<fe_number_extern, ValueType>(value, q);
   }
 
+  template <unsigned int fe_number_extern>
+  typename std::enable_if<fe_number == fe_number_extern, unsigned int>::type
+  dofs_per_cell()
+  {
+    return fe_evaluation->dofs_per_cell;
+  }
+
+  template <unsigned int fe_number_extern>
+  typename std::enable_if<fe_number != fe_number_extern, unsigned int>::type
+  dofs_per_cell()
+  {
+    return FEDatas<Types...>::template dofs_per_cell<fe_number_extern>();
+  }
+
+  template <unsigned int fe_number_extern>
+  static constexpr typename std::enable_if<fe_number == fe_number_extern, unsigned int>::type
+  tensor_dofs_per_cell()
+  {
+    return FEData::FEEvaluationType::tensor_dofs_per_cell;
+  }
+
+  template <unsigned int fe_number_extern>
+  static constexpr typename std::enable_if<fe_number != fe_number_extern, unsigned int>::type
+  tensor_dofs_per_cell()
+  {
+    return FEDatas<Types...>::template tensor_dofs_per_cell<fe_number_extern>();
+  }
+
+  template <unsigned int fe_number_extern,
+            typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
+  auto begin_dof_values(
+    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr)
+  {
+    return fe_evaluation->begin_dof_values();
+  }
+
+  template <unsigned int fe_number_extern,
+            typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
+  auto begin_dof_values(
+    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr)
+  {
+    return FEDatas<Types...>::template begin_dof_values<fe_number_extern>();
+  }
+
   FEDatas()
     : FEDatas<Types...>()
     , integrate_values(false)
@@ -829,13 +897,13 @@ public:
   }
 
 private:
-  std::unique_ptr<typename FEData::FEEvaluationType> fe_evaluation;
-  bool integrate_values;
-  bool integrate_gradients;
-  bool evaluate_values;
-  bool evaluate_gradients;
-  bool evaluate_hessians;
-  bool initialized;
+  std::unique_ptr<typename FEData::FEEvaluationType> fe_evaluation = nullptr;
+  bool integrate_values = false;
+  bool integrate_gradients = false;
+  bool evaluate_values = false;
+  bool evaluate_gradients = false;
+  bool evaluate_hessians = false;
+  bool initialized = false;
 };
 
 template <class FEData1, class FEData2>
