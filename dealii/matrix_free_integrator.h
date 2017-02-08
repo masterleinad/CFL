@@ -144,6 +144,7 @@ private:
   apply_add(LinearAlgebra::distributed::Vector<Number>& dst,
             const LinearAlgebra::distributed::Vector<Number>& src) const override
   {
+    AssertThrow(false, ExcInternalError());
     if (use_cell)
       dealii::MatrixFreeOperators::Base<dim, Number>::data->cell_loop(
         &MatrixFreeIntegrator::local_apply_cell, this, dst, src);

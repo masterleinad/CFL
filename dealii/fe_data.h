@@ -10,13 +10,13 @@ class FEData
 {
 public:
   typedef typename dealii::FEEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>
-    FEEvaluationType;
+  FEEvaluationType;
   typedef Number NumberType;
   typedef CFL::Traits::Tensor<(n_components > 1 ? 1 : 0), dim> TensorTraits;
   static constexpr unsigned int fe_number = fe_no;
   static constexpr unsigned int max_degree = max_fe_degree;
 
-  explicit FEData(const FiniteElement<dim>& fe)
+  explicit FEData(const FiniteElement<dim> &fe)
   {
     (void)fe;
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
@@ -27,15 +27,15 @@ public:
 
 namespace CFL
 {
-namespace Traits
-{
-  template <int fe_degree, int n_components, int dim, unsigned int fe_no, unsigned int max_degree,
-            typename Number>
-  struct is_fe_data<FEData<fe_degree, n_components, dim, fe_no, max_degree, Number>>
+  namespace Traits
   {
-    static const bool value = true;
-  };
-}
+    template <int fe_degree, int n_components, int dim, unsigned int fe_no, unsigned int max_degree,
+              typename Number>
+    struct is_fe_data<FEData<fe_degree, n_components, dim, fe_no, max_degree, Number>>
+    {
+      static const bool value = true;
+    };
+  }
 }
 
 template <typename... Types>
@@ -45,7 +45,7 @@ public:
   FEDatas() = delete;
 
   template <class FEData>
-  FEDatas<FEData, Types...> operator, (const FEData&)
+  FEDatas<FEData, Types...> operator, (const FEData &)
   {
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "You need to construct this with a FEData object!");
@@ -75,7 +75,7 @@ public:
                   "You need to construct this with a FEData object!");
   }
 
-  FEDatas(const FEData&)
+  FEDatas(const FEData &)
     : integrate_values(false)
     , integrate_gradients(false)
     , evaluate_values(false)
@@ -87,7 +87,7 @@ public:
                   "You need to construct this with a FEData object!");
   }
 
-  FEDatas(const FEDatas<FEData>& fe_datas)
+  FEDatas(const FEDatas<FEData> &fe_datas)
     : integrate_values(false)
     , integrate_gradients(false)
     , evaluate_values(false)
@@ -108,7 +108,7 @@ public:
   }
 
   template <class NewFEData>
-  FEDatas<NewFEData, FEData> operator, (const NewFEData&)
+  FEDatas<NewFEData, FEData> operator, (const NewFEData &)
   {
     static_assert(CFL::Traits::is_fe_data<NewFEData>::value, "Only FEData objects can be added!");
 
@@ -117,7 +117,7 @@ public:
 
   template <typename Cell>
   void
-  reinit(const Cell& cell)
+  reinit(const Cell &cell)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Reinit FEDatas " << fe_number << std::endl;
@@ -127,25 +127,18 @@ public:
   }
 
   template <typename VectorType>
-  typename std::enable_if<CFL::Traits::is_block_vector<VectorType>::value, void>::type
-  read_dof_values(const VectorType& vector)
+  void
+  read_dof_values(const VectorType &vector)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Read DoF values " << fe_number << std::endl;
 #endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
-    fe_evaluation->read_dof_values(vector.block(fe_number));
-  }
-
-  template <typename VectorType>
-  typename std::enable_if<!CFL::Traits::is_block_vector<VectorType>::value, void>::type
-  read_dof_values(const VectorType& vector)
-  {
-#ifdef DEBUG_OUTPUT
-    std::cout << "Read DoF values " << fe_number << std::endl;
-#endif
-    Assert(fe_evaluation.get() != nullptr, ExcInternalError());
-    fe_evaluation->read_dof_values(vector);
+    if
+    constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+      fe_evaluation->read_dof_values(vector.block(fe_number));
+    else
+      fe_evaluation->read_dof_values(vector);
   }
 
   template <unsigned int fe_number_extern>
@@ -174,36 +167,28 @@ public:
   }
 
   template <typename VectorType>
-  typename std::enable_if<CFL::Traits::is_block_vector<VectorType>::value, void>::type
-  distribute_local_to_global(VectorType& vector)
+  void
+  distribute_local_to_global(VectorType &vector)
   {
     if (integrate_values | integrate_gradients)
-    {
+      {
 #ifdef DEBUG_OUTPUT
-      std::cout << "Distribute DoF values " << fe_number << std::endl;
+        std::cout << "Distribute DoF values " << fe_number << std::endl;
 #endif
-      Assert(fe_evaluation.get() != nullptr, ExcInternalError());
-      fe_evaluation->distribute_local_to_global(vector.block(fe_number));
-    }
-  }
-
-  template <typename VectorType>
-  typename std::enable_if<!CFL::Traits::is_block_vector<VectorType>::value, void>::type
-  distribute_local_to_global(VectorType& vector)
-  {
-    if (integrate_values | integrate_gradients)
-    {
+        Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+        if
+        constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+          fe_evaluation->distribute_local_to_global(vector.block(fe_number));
+        else
 #ifdef DEBUG_OUTPUT
-      std::cout << "Distribute DoF values " << fe_number << std::endl;
 #endif
-      Assert(fe_evaluation.get() != nullptr, ExcInternalError());
-      fe_evaluation->distribute_local_to_global(vector);
-    }
+          fe_evaluation->distribute_local_to_global(vector);
+      }
   }
 
   template <int dim, typename OtherNumber>
   void
-  initialize(const MatrixFree<dim, OtherNumber>& mf)
+  initialize(const MatrixFree<dim, OtherNumber> &mf)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Initialize FEDatas " << fe_number << std::endl;
@@ -305,7 +290,7 @@ public:
 
   template <unsigned int fe_number_extern, typename ValueType>
   void
-  submit_gradient(const ValueType& value, unsigned int q)
+  submit_gradient(const ValueType &value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -319,7 +304,7 @@ public:
 
   template <unsigned int fe_number_extern, typename ValueType>
   void
-  submit_curl(const ValueType& value, unsigned int q)
+  submit_curl(const ValueType &value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit curl FEDatas " << fe_number << " " << q << std::endl;
@@ -333,7 +318,7 @@ public:
 
   template <unsigned int fe_number_extern, typename ValueType>
   void
-  submit_divergence(const ValueType& value, unsigned int q)
+  submit_divergence(const ValueType &value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit divergence FEDatas " << fe_number << " " << q << std::endl;
@@ -347,7 +332,7 @@ public:
 
   template <unsigned int fe_number_extern, typename ValueType>
   void
-  submit_symmetric_gradient(const ValueType& value, unsigned int q)
+  submit_symmetric_gradient(const ValueType &value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -361,7 +346,7 @@ public:
 
   template <unsigned int fe_number_extern, typename ValueType>
   void
-  submit_value(const ValueType& value, unsigned int q)
+  submit_value(const ValueType &value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit value FEDatas" << fe_number << " " << q << std::endl;
@@ -384,7 +369,7 @@ public:
       fe_evaluation->integrate(integrate_values, integrate_gradients);
   }
 
-  const typename FEData::FEEvaluationType&
+  const typename FEData::FEEvaluationType &
   get_fe_evaluation()
   {
     return fe_evaluation();
@@ -434,21 +419,17 @@ public:
   static constexpr unsigned int max_degree = FEDatas<Types...>::max_degree;
 
   template <unsigned int fe_number_extern>
-  static constexpr typename std::enable_if<fe_number == fe_number_extern, unsigned int>::type
+  static constexpr unsigned int
   rank()
   {
-    return TensorTraits::rank;
-  }
-
-  template <unsigned int fe_number_extern>
-  static constexpr typename std::enable_if<fe_number != fe_number_extern, unsigned int>::type
-  rank()
-  {
-    return FEDatas<Types...>::template rank<fe_number_extern>();
+    if
+    constexpr(fe_number == fe_number_extern) return TensorTraits::rank;
+    else
+      return FEDatas<Types...>::template rank<fe_number_extern>();
   }
 
   template <int dim, typename OtherNumber>
-  auto initialize(const MatrixFree<dim, OtherNumber>& mf)
+  auto initialize(const MatrixFree<dim, OtherNumber> &mf)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Initialize FEDatas " << fe_number << std::endl;
@@ -463,7 +444,7 @@ public:
 
   template <typename Cell>
   void
-  reinit(const Cell& cell)
+  reinit(const Cell &cell)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Reinit FEDatas " << fe_number << std::endl;
@@ -474,45 +455,46 @@ public:
   }
 
   template <typename VectorType>
-  typename std::enable_if<CFL::Traits::is_block_vector<VectorType>::value, void>::type
-  read_dof_values(const VectorType& vector)
+  void
+  read_dof_values(const VectorType &vector)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Read DoF values " << fe_number << std::endl;
 #endif
     Assert(fe_evaluation.get() != nullptr, ExcInternalError());
-    fe_evaluation->read_dof_values(vector.block(fe_number));
-    FEDatas<Types...>::read_dof_values(vector);
-  }
-
-  template <typename VectorType>
-  typename std::enable_if<!CFL::Traits::is_block_vector<VectorType>::value, void>::type
-  read_dof_values(const VectorType&)
-  {
-    static_assert(!CFL::Traits::is_block_vector<VectorType>::value,
-                  "It only makes sense to have multiple FEData objects if "
-                  "you provide a block vector.");
+    if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+    {
+      fe_evaluation->read_dof_values(vector.block(fe_number));
+      FEDatas<Types...>::read_dof_values(vector);
+    }
+    else
+    {
+      AssertThrow(false, ExcInternalError());
+/*      static_assert(CFL::Traits::is_block_vector<VectorType>::value,
+                    "It only makes sense to have multiple FEData objects if "
+                    "you provide a block vector.");*/
+    }
   }
 
   template <typename VectorType>
   typename std::enable_if<CFL::Traits::is_block_vector<VectorType>::value, void>::type
-  distribute_local_to_global(VectorType& vector)
+  distribute_local_to_global(VectorType &vector)
   {
     if (integrate_values | integrate_gradients)
-    {
+      {
 #ifdef DEBUG_OUTPUT
-      std::cout << "Distribute DoF values " << fe_number << std::endl;
+        std::cout << "Distribute DoF values " << fe_number << std::endl;
 #endif
-      Assert(fe_evaluation.get() != nullptr, ExcInternalError());
-      fe_evaluation->distribute_local_to_global(vector.block(fe_number));
-    }
+        Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+        fe_evaluation->distribute_local_to_global(vector.block(fe_number));
+      }
 
     FEDatas<Types...>::distribute_local_to_global(vector);
   }
 
   template <typename VectorType>
   typename std::enable_if<!CFL::Traits::is_block_vector<VectorType>::value, void>::type
-  distribute_local_to_global(const VectorType&)
+  distribute_local_to_global(const VectorType &)
   {
     static_assert(!CFL::Traits::is_block_vector<VectorType>::value,
                   "It only makes sense to have multiple FEData objects if "
@@ -562,7 +544,7 @@ public:
   set_integration_flags(bool integrate_value, bool integrate_gradient)
   {
     FEDatas<Types...>::template set_integration_flags<fe_number_extern>(integrate_value,
-                                                                        integrate_gradient);
+        integrate_gradient);
   }
 
   template <unsigned int fe_number_extern>
@@ -600,7 +582,7 @@ public:
             typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
   auto get_gradient(
     unsigned int q,
-    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number == fe_number_extern, void>::type * = nullptr) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -612,7 +594,7 @@ public:
             typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
   auto get_gradient(
     unsigned int q,
-    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number != fe_number_extern, void>::type * = nullptr) const
   {
     return FEDatas<Types...>::template get_gradient<fe_number_extern>(q);
   }
@@ -621,7 +603,7 @@ public:
             typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
   auto get_symmetric_gradient(
     unsigned int q,
-    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number == fe_number_extern, void>::type * = nullptr) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -633,7 +615,7 @@ public:
             typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
   auto get_symmetric_gradient(
     unsigned int q,
-    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number != fe_number_extern, void>::type * = nullptr) const
   {
     return FEDatas<Types...>::template get_symmetric_gradient<fe_number_extern>(q);
   }
@@ -642,7 +624,7 @@ public:
             typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
   auto get_divergence(
     unsigned int q,
-    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number == fe_number_extern, void>::type * = nullptr) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get divergence FEDatas " << fe_number << " " << q << std::endl;
@@ -654,7 +636,7 @@ public:
             typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
   auto get_divergence(
     unsigned int q,
-    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number != fe_number_extern, void>::type * = nullptr) const
   {
     return FEDatas<Types...>::template get_divergence<fe_number_extern>(q);
   }
@@ -663,7 +645,7 @@ public:
             typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
   auto get_laplacian(
     unsigned int q,
-    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number == fe_number_extern, void>::type * = nullptr) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get laplacian FEDatas " << fe_number << " " << q << std::endl;
@@ -675,7 +657,7 @@ public:
             typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
   auto get_laplacian(
     unsigned int q,
-    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number != fe_number_extern, void>::type * = nullptr) const
   {
     return FEDatas<Types...>::template get_laplacian<fe_number_extern>(q);
   }
@@ -684,7 +666,7 @@ public:
             typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
   auto get_hessian_diagonal(
     unsigned int q,
-    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number == fe_number_extern, void>::type * = nullptr) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get hessian_diagonal FEDatas " << fe_number << " " << q << std::endl;
@@ -696,7 +678,7 @@ public:
             typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
   auto get_hessian_diagonal(
     unsigned int q,
-    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number != fe_number_extern, void>::type * = nullptr) const
   {
     return FEDatas<Types...>::template get_hessian_diagonal<fe_number_extern>(q);
   }
@@ -705,7 +687,7 @@ public:
             typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
   auto get_hessian(
     unsigned int q,
-    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number == fe_number_extern, void>::type * = nullptr) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get hessian FEDatas " << fe_number << " " << q << std::endl;
@@ -717,7 +699,7 @@ public:
             typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
   auto get_hessian(
     unsigned int q,
-    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number != fe_number_extern, void>::type * = nullptr) const
   {
     return FEDatas<Types...>::template get_hessian<fe_number_extern>(q);
   }
@@ -726,7 +708,7 @@ public:
             typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
   auto get_value(
     unsigned int q,
-    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number == fe_number_extern, void>::type * = nullptr) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
@@ -738,56 +720,56 @@ public:
             typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
   auto get_value(
     unsigned int q,
-    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr) const
+    typename std::enable_if<fe_number != fe_number_extern, void>::type * = nullptr) const
   {
     return FEDatas<Types...>::template get_value<fe_number_extern>(q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number == fe_number_extern, void>::type
-  submit_curl(const ValueType& value, unsigned int q)
+  submit_curl(const ValueType &value, unsigned int q)
   {
     fe_evaluation->submit_curl(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number != fe_number_extern, void>::type
-  submit_curl(const ValueType& value, unsigned int q)
+  submit_curl(const ValueType &value, unsigned int q)
   {
     FEDatas<Types...>::template submit_curl<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number == fe_number_extern, void>::type
-  submit_divergence(const ValueType& value, unsigned int q)
+  submit_divergence(const ValueType &value, unsigned int q)
   {
     fe_evaluation->submit_divergence(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number != fe_number_extern, void>::type
-  submit_divergence(const ValueType& value, unsigned int q)
+  submit_divergence(const ValueType &value, unsigned int q)
   {
     FEDatas<Types...>::template submit_divergence<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number == fe_number_extern, void>::type
-  submit_symmetric_gradient(const ValueType& value, unsigned int q)
+  submit_symmetric_gradient(const ValueType &value, unsigned int q)
   {
     fe_evaluation->submit_symmetric_gradient(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number != fe_number_extern, void>::type
-  submit_symmetric_gradient(const ValueType& value, unsigned int q)
+  submit_symmetric_gradient(const ValueType &value, unsigned int q)
   {
     FEDatas<Types...>::template submit_symmetric_gradient<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number == fe_number_extern, void>::type
-  submit_gradient(const ValueType& value, unsigned int q)
+  submit_gradient(const ValueType &value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -800,14 +782,14 @@ public:
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number != fe_number_extern, void>::type
-  submit_gradient(const ValueType& value, unsigned int q)
+  submit_gradient(const ValueType &value, unsigned int q)
   {
     FEDatas<Types...>::template submit_gradient<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number == fe_number_extern, void>::type
-  submit_value(const ValueType& value, unsigned int q)
+  submit_value(const ValueType &value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
@@ -819,7 +801,7 @@ public:
 
   template <unsigned int fe_number_extern, typename ValueType>
   typename std::enable_if<fe_number != fe_number_extern, void>::type
-  submit_value(const ValueType& value, unsigned int q)
+  submit_value(const ValueType &value, unsigned int q)
   {
     FEDatas<Types...>::template submit_value<fe_number_extern, ValueType>(value, q);
   }
@@ -855,7 +837,7 @@ public:
   template <unsigned int fe_number_extern,
             typename = typename std::enable_if<fe_number == fe_number_extern, void>::type>
   auto begin_dof_values(
-    typename std::enable_if<fe_number == fe_number_extern, void>::type* = nullptr)
+    typename std::enable_if<fe_number == fe_number_extern, void>::type * = nullptr)
   {
     return fe_evaluation->begin_dof_values();
   }
@@ -863,7 +845,7 @@ public:
   template <unsigned int fe_number_extern,
             typename = typename std::enable_if<fe_number != fe_number_extern, void>::type>
   auto begin_dof_values(
-    typename std::enable_if<fe_number != fe_number_extern, void>::type* = nullptr)
+    typename std::enable_if<fe_number != fe_number_extern, void>::type * = nullptr)
   {
     return FEDatas<Types...>::template begin_dof_values<fe_number_extern>();
   }
@@ -883,7 +865,7 @@ public:
                   "You need to construct this with a FEData object!");
   }
 
-  FEDatas(const FEDatas<FEData, Types...>& fe_datas)
+  FEDatas(const FEDatas<FEData, Types...> &fe_datas)
     : FEDatas<Types...>()
     , integrate_values(false)
     , integrate_gradients(false)
@@ -907,8 +889,8 @@ private:
 };
 
 template <class FEData1, class FEData2>
-typename std::enable_if<CFL::Traits::is_fe_data<FEData1>::value, FEDatas<FEData1, FEData2>>::type operator, (const FEData1&,
-                                                                                                             const FEData2&)
+typename std::enable_if<CFL::Traits::is_fe_data<FEData1>::value, FEDatas<FEData1, FEData2>>::type operator, (const FEData1 &,
+    const FEData2 &)
 {
   static_assert(CFL::Traits::is_fe_data<FEData2>::value, "Only FEData objects can be added!");
   return FEDatas<FEData1, FEData2>();
