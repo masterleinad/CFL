@@ -50,34 +50,41 @@ public:
   virtual void
   compute_diagonal() override
   {
-    Assert((::dealii::MatrixFreeOperators::Base<dim, Number>::data != NULL), ExcNotInitialized());
+    if
+      constexpr(FEDatas::n == 1)
+      {
+        Assert((::dealii::MatrixFreeOperators::Base<dim, Number>::data != NULL),
+               ExcNotInitialized());
+        unsigned int dummy = 0;
+        this->inverse_diagonal_entries.reset(
+          new DiagonalMatrix<LinearAlgebra::distributed::Vector<Number>>());
+        LinearAlgebra::distributed::Vector<Number>& inverse_diagonal_vector =
+          this->inverse_diagonal_entries->get_vector();
+        this->initialize_dof_vector(inverse_diagonal_vector);
+        // LinearAlgebra::distributed::Vector<Number> ones;
+        // this->initialize_dof_vector(ones);
+        // ones = Number(1.);
+        // apply_add(inverse_diagonal_vector, ones);
 
-    unsigned int dummy = 0;
-    this->inverse_diagonal_entries.reset(
-      new DiagonalMatrix<LinearAlgebra::distributed::Vector<Number>>());
-    LinearAlgebra::distributed::Vector<Number>& inverse_diagonal_vector =
-      this->inverse_diagonal_entries->get_vector();
-    this->initialize_dof_vector(inverse_diagonal_vector);
-    // LinearAlgebra::distributed::Vector<Number> ones;
-    // this->initialize_dof_vector(ones);
-    // ones = Number(1.);
-    // apply_add(inverse_diagonal_vector, ones);
+        this->data->cell_loop(
+          &MatrixFreeIntegrator::local_diagonal_cell, this, inverse_diagonal_vector, dummy);
 
-    this->data->cell_loop(
-      &MatrixFreeIntegrator::local_diagonal_cell, this, inverse_diagonal_vector, dummy);
+        this->set_constrained_entries_to_one(inverse_diagonal_vector);
 
-    this->set_constrained_entries_to_one(inverse_diagonal_vector);
+        const unsigned int local_size = inverse_diagonal_vector.local_size();
+        for (unsigned int i = 0; i < local_size; ++i)
+          if (std::abs(inverse_diagonal_vector.local_element(i)) >
+              std::sqrt(std::numeric_limits<Number>::epsilon()))
+            inverse_diagonal_vector.local_element(i) =
+              1. / inverse_diagonal_vector.local_element(i);
+          else
+            inverse_diagonal_vector.local_element(i) = 1.;
 
-    const unsigned int local_size = inverse_diagonal_vector.local_size();
-    for (unsigned int i = 0; i < local_size; ++i)
-      if (std::abs(inverse_diagonal_vector.local_element(i)) >
-          std::sqrt(std::numeric_limits<Number>::epsilon()))
-        inverse_diagonal_vector.local_element(i) = 1. / inverse_diagonal_vector.local_element(i);
-      else
-        inverse_diagonal_vector.local_element(i) = 1.;
-
-    inverse_diagonal_vector.update_ghost_values();
-    // inverse_diagonal_vector.print(std::cout);
+        inverse_diagonal_vector.update_ghost_values();
+        // inverse_diagonal_vector.print(std::cout);
+      }
+    else
+      AssertThrow(false, ExcNotImplemented());
   }
 
   // TODO this is hacky and just tries to get comparable output w.r.t. step-37
@@ -144,7 +151,6 @@ private:
   apply_add(LinearAlgebra::distributed::Vector<Number>& dst,
             const LinearAlgebra::distributed::Vector<Number>& src) const override
   {
-    AssertThrow(false, ExcInternalError());
     if (use_cell)
       dealii::MatrixFreeOperators::Base<dim, Number>::data->cell_loop(
         &MatrixFreeIntegrator::local_apply_cell, this, dst, src);
@@ -194,29 +200,15 @@ private:
     phi.integrate();
   }
 
+  template <class VectorType>
   void
-  local_apply_cell(const MatrixFree<dim, Number>& data_,
-                   LinearAlgebra::distributed::BlockVector<Number>& dst,
-                   const LinearAlgebra::distributed::BlockVector<Number>& src,
+  local_apply_cell(const MatrixFree<dim, Number>& data_, VectorType& dst, const VectorType& src,
                    const std::pair<unsigned int, unsigned int>& cell_range) const
   {
-    (void)data_;
-    Assert(&data_ == &(this->get_matrix_free()), ExcInternalError());
-    for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
-    {
-      fe_datas->reinit(cell);
-      fe_datas->read_dof_values(src);
-      do_operation_on_cell(*fe_datas, cell);
-      fe_datas->distribute_local_to_global(dst);
-    }
-  }
-
-  void
-  local_apply_cell(const MatrixFree<dim, Number>& data_,
-                   LinearAlgebra::distributed::Vector<Number>& dst,
-                   const LinearAlgebra::distributed::Vector<Number>& src,
-                   const std::pair<unsigned int, unsigned int>& cell_range) const
-  {
+    static_assert(std::is_same_v<VectorType, LinearAlgebra::distributed::Vector<Number>> ||
+                    std::is_same_v<VectorType, LinearAlgebra::distributed::BlockVector<Number>>,
+                  "This is only implemented for LinearAlgebra::distributed::Vector<Number> "
+                  "and LinearAlgebra::distributed::BlockVector<Number> objects!");
     (void)data_;
     Assert(&data_ == &(this->get_matrix_free()), ExcInternalError());
     for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
