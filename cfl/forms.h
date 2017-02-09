@@ -291,9 +291,13 @@ public:
   void
   evaluate(FEEvaluation& phi, unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "expecting value " << fe_number << std::endl;
+#endif
     const auto value = form.value(phi, q);
+#ifdef DEBUG_OUUTPUT
     std::cout << "expecting submit " << fe_number << std::endl;
+#endif
     form.submit(phi, q, value);
   }
 
@@ -361,11 +365,17 @@ public:
   void
   evaluate(FEEvaluation& phi, unsigned int q) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "expecting value " << fe_number << std::endl;
+#endif
     const auto value = form.value(phi, q);
+#ifdef DEBUG_OUTPUT
     std::cout << "descending" << std::endl;
+#endif
     Forms<Types...>::evaluate(phi, q);
+#ifdef DEBUG_OUTPUT
     std::cout << "expecting submit " << fe_number << std::endl;
+#endif
     form.submit(phi, q, value);
   }
 

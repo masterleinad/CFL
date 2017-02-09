@@ -3,6 +3,7 @@
 
 //#include <deal.II/matrix_free/operators.h>
 
+#include <deal.II/lac/la_parallel_block_vector.h>
 #include <cfl/static_for.h>
 #include <dealii/operators.h>
 
@@ -45,6 +46,43 @@ public:
   {
     ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_, mg_constrained_dofs, level);
     initialize(form_, fe_datas_);
+  }
+
+  void
+  set_nonlinearities(std::vector<bool> nonlinear_components_,
+                     LinearAlgebra::distributed::BlockVector<Number> dst)
+  {
+    nonlinear_components = nonlinear_components_;
+    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize_dof_vector(safed_vectors);
+    for (const unsigned int& i : nonlinear_components)
+    {
+      AssertDimesnion(i, dst.n_blocks());
+      safed_vectors.block(i) = dst.block(i);
+    }
+  }
+
+  void
+  vmult(LinearAlgebra::distributed::Vector<Number>& dst,
+        const LinearAlgebra::distributed::Vector<Number>& src) const
+  {
+    ::dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, src);
+  }
+
+  void
+  vmult(LinearAlgebra::distributed::BlockVector<Number>& dst,
+        const LinearAlgebra::distributed::BlockVector<Number>& src) const
+  {
+    if (nonlinear_components.size() == 0)
+      ::dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, src);
+    else
+    {
+      for (unsigned int i = 0; i < dst.n_blocks(); ++i)
+      {
+        if (!nonlinear_components[i])
+          safed_vectors.block(i) = src.block(i);
+      }
+      ::dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, safed_vectors);
+    }
   }
 
   virtual void
@@ -124,6 +162,8 @@ private:
   bool use_cell = false;
   bool use_face = false;
   bool use_boundary = false;
+  const std::vector<unsigned int> nonlinear_components;
+  mutable dealii::LinearAlgebra::distributed::BlockVector<double> safed_vectors;
 
   // convenience function to avoid shared_ptr
   void

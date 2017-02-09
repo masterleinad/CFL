@@ -25,7 +25,7 @@ ENDIF()
 OPTION(PVS-Analysis "Use static code analyzer PVS-Studio?" OFF)
 
 OPTION(DEBUG-OUTPUT "Enable verbose debug output?" OFF)
-IF (MG)
+IF (DEBUG-OUTPUT)
   ADD_DEFINITIONS(-DDEBUG_OUTPUT)
 ENDIF()
 
