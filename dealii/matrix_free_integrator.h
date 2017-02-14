@@ -53,11 +53,12 @@ public:
                      LinearAlgebra::distributed::BlockVector<Number> dst)
   {
     nonlinear_components = nonlinear_components_;
-    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize_dof_vector(safed_vectors);
-    for (const unsigned int& i : nonlinear_components)
+    safed_vectors.reinit(dst);
+    for (unsigned int i = 0; i < dst.n_blocks(); ++i)
     {
       AssertDimesnion(i, dst.n_blocks());
-      safed_vectors.block(i) = dst.block(i);
+      if (nonlinear_components[i])
+        safed_vectors.block(i) = dst.block(i);
     }
   }
 
@@ -82,6 +83,11 @@ public:
           safed_vectors.block(i) = src.block(i);
       }
       ::dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, safed_vectors);
+      for (unsigned int i = 0; i < dst.n_blocks(); ++i)
+      {
+        if (nonlinear_components[i])
+          dst.block(i) = src.block(i);
+      }
     }
   }
 
@@ -162,7 +168,7 @@ private:
   bool use_cell = false;
   bool use_face = false;
   bool use_boundary = false;
-  const std::vector<unsigned int> nonlinear_components;
+  std::vector<bool> nonlinear_components;
   mutable dealii::LinearAlgebra::distributed::BlockVector<double> safed_vectors;
 
   // convenience function to avoid shared_ptr

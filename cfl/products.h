@@ -51,9 +51,15 @@ multiply(const T& t, const S& s)
 }
 
 template <class A, class B>
-auto operator*(const A& a, const B& b)
+typename std::enable_if_t<((CFL::Traits::is_cfl_object<A>::value ||
+                            CFL::Traits::is_cfl_object<B>::value) &&
+                           !CFL::Traits::is_multiplicable<A, B>::value),
+                          A>
+operator*(const A& a, const B& b)
 {
-  return multiply(a, b);
+  assert_is_multiplicable(a, b);
+  throw std::runtime_error("Internal error! This line should never be invoked!");
+  return a;
 }
 
 namespace Traits

@@ -89,6 +89,12 @@ namespace Traits
     static constexpr bool value = false;
   };
 
+  template <class T, class U, class Enable = void>
+  struct is_multiplicable
+  {
+    static constexpr bool value = false;
+  };
+
   template <class A, class B>
   struct is_compatible
   {
@@ -119,6 +125,12 @@ namespace Traits
    */
   template <class T>
   struct is_fe_function_set
+  {
+    static constexpr bool value = false;
+  };
+
+  template <class T>
+  struct is_fe_function_product
   {
     static constexpr bool value = false;
   };
@@ -166,6 +178,14 @@ void
 assert_is_summable(const A&, const B&)
 {
   static_assert(CFL::Traits::is_summable<A, B>::value, "The sum of these objects is not defined!");
+}
+
+template <class A, class B>
+void
+assert_is_multiplicable(const A&, const B&)
+{
+  static_assert(CFL::Traits::is_multiplicable<A, B>::value,
+                "The product of these objects is not defined!");
 }
 
 template <class A, class B>

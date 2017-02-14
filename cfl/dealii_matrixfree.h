@@ -53,6 +53,8 @@ namespace dealii
     class FELaplacian;
     template <typename... Types>
     class SumFEFunctions;
+    template <typename... Types>
+    class ProductFEFunctions;
     template <class FEFunctionType>
     class FELiftDivergence;
   }
@@ -116,6 +118,13 @@ namespace Traits
   template <typename A, typename B>
   struct is_summable<A, B, typename std::enable_if<is_fe_function_set<A>::value &&
                                                    is_fe_function_set<B>::value>::type>
+  {
+    static const bool value = true;
+  };
+
+  template <typename A, typename B>
+  struct is_multiplicable<A, B, typename std::enable_if<is_fe_function_set<A>::value &&
+                                                        is_fe_function_set<B>::value>::type>
   {
     static const bool value = true;
   };
@@ -290,6 +299,18 @@ namespace Traits
 
   template <int rank, int dim, unsigned int idx>
   struct is_fe_function_set<dealii::MatrixFree::FELaplacian<rank, dim, idx>>
+  {
+    static const bool value = true;
+  };
+
+  template <typename... Types>
+  struct is_fe_function_set<dealii::MatrixFree::ProductFEFunctions<Types...>>
+  {
+    static const bool value = true;
+  };
+
+  template <typename... Types>
+  struct is_fe_function_product<dealii::MatrixFree::ProductFEFunctions<Types...>>
   {
     static const bool value = true;
   };
@@ -475,18 +496,18 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      double factor = 1.;
+      double scalar_factor = 1.;
 
       FEFunction(const std::string& name)
         : data_name(name)
       {
       }
 
-      FEFunction(double new_factor = 1.) { factor = new_factor; }
+      FEFunction(double new_factor = 1.) { scalar_factor = new_factor; }
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
         return newfunction;
       }
 
@@ -499,7 +520,7 @@ namespace dealii
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return factor * phi.template get_value<index>(q);
+        return scalar_factor * phi.template get_value<index>(q);
       }
 
       template <class FEEvaluation>
@@ -513,6 +534,22 @@ namespace dealii
                       "the FiniteElement is vector valued!");
         phi.template set_evaluation_flags<index>(true, false, false);
       }
+
+      template <typename Number>
+      typename std::enable_if_t<std::is_arithmetic_v<Number>, FEFunction<rank, dim, idx>> operator*(
+        const Number scalar_factor) const
+      {
+        FEFunction<rank, dim, idx> tmp = *this;
+        tmp.multiply_by_scalar(scalar_factor);
+        return tmp;
+      }
+
+      template <typename Number>
+      std::enable_if_t<std::is_arithmetic_v<Number>>
+      multiply_by_scalar(const Number scalar)
+      {
+        scalar_factor *= scalar;
+      }
     };
 
     template <int rank, int dim, unsigned int idx>
@@ -521,23 +558,23 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      double factor = 1.;
+      double scalar_factor = 1.;
 
       explicit FEDivergence(const double new_factor = 1.)
-        : factor(new_factor)
+        : scalar_factor(new_factor)
       {
       }
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
         return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return factor * phi.template get_divergence<index>(q);
+        return scalar_factor * phi.template get_divergence<index>(q);
       }
 
       template <class FEEvaluation>
@@ -593,20 +630,20 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      double factor = 1;
+      double scalar_factor = 1;
 
       FESymmetricGradient() = default;
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
         return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return factor * phi.template get_symmetric_gradient<index>(q);
+        return scalar_factor * phi.template get_symmetric_gradient<index>(q);
       }
 
       template <class FEEvaluation>
@@ -628,20 +665,20 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      double factor = 1.;
+      double scalar_factor = 1.;
 
       FECurl(const FEFunction<rank - 1, dim, idx>&) {}
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
         return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return factor * phi.template get_curl<index>(q);
+        return scalar_factor * phi.template get_curl<index>(q);
       }
 
       template <class FEEvaluation>
@@ -663,20 +700,20 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      double factor = 1.;
+      double scalar_factor = 1.;
 
       FEGradient(const FEFunction<rank - 1, dim, idx>&) {}
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
         return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return factor * phi.template get_gradient<index>(q);
+        return scalar_factor * phi.template get_gradient<index>(q);
       }
 
       template <class FEEvaluation>
@@ -698,20 +735,20 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      double factor = 1.;
+      double scalar_factor = 1.;
 
       FELaplacian() = default;
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
         return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return factor * phi.template get_laplacian<index>(q);
+        return scalar_factor * phi.template get_laplacian<index>(q);
       }
 
       template <class FEEvaluation>
@@ -733,20 +770,20 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      double factor = 1.;
+      double scalar_factor = 1.;
 
       FEDiagonalHessian() = default;
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
         return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return factor * phi.template get_hessian_diagonal<index>(q);
+        return scalar_factor * phi.template get_hessian_diagonal<index>(q);
       }
 
       template <class FEEvaluation>
@@ -770,20 +807,20 @@ namespace dealii
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
       static constexpr unsigned int index = idx;
-      double factor = 1.;
+      double scalar_factor = 1.;
 
       FEHessian(const FEGradient<rank - 1, dim, idx>&) {}
 
       auto operator-() const
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-factor);
+        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
         return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return factor * phi.template get_hessian<index>(q);
+        return scalar_factor * phi.template get_hessian<index>(q);
       }
 
       template <class FEEvaluation>
@@ -827,20 +864,13 @@ namespace dealii
       return FELaplacian<rank - 1, dim, idx>();
     }
 
-    template <class A, typename Number>
-    typename std::enable_if<CFL::Traits::is_fe_function_set<A>::value, A>::type operator*(
-      const A& a, const Number factor)
-    {
-      A tmp = a;
-      tmp.factor *= factor;
-      return tmp;
-    }
 
     template <typename Number, class A>
-    typename std::enable_if<CFL::Traits::is_fe_function_set<A>::value, A>::type operator*(
-      const Number& factor, const A& a)
+    typename std::enable_if_t<
+      CFL::Traits::is_fe_function_set<A>::value && std::is_arithmetic_v<Number>, A>
+    operator*(const Number scalar_factor, const A& a)
     {
-      return a * factor;
+      return a * scalar_factor;
     }
 
     template <typename... Types>
@@ -1053,6 +1083,191 @@ namespace dealii
     operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
       return -(old_fe_function - new_fe_function);
+    }
+
+    template <typename... Types>
+    class ProductFEFunctions
+    {
+    public:
+      ProductFEFunctions() = delete;
+      ProductFEFunctions(const ProductFEFunctions<Types...>&) = delete;
+    };
+
+    template <class FEFunction>
+    class ProductFEFunctions<FEFunction>
+    {
+    public:
+      typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
+        TensorTraits;
+
+      ProductFEFunctions(const FEFunction& factor)
+        : factor(factor)
+      {
+        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+                      "You need to construct this with a FEFunction object!");
+      }
+
+      template <class NewFEFunction>
+      ProductFEFunctions<NewFEFunction, FEFunction> operator*(const NewFEFunction& new_factor) const
+      {
+        static_assert(Traits::is_fe_function_set<NewFEFunction>::value,
+                      "Only FEFunction objects can be added!");
+        static_assert(TensorTraits::dim == NewFEFunction::TensorTraits::dim,
+                      "You can only add tensors of equal dimension!");
+        static_assert(TensorTraits::rank == NewFEFunction::TensorTraits::rank,
+                      "You can only add tensors of equal rank!");
+        return ProductFEFunctions<NewFEFunction, FEFunction>(new_factor, factor);
+      }
+
+      template <class FEEvaluation>
+      auto value(FEEvaluation& phi, unsigned int q) const
+      {
+        return factor.value(phi, q);
+      }
+
+      template <class FEEvaluation>
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
+      {
+        FEFunction::set_evaluation_flags(phi);
+      }
+
+      const FEFunction&
+      get_factor() const
+      {
+        return factor;
+      }
+
+    private:
+      const FEFunction factor;
+    };
+
+    template <class FEFunction, typename... Types>
+    class ProductFEFunctions<FEFunction, Types...> : public ProductFEFunctions<Types...>
+    {
+    public:
+      typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
+        TensorTraits;
+
+      template <class FEEvaluation>
+      auto value(const FEEvaluation& phi, unsigned int q) const
+      {
+        const auto own_value = factor.value(phi, q);
+        const auto other_value = ProductFEFunctions<Types...>::value(phi, q);
+        assert_is_compatible(own_value, other_value);
+        return own_value * other_value;
+      }
+
+      template <class FEEvaluation>
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
+      {
+        FEFunction::set_evaluation_flags(phi);
+        ProductFEFunctions<Types...>::set_evaluation_flags(phi);
+      }
+
+      ProductFEFunctions(const FEFunction& factor, const Types&... old_product)
+        : ProductFEFunctions<Types...>(old_product...)
+        , factor(factor)
+      {
+        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+                      "You need to construct this with a FEFunction object!");
+        static_assert(TensorTraits::dim == ProductFEFunctions<Types...>::TensorTraits::dim,
+                      "You can only add tensors of equal dimension!");
+        static_assert(TensorTraits::rank == ProductFEFunctions<Types...>::TensorTraits::rank,
+                      "You can only add tensors of equal rank!");
+      }
+
+      ProductFEFunctions(const FEFunction& factor, const ProductFEFunctions<Types...>& old_product)
+        : ProductFEFunctions<Types...>(old_product)
+        , factor(factor)
+      {
+        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+                      "You need to construct this with a FEFunction object!");
+        static_assert(TensorTraits::dim == ProductFEFunctions<Types...>::TensorTraits::dim,
+                      "You can only add tensors of equal dimension!");
+        static_assert(TensorTraits::rank == ProductFEFunctions<Types...>::TensorTraits::rank,
+                      "You can only add tensors of equal rank!");
+      }
+
+      template <class NewFEFunction>
+      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+                              ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type
+      operator*(const NewFEFunction& new_factor) const
+      {
+        return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_factor, *this);
+      }
+
+      template <typename Number>
+      typename std::enable_if<std::is_arithmetic_v<Number>,
+                              ProductFEFunctions<FEFunction, Types...>>::type
+      operator*(const Number scalar_factor) const
+      {
+        ProductFEFunctions<FEFunction, Types...> tmp = *this;
+        tmp.multiply_by_scalar(scalar_factor);
+        return tmp;
+      }
+
+      template <typename Number>
+      std::enable_if_t<std::is_arithmetic_v<Number>>
+      multiply_by_scalar(const Number scalar)
+      {
+        factor.scalar_factor *= scalar;
+      }
+
+      template <class NewFEFunction, typename... NewTypes>
+      typename std::enable_if<
+        CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+        ProductFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
+      operator*(const ProductFEFunctions<NewFEFunction, NewTypes...>& new_product) const
+      {
+        return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_product.get_factor(),
+                                                                       *this) *
+               ProductFEFunctions<NewTypes...>(
+                 static_cast<const ProductFEFunctions<NewTypes...>&>(new_product));
+      }
+
+      template <class NewFEFunction>
+      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+                              ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type
+      operator*(const ProductFEFunctions<NewFEFunction>& new_product) const
+      {
+        return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_product.get_factor(),
+                                                                       *this);
+      }
+
+      const FEFunction&
+      get_factor() const
+      {
+        return factor;
+      }
+
+    private:
+      FEFunction factor;
+    };
+
+    template <class FEFunction1, class FEFunction2>
+    typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
+                              !Traits::is_fe_function_product<FEFunction1>::value &&
+                              Traits::is_fe_function_set<FEFunction2>::value &&
+                              !Traits::is_fe_function_product<FEFunction2>::value,
+                            ProductFEFunctions<FEFunction2, FEFunction1>>::type
+    operator*(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+    {
+      static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
+                    "You can only add tensors of equal dimension!");
+      static_assert(FEFunction1::TensorTraits::rank == FEFunction2::TensorTraits::rank,
+                    "You can only add tensors of equal rank!");
+      return ProductFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
+    }
+
+    template <class FEFunction, typename... Types>
+    typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
+                            ProductFEFunctions<FEFunction, Types...>>::type
+    operator*(const FEFunction& new_fe_function,
+              const ProductFEFunctions<Types...>& old_fe_function)
+    {
+      return old_fe_function * new_fe_function;
     }
   }
 }

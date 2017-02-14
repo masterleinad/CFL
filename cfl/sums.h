@@ -57,10 +57,10 @@ namespace Traits
 }
 
 template <class A, class B>
-typename std::enable_if<((CFL::Traits::is_cfl_object<A>::value ||
-                          CFL::Traits::is_cfl_object<B>::value) &&
-                         !CFL::Traits::is_summable<A, B>::value),
-                        A>::type
+typename std::enable_if_t<((CFL::Traits::is_cfl_object<A>::value ||
+                            CFL::Traits::is_cfl_object<B>::value) &&
+                           !CFL::Traits::is_summable<A, B>::value),
+                          A>
 operator+(const A& a, const B& b)
 {
   assert_is_summable(a, b);
