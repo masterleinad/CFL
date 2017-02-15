@@ -70,6 +70,54 @@ namespace Step37
 {
 using namespace dealii;
 
+template <int dim>
+class ReferenceFunction : public Function<dim>
+{
+public:
+  ReferenceFunction()
+    : Function<dim>(1)
+  {}
+
+  double value (const Point<dim> &p, const unsigned int component=0) const
+  {
+    return std::sin(numbers::PI*p(0)) * std::sin(numbers::PI*p(1)) ;
+  }
+
+  Tensor<1,dim> gradient (const Point<dim> &p, const unsigned int component=0) const
+  {
+    Tensor<1,dim> ret_value;
+    ret_value[0] = numbers::PI * std::cos(numbers::PI*p(0)) * std::sin(numbers::PI*p(1)) ;
+    ret_value[1] = numbers::PI * std::cos(numbers::PI*p(1)) * std::sin(numbers::PI*p(0)) ;
+    return ret_value;
+  }
+
+  double laplacian (const Point< dim > &p, const unsigned int component=0) const
+  {
+    return - 2 * numbers::PI * numbers::PI * std::sin(numbers::PI*p(0)) * std::sin(numbers::PI*p(1)) ;
+  }
+};
+
+template <int dim>
+class RHS : public Function<dim>
+{
+public:
+  RHS(double a)
+    :
+    Function<dim>(1),
+    alpha(a)
+  {}
+
+  double value (const Point<dim> &p, const unsigned int component) const
+  {
+    return - ref_func.laplacian(p) + ref_func.value(p)*ref_func.value(p)*ref_func.value(p)  - alpha * ref_func.value(p) ;
+  }
+
+  ReferenceFunction<dim> ref_func ;
+private:
+  double alpha ;
+};
+
+
 template <int dim, class FEDatasSystem, class FEDatasLevel, class Form>
 class LaplaceProblem
 {
@@ -163,8 +211,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
 
   constraints[0].clear();
   constraints[0].reinit(locally_relevant_dofs);
-  DoFTools::make_hanging_node_constraints(dof_handler, constraints[0]);
-  VectorTools::interpolate_boundary_values(dof_handler, 0, ZeroFunction<dim>(), constraints[0]);
+  //DoFTools::make_hanging_node_constraints(dof_handler, constraints[0]);
+  //VectorTools::interpolate_boundary_values(dof_handler, 0, ZeroFunction<dim>(), constraints[0]);
   constraints[0].close();
   constraints[0].clear();
   constraints[1].reinit(locally_relevant_dofs);
@@ -204,6 +252,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
   system_matrix.initialize_dof_vector(solution);
   system_matrix.initialize_dof_vector(system_rhs);
   system_matrix.initialize_dof_vector(solution_update);
+
+  solution = 100.;
 
   setup_time += time.wall_time();
   time_details << "Setup matrix-free system   (CPU/wall) " << time() << "s/" << time.wall_time()
@@ -253,6 +303,10 @@ template <int dim, class FEDatasSystem, class FEDatasLevel, class Form>
 void
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::assemble_rhs()
 {
+std::cout << "solution_before_assembly\n";
+   solution.print(std::cout);
+
+  const double alpha =10.;
   Timer time;
 
   /*  std::vector<bool> nonlinear_components;
@@ -260,7 +314,64 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::assemble_rhs()
     nonlinear_components.push_back(true);
     system_matrix.set_nonlinearities(nonlinear_components, solution);*/
 
-  system_rhs = 0;
+  QGauss<dim> quadrature(fe.get_degree()+1);
+  FEValues<dim> fev(fe, quadrature, update_values | update_gradients | update_JxW_values | update_quadrature_points );
+  const unsigned int dpc = fe.dofs_per_cell;
+  const unsigned int nqp = quadrature.size();
+  Vector<double> local_rhs(dpc);
+  std::vector<types::global_dof_index> global_dof_idx(dpc);
+  RHS<dim> rhs_function(alpha);
+
+  std::vector<Tensor<1,dim> > old_local_gradients(nqp);
+  std::vector<double> old_local_values(nqp);
+  std::vector<double> rhs_values(nqp,0.);
+
+  system_rhs = 0.;
+
+  ReferenceFunction<dim> ref_function;
+  typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(),
+                                                 endc = dof_handler.end();
+  for (; cell!=endc; ++cell)
+    {
+      fev.reinit(cell);
+      cell->get_dof_indices(global_dof_idx);
+      local_rhs = 0.;
+
+      fev.get_function_gradients(solution.block(0), old_local_gradients);
+      fev.get_function_values(solution.block(0), old_local_values);
+//      rhs_function.value_list(fev.get_quadrature_points(),rhs_values);
+
+      for (unsigned int q=0; q<nqp; ++q)
+        {
+          for (unsigned int i=0; i<dpc; ++i)
+            {
+              // rhs wrt old_solution
+double tmp1 = fev.shape_grad(i,q) * old_local_gradients[q];
+ double tmp2a = fev.shape_value(i,q);
+              double tmp2b = old_local_values[q];
+              double tmp2c = alpha;
+              double tmp3 = - fev.shape_value(i,q) * rhs_values[q];
+              local_rhs(i) += - fev.JxW(q) * ( fev.shape_grad(i,q) * old_local_gradients[q]
+                                                + fev.shape_value(i,q) * old_local_values[q]
+                                                 * (old_local_values[q]*old_local_values[q] - alpha)
+                                              - fev.shape_value(i,q) * rhs_values[q] ) ;
+              std::cout << i << ": " << local_rhs(i) << std::endl;
+              std::cout << "tmp2a: " << tmp2a << std::endl;
+              std::cout << "tmp2b: " << tmp2b << std::endl;
+              std::cout << "tmp2c: " << tmp2c << std::endl;
+              std::cout << "JxW: " << fev.JxW(q) << std::endl;
+            }
+        }
+      local_rhs.print(std::cout);
+      constraints[0].distribute_local_to_global (local_rhs,global_dof_idx,system_rhs.block(0));
+    }
+ system_rhs.compress(VectorOperation::add);
+
+  std::cout << "rhs: \n";
+  system_rhs.block(0).print(std::cout);
+  Assert(system_rhs.block(1).l2_norm()<1e-10, ExcInternalError());
+
+/*  system_rhs = 0;
   FEEvaluation<dim, degree_finite_element> phi(system_mf_storage);
   for (unsigned int cell = 0; cell < system_mf_storage.n_macro_cells(); ++cell)
   {
@@ -270,7 +381,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::assemble_rhs()
     phi.integrate(true, false);
     phi.distribute_local_to_global(system_rhs);
   }
-  system_rhs.compress(VectorOperation::add);
+  system_rhs.compress(VectorOperation::add);*/
 
   setup_time += time.wall_time();
   time_details << "Assemble right hand side   (CPU/wall) " << time() << "s/" << time.wall_time()
@@ -332,7 +443,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::solve()
   float>>
     preconditioner(dof_handler, mg, mg_transfer);*/
 
-  SolverControl solver_control(1000, 1e-12 * system_rhs.l2_norm(), true, true);
+  SolverControl solver_control(1000, 1e-12 * system_rhs.l2_norm(), false, false);
   SolverCG<LinearAlgebra::distributed::BlockVector<double>> cg(solver_control);
   setup_time += time.wall_time();
   time_details << "MG build smoother time     (CPU/wall) " << time() << "s/" << time.wall_time()
@@ -342,29 +453,22 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::solve()
   time.reset();
   time.start();
 
-  for (size_t i = 0; i < system_rhs.n_blocks(); ++i)
-  {
-    for (types::global_dof_index j = 0; j < system_rhs.block(i).size(); ++j)
-      system_rhs.block(i)[j] = j;
-  }
-
-  std::cout << "system_rhs\n";
-  system_rhs.print(std::cout);
-  std::cout << "solution before\n";
-  solution = system_rhs;
-
+  // set nonlinearity to use
+  solution.block(1) = solution.block(0);
   std::vector<bool> nonlinear_components;
   nonlinear_components.push_back(false);
   nonlinear_components.push_back(true);
   system_matrix.set_nonlinearities(nonlinear_components, solution);
 
-  system_matrix.vmult(solution, system_rhs);
-  std::cout << "solution after\n";
+  cg.solve(system_matrix, solution_update, system_rhs, PreconditionIdentity());
+
+  constraints[0].distribute(solution_update.block(0));
+  const double b = .2;
+  solution_update *= b;
+  solution += solution_update;
+  std::cout << "solution: \n";
   solution.print(std::cout);
 
-  cg.solve(system_matrix, solution, system_rhs, PreconditionIdentity());
-
-  constraints[0].distribute(solution.block(0));
 
   pcout << "Time solve (" << solver_control.last_step() << " iterations)  (CPU/wall) " << time()
         << "s/" << time.wall_time() << "s\n";
@@ -382,7 +486,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::output_results(
 
   solution.update_ghost_values();
   data_out.attach_dof_handler(dof_handler);
-  data_out.add_data_vector(solution, "solution");
+  data_out.add_data_vector(solution.block(0), "solution");
   data_out.build_patches();
 
   std::ostringstream filename;
@@ -412,20 +516,16 @@ template <int dim, class FEDatasSystem, class FEDatasLevel, class Form>
 void
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::run()
 {
-  for (unsigned int cycle = 0; cycle < 8 - dim; ++cycle)
+      GridGenerator::hyper_cube(triangulation, 0., 1.);
+//      triangulation.refine_global(1);
+      setup_system();
+      output_results(0);
+  for (unsigned int cycle = 1; cycle < 2; ++cycle)
   {
     pcout << "Cycle " << cycle << std::endl;
-
-    if (cycle == 0)
-    {
-      GridGenerator::hyper_cube(triangulation, 0., 1.);
-      // triangulation.refine_global(3 - dim);
-    }
-    //    triangulation.refine_global(1);
-    setup_system();
     assemble_rhs();
     solve();
-    // output_results(cycle);
+    output_results(cycle);
     pcout << std::endl;
   };
 }
