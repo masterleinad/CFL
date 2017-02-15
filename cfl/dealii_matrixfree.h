@@ -129,6 +129,20 @@ namespace Traits
     static const bool value = true;
   };
 
+  template <typename A, typename B>
+  struct is_multiplicable<A, B, typename std::enable_if_t<std::is_arithmetic_v<A> &&
+                                                        is_fe_function_set<B>::value> >
+  {
+    static const bool value = true;
+  };
+
+  template <typename A, typename B>
+  struct is_multiplicable<A, B, typename std::enable_if_t<is_fe_function_set<A>::value &&
+                                                        std::is_arithmetic_v<B> > >
+  {
+    static const bool value = true;
+  };
+
   template <int rank, int dim, unsigned int idx>
   struct is_test_function_set<dealii::MatrixFree::TestFunction<rank, dim, idx>>
   {

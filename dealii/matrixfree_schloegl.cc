@@ -203,6 +203,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
 
   system_matrix.initialize_dof_vector(solution);
   system_matrix.initialize_dof_vector(system_rhs);
+  system_matrix.initialize_dof_vector(solution_update);
 
   setup_time += time.wall_time();
   time_details << "Setup matrix-free system   (CPU/wall) " << time() << "s/" << time.wall_time()
@@ -254,10 +255,10 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::assemble_rhs()
 {
   Timer time;
 
-  std::vector<bool> nonlinear_components;
-  nonlinear_components.push_back(false);
-  nonlinear_components.push_back(true);
-  system_matrix.set_nonlinearities(nonlinear_components, solution);
+  /*  std::vector<bool> nonlinear_components;
+    nonlinear_components.push_back(false);
+    nonlinear_components.push_back(true);
+    system_matrix.set_nonlinearities(nonlinear_components, solution);*/
 
   system_rhs = 0;
   FEEvaluation<dim, degree_finite_element> phi(system_mf_storage);
@@ -350,11 +351,16 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::solve()
   std::cout << "system_rhs\n";
   system_rhs.print(std::cout);
   std::cout << "solution before\n";
-  solution.block(0) = system_rhs.block(0);
+  solution = system_rhs;
+
+  std::vector<bool> nonlinear_components;
+  nonlinear_components.push_back(false);
+  nonlinear_components.push_back(true);
+  system_matrix.set_nonlinearities(nonlinear_components, solution);
+
   system_matrix.vmult(solution, system_rhs);
   std::cout << "solution after\n";
   solution.print(std::cout);
-  abort();
 
   cg.solve(system_matrix, solution, system_rhs, PreconditionIdentity());
 
@@ -415,7 +421,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::run()
       GridGenerator::hyper_cube(triangulation, 0., 1.);
       // triangulation.refine_global(3 - dim);
     }
-//    triangulation.refine_global(1);
+    //    triangulation.refine_global(1);
     setup_system();
     assemble_rhs();
     solve();
@@ -461,8 +467,8 @@ main(int argc, char* argv[])
     auto f2 = CFL::form(3 * u * u * e - alpha * e, v);
     auto f = f1 + f2;
 
-    LaplaceProblem<dimension, decltype(fe_datas_system), decltype(fe_datas_level), decltype(f1)>
-      laplace_problem(fe_datas_system, fe_datas_level, f1);
+    LaplaceProblem<dimension, decltype(fe_datas_system), decltype(fe_datas_level), decltype(f)>
+      laplace_problem(fe_datas_system, fe_datas_level, f);
     laplace_problem.run();
   }
   catch (std::exception& exc)
