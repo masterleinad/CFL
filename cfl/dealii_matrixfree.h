@@ -130,15 +130,15 @@ namespace Traits
   };
 
   template <typename A, typename B>
-  struct is_multiplicable<A, B, typename std::enable_if_t<std::is_arithmetic_v<A> &&
-                                                        is_fe_function_set<B>::value> >
+  struct is_multiplicable<
+    A, B, typename std::enable_if_t<std::is_arithmetic_v<A> && is_fe_function_set<B>::value>>
   {
     static const bool value = true;
   };
 
   template <typename A, typename B>
-  struct is_multiplicable<A, B, typename std::enable_if_t<is_fe_function_set<A>::value &&
-                                                        std::is_arithmetic_v<B> > >
+  struct is_multiplicable<
+    A, B, typename std::enable_if_t<is_fe_function_set<A>::value && std::is_arithmetic_v<B>>>
   {
     static const bool value = true;
   };
@@ -551,10 +551,10 @@ namespace dealii
 
       template <typename Number>
       typename std::enable_if_t<std::is_arithmetic_v<Number>, FEFunction<rank, dim, idx>> operator*(
-        const Number scalar_factor) const
+        const Number scalar_factor_) const
       {
         FEFunction<rank, dim, idx> tmp = *this;
-        tmp.multiply_by_scalar(scalar_factor);
+        tmp.multiply_by_scalar(scalar_factor_);
         return tmp;
       }
 
@@ -716,11 +716,18 @@ namespace dealii
       static constexpr unsigned int index = idx;
       double scalar_factor = 1.;
 
-      FEGradient(const FEFunction<rank - 1, dim, idx>&) {}
+      FEGradient(double scalar_factor_) { scalar_factor = scalar_factor_; }
+
+      explicit FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
+      {
+        scalar_factor = fefunction.scalar_factor;
+      }
 
       auto operator-() const
       {
         const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
+        std::cout << "scalar_factor old and new" << scalar_factor << " "
+                  << newfunction.scalar_factor << std::endl;
         return newfunction;
       }
 
@@ -823,7 +830,7 @@ namespace dealii
       static constexpr unsigned int index = idx;
       double scalar_factor = 1.;
 
-      FEHessian(const FEGradient<rank - 1, dim, idx>&) {}
+      explicit FEHessian(const FEGradient<rank - 1, dim, idx>&) {}
 
       auto operator-() const
       {
@@ -877,7 +884,6 @@ namespace dealii
     {
       return FELaplacian<rank - 1, dim, idx>();
     }
-
 
     template <typename Number, class A>
     typename std::enable_if_t<
