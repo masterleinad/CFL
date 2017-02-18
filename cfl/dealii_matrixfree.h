@@ -35,6 +35,8 @@ namespace dealii
     template <int rank, int dim, unsigned int idx>
     class TestHessian;
 
+    template <class Derived>
+    class FEFunctionBase;
     template <int rank, int dim, unsigned int idx>
     class FEFunction;
     template <int rank, int dim, unsigned int idx>
@@ -221,98 +223,18 @@ namespace Traits
     static const bool value = true;
   };
 
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::FEFunction<rank, dim, idx>>
+  template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
+  struct is_cfl_object<T<rank, dim, idx>,
+                       std::enable_if_t<std::is_base_of_v<
+                         dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>, T<rank, dim, idx>>>>
   {
     static const bool value = true;
   };
 
-  template <int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<dealii::MatrixFree::FEFunction<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::FEDivergence<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<dealii::MatrixFree::FEDivergence<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::FECurl<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<dealii::MatrixFree::FECurl<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::FESymmetricGradient<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<dealii::MatrixFree::FESymmetricGradient<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::FEGradient<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<dealii::MatrixFree::FEGradient<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::FEHessian<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<dealii::MatrixFree::FEHessian<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::FEDiagonalHessian<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<dealii::MatrixFree::FEDiagonalHessian<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::FELaplacian<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<dealii::MatrixFree::FELaplacian<rank, dim, idx>>
+  template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
+  struct is_fe_function_set<
+    T<rank, dim, idx>, std::enable_if_t<std::is_base_of_v<
+                         dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>, T<rank, dim, idx>>>>
   {
     static const bool value = true;
   };

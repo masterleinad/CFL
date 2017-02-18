@@ -65,13 +65,13 @@ namespace Traits
    * Test function sets are the exception from the rule, thus most
    * classes have a <tt>false</tt> here.
    */
-  template <class T>
+  template <class T, class Enable = void>
   struct is_test_function_set
   {
     static constexpr bool value = false;
   };
 
-  template <class T>
+  template <class T, class Enable = void>
   struct is_cfl_object
   {
     static constexpr bool value = false;
@@ -123,7 +123,7 @@ namespace Traits
    * Test function sets are the exception from the rule, thus most
    * classes have a <tt>false</tt> here.
    */
-  template <class T>
+  template <class T, class Enable = void>
   struct is_fe_function_set
   {
     static constexpr bool value = false;
