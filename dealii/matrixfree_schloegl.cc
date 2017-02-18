@@ -63,7 +63,7 @@
 #include <cfl/dealii_matrixfree.h>
 #include <cfl/forms.h>
 
-constexpr unsigned int degree_finite_element = 1;
+constexpr unsigned int degree_finite_element = 3;
 constexpr unsigned int dimension = 2;
 constexpr double alpha = 1.;
 
@@ -81,14 +81,16 @@ public:
   }
 
   double
-  value(const Point<dim>& p, const unsigned int component = 0) const
+  value(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
   {
+    Assert(component == 0, ExcInternalError());
     return std::sin(numbers::PI * p(0)) * std::sin(numbers::PI * p(1));
   }
 
   Tensor<1, dim>
-  gradient(const Point<dim>& p, const unsigned int component = 0) const
+  gradient(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
   {
+    Assert(component == 0, ExcInternalError());
     Tensor<1, dim> ret_value;
     ret_value[0] = numbers::PI * std::cos(numbers::PI * p(0)) * std::sin(numbers::PI * p(1));
     ret_value[1] = numbers::PI * std::cos(numbers::PI * p(1)) * std::sin(numbers::PI * p(0));
@@ -96,8 +98,9 @@ public:
   }
 
   double
-  laplacian(const Point<dim>& p, const unsigned int component = 0) const
+  laplacian(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
   {
+    Assert(component == 0, ExcInternalError());
     return -2 * numbers::PI * numbers::PI * std::sin(numbers::PI * p(0)) *
            std::sin(numbers::PI * p(1));
   }
@@ -114,7 +117,7 @@ public:
   }
 
   double
-  value(const Point<dim>& p, const unsigned int component) const
+  value(const Point<dim>& p, const unsigned int /* component*/) const
   {
     return -ref_func.laplacian(p) + ref_func.value(p) * ref_func.value(p) * ref_func.value(p) -
            alpha * ref_func.value(p);
@@ -226,12 +229,17 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
 
   constraints[0].clear();
   constraints[0].reinit(locally_relevant_dofs);
-  // DoFTools::make_hanging_node_constraints(dof_handler, constraints[0]);
-  // VectorTools::interpolate_boundary_values(dof_handler, 0, ZeroFunction<dim>(), constraints[0]);
+  DoFTools::make_hanging_node_constraints(dof_handler, constraints[0]);
+  VectorTools::interpolate_boundary_values(dof_handler, 0, ZeroFunction<dim>(), constraints[0]);
+  VectorTools::interpolate_boundary_values(dof_handler, 1, ZeroFunction<dim>(), constraints[0]);
+  VectorTools::interpolate_boundary_values(dof_handler, 2, ZeroFunction<dim>(), constraints[0]);
+  VectorTools::interpolate_boundary_values(dof_handler, 3, ZeroFunction<dim>(), constraints[0]);
   constraints[0].close();
-  constraints[0].clear();
+  constraints[1].clear();
   constraints[1].reinit(locally_relevant_dofs);
-  constraints[0].close();
+  constraints[1].close();
+
+  std::cout << "n_constraints: " << constraints[0].n_constraints() << std::endl;
 
   setup_time += time.wall_time();
   time_details << "Distribute DoFs & B.C.     (CPU/wall) " << time() << "s/" << time.wall_time()
@@ -265,16 +273,17 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   rhs_operator.initialize(system_mf_storage,
                           std::make_shared<FormRHS>(form_rhs),
                           std::make_shared<FEDatasSystem>(mf_cfl_data_system));
-  //    system_matrix.evaluate_coefficient(Coefficient<dim>());
 
   system_matrix.initialize_dof_vector(solution);
   system_matrix.initialize_dof_vector(system_rhs);
   system_matrix.initialize_dof_vector(solution_update);
 
   //  solution = 100.;
-  std::srand(std::time(0));
-  for (unsigned int i = 0; i < dof_handler.n_dofs(); ++i)
-    solution(i) = ((2. * std::rand()) / RAND_MAX - 1.) * alpha;
+  /*  std::srand(std::time(0));
+    for (unsigned int i = 0; i < dof_handler.n_dofs(); ++i)
+      solution(i) = ((2. * std::rand()) / RAND_MAX - 1.) * alpha;*/
+  solution = alpha;
+  constraints[0].distribute(solution);
 
   setup_time += time.wall_time();
   time_details << "Setup matrix-free system   (CPU/wall) " << time() << "s/" << time.wall_time()
@@ -376,14 +385,10 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::assemble_
                       double tmp2b = old_local_values[q];
                       double tmp2c = alpha;
                       double tmp3 = - fev.shape_value(i,q) * rhs_values[q];*/
-        local_rhs(i) +=
-          -fev.JxW(q) *
-          (fev.shape_grad(i, q) * old_local_gradients[q]
-           /*                                       +fev.shape_value(i, q) * old_local_values[q] *
-                                                    (old_local_values[q] * old_local_values[q] -
-              alpha)
-                                                   -fev.shape_value(i, q) * rhs_values[q]*/
-           );
+        local_rhs(i) += -fev.JxW(q) * (fev.shape_grad(i, q) * old_local_gradients[q] +
+                                       fev.shape_value(i, q) * old_local_values[q] *
+                                         (old_local_values[q] * old_local_values[q] - alpha) -
+                                       fev.shape_value(i, q) * rhs_values[q]);
         /*              std::cout << i << ": " << local_rhs(i) << std::endl;
                       std::cout << "tmp2a: " << tmp2a << std::endl;
                       std::cout << "tmp2b: " << tmp2b << std::endl;
@@ -507,6 +512,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
   solution_update *= b;
   solution += solution_update;
   std::cout << "update: " << solution_update.l2_norm() << std::endl;
+  std::cout << "solution: " << solution.l2_norm() << std::endl;
 
   pcout << "Time solve (" << solver_control.last_step() << " iterations)  (CPU/wall) " << time()
         << "s/" << time.wall_time() << "s\n";
@@ -526,7 +532,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::output_re
   solution.update_ghost_values();
   data_out.attach_dof_handler(dof_handler);
   data_out.add_data_vector(solution.block(0), "solution");
-  data_out.build_patches();
+  data_out.build_patches(degree_finite_element);
 
   std::ostringstream filename;
   filename << "solution-" << cycle << "." << Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)
@@ -567,7 +573,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::run()
     assemble_rhs();
     const double update_size = solve();
     output_results(cycle);
-    if (update_size < 1.e-3 * solution.l2_norm())
+    if (update_size < 1.e-3 * solution.l2_norm() || solution.l2_norm() < 1.e-10)
       break;
     pcout << std::endl;
   }
@@ -605,11 +611,11 @@ main(int argc, char* argv[])
     CFL::dealii::MatrixFree::FEFunction<0, dimension, 1> u("u");
     auto Du = grad(u);
 
-    auto f1 = CFL::form(De, Dv);
+    auto f1 = CFL::form(.01 * De, Dv);
     auto f2 = CFL::form(3 * u * u * e - alpha * e, v);
     auto f = f1 + f2;
 
-    auto rhs = CFL::form(-Du, Dv) /*+CFL::form(-u*u*u+alpha*u, v)*/;
+    auto rhs = CFL::form(-.01 * Du, Dv) + CFL::form(-u * u * u + alpha * u, v);
 
     LaplaceProblem<dimension,
                    decltype(fe_datas_system),

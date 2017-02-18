@@ -167,7 +167,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   //  TestSymmetricGradient<2,dim,0> Dv;
   auto Divu = div(u);
   FELiftDivergence<decltype(p)> Liftp(p);
-  FESymmetricGradient<2, dim, 0> Du;
+  FESymmetricGradient<2, dim, 0> Du("(\\nabla+\\nabla^T)u");
   auto f1 = form(Du + Liftp, Dv);
   auto f2 = form(Divu, q);
   auto f = f1 + f2;

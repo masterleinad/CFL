@@ -502,9 +502,19 @@ namespace dealii
       return TestHessian<rank + 1, dim, idx>();
     }
 
-    template <int rank, int dim, unsigned int idx>
-    class FEFunction
+    // CRTP
+    template <class Derived>
+    class FEFunctionBase
     {
+    public:
+      // This class should never be constructed
+      FEFunctionBase() = delete;
+    };
+
+    template <template <int, int, unsigned int> class Derived, int rank, int dim, unsigned int idx>
+    class FEFunctionBase<Derived<rank, dim, idx>>
+    {
+    protected:
       const std::string data_name;
 
     public:
@@ -512,17 +522,17 @@ namespace dealii
       static constexpr unsigned int index = idx;
       double scalar_factor = 1.;
 
-      FEFunction(const std::string& name)
+      FEFunctionBase() = delete;
+
+      FEFunctionBase(const std::string& name, double new_factor = 1.)
         : data_name(name)
+        , scalar_factor(new_factor)
       {
       }
 
-      FEFunction(double new_factor = 1.) { scalar_factor = new_factor; }
-
-      auto operator-() const
+      explicit FEFunctionBase(double new_factor = 1.)
+        : scalar_factor(new_factor)
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
-        return newfunction;
       }
 
       const std::string&
@@ -531,31 +541,11 @@ namespace dealii
         return data_name;
       }
 
-      template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
-      {
-        return scalar_factor * phi.template get_value<index>(q);
-      }
-
-      template <class FEEvaluation>
-      static void
-      set_evaluation_flags(FEEvaluation& phi)
-      {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 0),
-                      "Either the proposed FiniteElement is scalar valued "
-                      "and the FEFunction is vector valued or "
-                      "the FEFunction is scalar valued and "
-                      "the FiniteElement is vector valued!");
-        phi.template set_evaluation_flags<index>(true, false, false);
-      }
-
       template <typename Number>
-      typename std::enable_if_t<std::is_arithmetic_v<Number>, FEFunction<rank, dim, idx>> operator*(
+      typename std::enable_if_t<std::is_arithmetic_v<Number>, Derived<rank, dim, idx>> operator*(
         const Number scalar_factor_) const
       {
-        FEFunction<rank, dim, idx> tmp = *this;
-        tmp.multiply_by_scalar(scalar_factor_);
-        return tmp;
+        return Derived<rank, dim, idx>(data_name, scalar_factor * scalar_factor_);
       }
 
       template <typename Number>
@@ -564,41 +554,69 @@ namespace dealii
       {
         scalar_factor *= scalar;
       }
+
+      Derived<rank, dim, idx> operator-() const
+      {
+        const Derived<rank, dim, idx> newfunction(-scalar_factor);
+        return newfunction;
+      }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEDivergence
+    class FEFunction : public FEFunctionBase<FEFunction<rank, dim, idx>>
     {
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
-      static constexpr unsigned int index = idx;
-      double scalar_factor = 1.;
-
-      explicit FEDivergence(const double new_factor = 1.)
-        : scalar_factor(new_factor)
-      {
-      }
-
-      auto operator-() const
-      {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
-        return newfunction;
-      }
+      typedef FEFunctionBase<FEFunction<rank, dim, idx>> Base;
+      // inherit constructors
+      using Base::FEFunctionBase;
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return scalar_factor * phi.template get_divergence<index>(q);
+        return Base::scalar_factor * phi.template get_value<Base::index>(q);
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        static_assert(FEEvaluation::template rank<index>() > 0,
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 0),
+                      "Either the proposed FiniteElement is scalar valued "
+                      "and the FEFunction is vector valued or "
+                      "the FEFunction is scalar valued and "
+                      "the FiniteElement is vector valued!");
+        phi.template set_evaluation_flags<Base::index>(true, false, false);
+      }
+    };
+
+    template <int rank, int dim, unsigned int idx>
+    class FEDivergence : public FEFunctionBase<FEDivergence<rank, dim, idx>>
+    {
+    public:
+      typedef FEFunctionBase<FEDivergence<rank, dim, idx>> Base;
+      // inherit constructors
+      using Base::FEFunctionBase;
+
+      FEDivergence(const FEFunction<rank + 1, dim, idx>& fefunction)
+        : FEDivergence(fefunction.name(), fefunction.scalar_factor)
+      {
+      }
+
+      template <class FEDatas>
+      auto value(const FEDatas& phi, unsigned int q) const
+      {
+        return Base::scalar_factor * phi.template get_divergence<Base::index>(q);
+      }
+
+      template <class FEEvaluation>
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
+      {
+        static_assert(FEEvaluation::template rank<Base::index>() > 0,
                       "The proposed FiniteElement has to be "
                       "vector valued for using FEDivergence!");
-        phi.template set_evaluation_flags<index>(false, true, false);
+        phi.template set_evaluation_flags<Base::index>(false, true, false);
       }
     };
 
@@ -606,7 +624,7 @@ namespace dealii
     class FELiftDivergence
     {
     private:
-      const FEFunctionType& fefunction;
+      const FEFunctionType fefunction;
 
     public:
       typedef Traits::Tensor<FEFunctionType::TensorTraits::rank + 2,
@@ -630,6 +648,14 @@ namespace dealii
 
       auto operator-() const { return FELiftDivergence(-fefunction); }
 
+      template <typename Number>
+      typename std::enable_if_t<std::is_arithmetic_v<Number>, FELiftDivergence<FEFunctionType>>
+      operator*(const Number scalar_factor_) const
+      {
+        return FELiftDivergence<FEFunctionType>(
+          FEFunctionType(fefunction.name(), fefunction.scalar_value * scalar_factor_));
+      }
+
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
@@ -639,221 +665,187 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FESymmetricGradient
+    class FESymmetricGradient : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
     {
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
-      static constexpr unsigned int index = idx;
-      double scalar_factor = 1;
-
-      FESymmetricGradient() = default;
-
-      auto operator-() const
-      {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
-        return newfunction;
-      }
+      typedef FEFunctionBase<FESymmetricGradient<rank, dim, idx>> Base;
+      // inherit constructors
+      using Base::FEFunctionBase;
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return scalar_factor * phi.template get_symmetric_gradient<index>(q);
+        return Base::scalar_factor * phi.template get_symmetric_gradient<Base::index>(q);
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the FEGradient is vector valued or "
                       "the FEGradient is scalar valued and "
                       "the FiniteElement is vector valued!");
-        phi.template set_evaluation_flags<index>(false, true, false);
+        phi.template set_evaluation_flags<Base::index>(false, true, false);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FECurl
+    class FECurl : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
     {
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
-      static constexpr unsigned int index = idx;
-      double scalar_factor = 1.;
+      typedef FEFunctionBase<FESymmetricGradient<rank, dim, idx>> Base;
+      // inherit constructors
+      using Base::FEFunctionBase;
 
-      FECurl(const FEFunction<rank - 1, dim, idx>&) {}
-
-      auto operator-() const
+      explicit FECurl(const FEFunction<rank - 1, dim, idx>& fefunction)
+        : FECurl(fefunction.name(), fefunction.scalar_factor)
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
-        return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return scalar_factor * phi.template get_curl<index>(q);
+        return Base::scalar_factor * phi.template get_curl<Base::index>(q);
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the FEGradient is vector valued or "
                       "the FEGradient is scalar valued and "
                       "the FiniteElement is vector valued!");
-        phi.template set_evaluation_flags<index>(false, true, false);
+        phi.template set_evaluation_flags<Base::index>(false, true, false);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEGradient
+    class FEGradient : public FEFunctionBase<FEGradient<rank, dim, idx>>
     {
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
-      static constexpr unsigned int index = idx;
-      double scalar_factor = 1.;
-
-      FEGradient(double scalar_factor_) { scalar_factor = scalar_factor_; }
+      typedef FEFunctionBase<FEGradient<rank, dim, idx>> Base;
+      // inherit constructors
+      using Base::FEFunctionBase;
 
       explicit FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
+        : FEGradient(fefunction.name(), fefunction.scalar_factor)
       {
-        scalar_factor = fefunction.scalar_factor;
-      }
-
-      auto operator-() const
-      {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
-        std::cout << "scalar_factor old and new" << scalar_factor << " "
-                  << newfunction.scalar_factor << std::endl;
-        return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return scalar_factor * phi.template get_gradient<index>(q);
+        return Base::scalar_factor * phi.template get_gradient<Base::index>(q);
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the FEGradient is vector valued or "
                       "the FEGradient is scalar valued and "
                       "the FiniteElement is vector valued!");
-        phi.template set_evaluation_flags<index>(false, true, false);
+        phi.template set_evaluation_flags<Base::index>(false, true, false);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FELaplacian
+    class FELaplacian : public FEFunctionBase<FELaplacian<rank, dim, idx>>
     {
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
-      static constexpr unsigned int index = idx;
-      double scalar_factor = 1.;
+      typedef FEFunctionBase<FELaplacian<rank, dim, idx>> Base;
+      // inherit constructors
+      using Base::FEFunctionBase;
 
-      FELaplacian() = default;
-
-      auto operator-() const
+      FELaplacian(const FEGradient<rank + 1, dim, idx>& fe_function)
+        : FELaplacian(fe_function.name(), fe_function.scalar_factor)
       {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
-        return newfunction;
       }
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return scalar_factor * phi.template get_laplacian<index>(q);
+        return Base::scalar_factor * phi.template get_laplacian<Base::index>(q);
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 2),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 2),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the FEHessian is vector valued or "
                       "the FEHessian is scalar valued and "
                       "the FiniteElement is vector valued!");
-        phi.template set_evaluation_flags<index>(false, false, true);
+        phi.template set_evaluation_flags<Base::index>(false, false, true);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEDiagonalHessian
+    class FEDiagonalHessian : public FEFunctionBase<FEDiagonalHessian<rank, dim, idx>>
     {
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
-      static constexpr unsigned int index = idx;
-      double scalar_factor = 1.;
-
-      FEDiagonalHessian() = default;
-
-      auto operator-() const
-      {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
-        return newfunction;
-      }
+      typedef FEFunctionBase<FEDiagonalHessian<rank, dim, idx>> Base;
+      // inherit constructors
+      using Base::FEFunctionBase;
 
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return scalar_factor * phi.template get_hessian_diagonal<index>(q);
+        return Base::scalar_factor * phi.template get_hessian_diagonal<Base::index>(q);
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 2),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 2),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the FEHessian is vector valued or "
                       "the FEHessian is scalar valued and "
                       "the FiniteElement is vector valued!");
-        phi.template set_evaluation_flags<index>(false, false, true);
+        phi.template set_evaluation_flags<Base::index>(false, false, true);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEHessian
+    class FEHessian : public FEFunctionBase<FEHessian<rank, dim, idx>>
     {
-      const FEFunction<rank - 2, dim, idx>& base;
-
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
-      static constexpr unsigned int index = idx;
-      double scalar_factor = 1.;
+      typedef FEFunctionBase<FEHessian<rank, dim, idx>> Base;
+      // inherit constructors
+      using Base::FEFunctionBase;
 
       explicit FEHessian(const FEGradient<rank - 1, dim, idx>&) {}
 
-      auto operator-() const
-      {
-        const typename std::remove_reference<decltype(*this)>::type newfunction(-scalar_factor);
-        return newfunction;
-      }
-
       template <class FEDatas>
       auto value(const FEDatas& phi, unsigned int q) const
       {
-        return scalar_factor * phi.template get_hessian<index>(q);
+        return Base::scalar_factor * phi.template get_hessian<index>(q);
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 2),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 2),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the FEHessian is vector valued or "
                       "the FEHessian is scalar valued and "
                       "the FiniteElement is vector valued!");
-        phi.template set_evaluation_flags<index>(false, false, true);
+        phi.template set_evaluation_flags<Base::index>(false, false, true);
       }
     };
 
@@ -866,9 +858,9 @@ namespace dealii
 
     template <int rank, int dim, unsigned int idx>
     FEDivergence<rank - 1, dim, idx>
-    div(const FEFunction<rank, dim, idx>& /*f*/)
+    div(const FEFunction<rank, dim, idx>& f)
     {
-      return FEDivergence<rank - 1, dim, idx>();
+      return FEDivergence<rank - 1, dim, idx>(f);
     }
 
     template <int rank, int dim, unsigned int idx>
@@ -880,9 +872,9 @@ namespace dealii
 
     template <int rank, int dim, unsigned int idx>
     FELaplacian<rank - 1, dim, idx>
-    div(const FEGradient<rank, dim, idx>&)
+    div(const FEGradient<rank, dim, idx>& f)
     {
-      return FELaplacian<rank - 1, dim, idx>();
+      return FELaplacian<rank - 1, dim, idx>(f);
     }
 
     template <typename Number, class A>

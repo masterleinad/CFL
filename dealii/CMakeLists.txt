@@ -31,6 +31,7 @@ ENDIF()
 
 IF(PVS-Analysis)
   INCLUDE(../PVS-Studio.cmake)
+  SET(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 ENDIF()
 FOREACH(ccfile ${sources})
   GET_FILENAME_COMPONENT(file ${ccfile} NAME_WE)
