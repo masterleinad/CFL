@@ -3,6 +3,8 @@
 
 #include <cfl/dealii_matrixfree.h>
 #include <cfl/traits.h>
+#include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/matrix_free.h>
 
 template <int fe_degree, int n_components, int dim, unsigned int fe_no, unsigned int max_fe_degree,
           typename Number = double>
@@ -16,11 +18,11 @@ public:
   static constexpr unsigned int fe_number = fe_no;
   static constexpr unsigned int max_degree = max_fe_degree;
 
-  explicit FEData(const FiniteElement<dim>& fe)
+  explicit FEData(const dealii::FiniteElement<dim>& fe)
   {
     (void)fe;
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
-    Assert(fe.degree == fe_degree, ExcIndexRange(fe.degree, fe_degree, fe_degree));
+    Assert(fe.degree == fe_degree, dealii::ExcIndexRange(fe.degree, fe_degree, fe_degree));
     AssertDimension(fe.n_components(), n_components);
   }
 };
@@ -98,7 +100,7 @@ public:
     , initialized(false)
   {
     (void)fe_datas;
-    Assert(!fe_datas.initialized, ExcNotImplemented());
+    Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
   }
 
   template <unsigned int fe_number_extern>
@@ -125,7 +127,7 @@ public:
 #ifdef DEBUG_OUTPUT
     std::cout << "Reinit FEDatas " << fe_number << std::endl;
 #endif
-    Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+    Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
     fe_evaluation->reinit(cell);
   }
 
@@ -136,7 +138,7 @@ public:
 #ifdef DEBUG_OUTPUT
     std::cout << "Read DoF values " << fe_number << std::endl;
 #endif
-    Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+    Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
     if
       constexpr(CFL::Traits::is_block_vector<VectorType>::value)
         fe_evaluation->read_dof_values(vector.block(fe_number));
@@ -178,7 +180,7 @@ public:
 #ifdef DEBUG_OUTPUT
       std::cout << "Distribute DoF values " << fe_number << std::endl;
 #endif
-      Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+      Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
       if
         constexpr(CFL::Traits::is_block_vector<VectorType>::value)
           fe_evaluation->distribute_local_to_global(vector.block(fe_number));
@@ -189,7 +191,7 @@ public:
 
   template <int dim, typename OtherNumber>
   void
-  initialize(const MatrixFree<dim, OtherNumber>& mf)
+  initialize(const dealii::MatrixFree<dim, OtherNumber>& mf)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Initialize FEDatas " << fe_number << std::endl;
@@ -207,7 +209,7 @@ public:
     std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
               << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
-    Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+    Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
     fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
   }
 
@@ -440,7 +442,7 @@ public:
 
   template <int dim, typename OtherNumber>
   auto
-  initialize(const MatrixFree<dim, OtherNumber>& mf)
+  initialize(const dealii::MatrixFree<dim, OtherNumber>& mf)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Initialize FEDatas " << fe_number << std::endl;
@@ -460,7 +462,7 @@ public:
 #ifdef DEBUG_OUTPUT
     std::cout << "Reinit FEDatas " << fe_number << std::endl;
 #endif
-    Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+    Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
     fe_evaluation->reinit(cell);
     FEDatas<Types...>::reinit(cell);
   }
@@ -475,14 +477,14 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "Read DoF values " << fe_number << std::endl;
 #endif
-        Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+        Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
         fe_evaluation->read_dof_values(vector.block(fe_number));
         FEDatas<Types...>::read_dof_values(vector);
       }
     else
     {
       // TODO something tries to instantiate this even for valid code. Find out who!
-      AssertThrow(false, ExcNotImplemented());
+      AssertThrow(false, dealii::ExcNotImplemented());
       /*static_assert(CFL::Traits::is_block_vector<VectorType>::value,
                     "It only makes sense to have multiple FEData objects if "
                     "you provide a block vector.");*/
@@ -501,7 +503,7 @@ public:
 #ifdef DEBUG_OUTPUT
           std::cout << "Distribute DoF values " << fe_number << std::endl;
 #endif
-          Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+          Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
           fe_evaluation->distribute_local_to_global(vector.block(fe_number));
         }
         FEDatas<Types...>::distribute_local_to_global(vector);
@@ -509,7 +511,7 @@ public:
     else
     {
       // TODO something tries to instantiate this even for valid code. Find out who!
-      AssertThrow(false, ExcNotImplemented());
+      AssertThrow(false, dealii::ExcNotImplemented());
       /*static_assert(CFL::Traits::is_block_vector<VectorType>::value,
                     "It only makes sense to have multiple FEData objects if "
                     "you provide a block vector.");*/
@@ -523,7 +525,7 @@ public:
     std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
               << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
-    Assert(fe_evaluation.get() != nullptr, ExcInternalError());
+    Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
     fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
     FEDatas<Types...>::evaluate();
   }
@@ -822,7 +824,7 @@ public:
     , initialized(false)
   {
     (void)fe_datas;
-    Assert(!fe_datas.initialized, ExcNotImplemented());
+    Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
   }
 
 private:
