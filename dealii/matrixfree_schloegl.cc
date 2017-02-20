@@ -21,47 +21,47 @@
  * 2009-2012, updated to MPI version with parallel vectors in 2016
  */
 
-#include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/logstream.h>
+#include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/timer.h>
 
 #include <deal.II/lac/full_matrix.h>
-#include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/la_parallel_vector.h>
 #include <deal.II/lac/precondition.h>
+#include <deal.II/lac/solver_cg.h>
 
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_system.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/grid/tria_accessor.h>
-#include <deal.II/grid/tria_iterator.h>
 #include <deal.II/grid/tria_boundary_lib.h>
-#include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/tria_iterator.h>
 
-#include <deal.II/multigrid/multigrid.h>
-#include <deal.II/multigrid/mg_transfer_matrix_free.h>
-#include <deal.II/multigrid/mg_tools.h>
 #include <deal.II/multigrid/mg_coarse.h>
-#include <deal.II/multigrid/mg_smoother.h>
 #include <deal.II/multigrid/mg_matrix.h>
+#include <deal.II/multigrid/mg_smoother.h>
+#include <deal.II/multigrid/mg_tools.h>
+#include <deal.II/multigrid/mg_transfer_matrix_free.h>
+#include <deal.II/multigrid/multigrid.h>
 
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/vector_tools.h>
 
-#include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/matrix_free.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
-#include <dealii/matrix_free_integrator.h>
-#include <dealii/fe_data.h>
 #include <cfl/dealii_matrixfree.h>
 #include <cfl/forms.h>
+#include <dealii/fe_data.h>
+#include <dealii/matrix_free_integrator.h>
 
 constexpr unsigned int degree_finite_element = 3;
 constexpr unsigned int dimension = 2;
@@ -133,8 +133,8 @@ template <int dim, class FEDatasSystem, class FEDatasLevel, class FormSystem, cl
 class LaplaceProblem
 {
 public:
-  LaplaceProblem(FEDatasSystem& mf_cfl_data_system_, FEDatasLevel& mf_cfl_data_level_,
-                 FormSystem& form_system_, FormRHS& form_rhs_);
+  LaplaceProblem(const FEDatasSystem& mf_cfl_data_system_, const FEDatasLevel& mf_cfl_data_level_,
+                 const FormSystem& form_system_, const FormRHS& form_rhs_);
   void run();
 
 private:
@@ -143,10 +143,10 @@ private:
   double solve();
   void output_results(const unsigned int cycle) const;
 
-  FEDatasSystem& mf_cfl_data_system;
-  FEDatasLevel& mf_cfl_data_level;
-  FormSystem& form_system;
-  FormRHS& form_rhs;
+  const FEDatasSystem& mf_cfl_data_system;
+  const FEDatasLevel& mf_cfl_data_level;
+  const FormSystem& form_system;
+  const FormRHS& form_rhs;
 
 #ifdef DEAL_II_WITH_P4EST
   parallel::distributed::Triangulation<dim> triangulation;
@@ -180,8 +180,8 @@ private:
 
 template <int dim, class FEDatasSystem, class FEDatasLevel, class FormSystem, class FormRHS>
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::LaplaceProblem(
-  FEDatasSystem& mf_cfl_data_system_, FEDatasLevel& mf_cfl_data_level_, FormSystem& form_system_,
-  FormRHS& form_rhs_)
+  const FEDatasSystem& mf_cfl_data_system_, const FEDatasLevel& mf_cfl_data_level_,
+  const FormSystem& form_system_, const FormRHS& form_rhs_)
   : mf_cfl_data_system(mf_cfl_data_system_)
   , mf_cfl_data_level(mf_cfl_data_level_)
   , form_system(form_system_)
@@ -397,16 +397,16 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::assemble_
       }
     }
     /*    local_rhs.print(std::cout);*/
-    constraints[0].distribute_local_to_global(local_rhs, global_dof_idx, system_rhs.block(0));
+    constraints[0].distribute_local_to_global(local_rhs, global_dof_idx, system_rhs_new.block(0));
   }
-  system_rhs.compress(VectorOperation::add);
+  system_rhs_new.compress(VectorOperation::add);
 
   /*  std::cout << "rhs: \n";
     system_rhs.block(0).print(std::cout);*/
-  Assert(system_rhs.block(1).l2_norm() < 1e-10, ExcInternalError());
+  Assert(system_rhs_new.block(1).l2_norm() < 1e-10, ExcInternalError());
 
   solution.block(1) = solution.block(0);
-  rhs_operator.vmult(system_rhs_new, solution);
+  rhs_operator.vmult(system_rhs, solution);
 
   /*  system_rhs.print(std::cout);
     system_rhs_new.print(std::cout);*/
@@ -508,7 +508,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
   cg.solve(system_matrix, solution_update, system_rhs, PreconditionIdentity());
 
   constraints[0].distribute(solution_update.block(0));
-  const double b = .05;
+  const double b = .2;
   solution_update *= b;
   solution += solution_update;
   std::cout << "update: " << solution_update.l2_norm() << std::endl;
@@ -611,17 +611,18 @@ main(int argc, char* argv[])
     CFL::dealii::MatrixFree::FEFunction<0, dimension, 1> u("u");
     auto Du = grad(u);
 
-    auto f1 = CFL::form(.01 * De, Dv);
+    auto f1 = CFL::form(De, Dv);
     auto f2 = CFL::form(3 * u * u * e - alpha * e, v);
     auto f = f1 + f2;
 
-    auto rhs = CFL::form(-.01 * Du, Dv) + CFL::form(-u * u * u + alpha * u, v);
+    auto rhs = CFL::form(-Du, Dv) + CFL::form(-u * u * u + alpha * u, v);
 
     LaplaceProblem<dimension,
                    decltype(fe_datas_system),
                    decltype(fe_datas_level),
                    decltype(f),
-                   decltype(rhs)> laplace_problem(fe_datas_system, fe_datas_level, f, rhs);
+                   decltype(rhs)>
+      laplace_problem(fe_datas_system, fe_datas_level, f, rhs);
     laplace_problem.run();
   }
   catch (std::exception& exc)

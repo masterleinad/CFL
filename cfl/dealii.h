@@ -4,11 +4,11 @@
 #include <cfl/forms.h>
 #include <cfl/traits.h>
 
+#include <deal.II/meshworker/dof_info.h>
+#include <deal.II/meshworker/integration_info.h>
 #include <deal.II/meshworker/loop.h>
 #include <deal.II/meshworker/output.h>
 #include <deal.II/meshworker/simple.h>
-#include <deal.II/meshworker/dof_info.h>
-#include <deal.II/meshworker/integration_info.h>
 
 // This is an ugly workaround to be able to use AssertIndexRange
 // because we are always in the wrong namespace.

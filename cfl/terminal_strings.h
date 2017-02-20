@@ -4,13 +4,14 @@
 #include <array>
 #include <string>
 
-#include <cfl/traits.h>
 #include <cfl/sums.h>
+#include <cfl/traits.h>
 
 namespace CFL
 {
 template <typename... Components>
-std::string compose_indices(Components...)
+std::string
+compose_indices(Components...)
 {
   return std::string();
 }
@@ -63,8 +64,8 @@ public:
    * throw an error message.
    */
   template <typename... Components>
-  typename std::enable_if<sizeof...(Components) == TensorTraits::rank, std::string>::type latex(
-    Components... comp) const
+  typename std::enable_if<sizeof...(Components) == TensorTraits::rank, std::string>::type
+  latex(Components... comp) const
   {
     std::string result = value;
     if (rank > 0)

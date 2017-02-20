@@ -21,46 +21,46 @@
  * 2009-2012, updated to MPI version with parallel vectors in 2016
  */
 
-#include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/function.h>
 #include <deal.II/base/logstream.h>
+#include <deal.II/base/quadrature_lib.h>
 #include <deal.II/base/timer.h>
 
 #include <deal.II/lac/full_matrix.h>
-#include <deal.II/lac/solver_cg.h>
 #include <deal.II/lac/la_parallel_vector.h>
 #include <deal.II/lac/precondition.h>
+#include <deal.II/lac/solver_cg.h>
 
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_values.h>
 
+#include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/grid/tria_accessor.h>
-#include <deal.II/grid/tria_iterator.h>
 #include <deal.II/grid/tria_boundary_lib.h>
-#include <deal.II/grid/grid_generator.h>
+#include <deal.II/grid/tria_iterator.h>
 
-#include <deal.II/multigrid/multigrid.h>
-#include <deal.II/multigrid/mg_transfer_matrix_free.h>
-#include <deal.II/multigrid/mg_tools.h>
 #include <deal.II/multigrid/mg_coarse.h>
-#include <deal.II/multigrid/mg_smoother.h>
 #include <deal.II/multigrid/mg_matrix.h>
+#include <deal.II/multigrid/mg_smoother.h>
+#include <deal.II/multigrid/mg_tools.h>
+#include <deal.II/multigrid/mg_transfer_matrix_free.h>
+#include <deal.II/multigrid/multigrid.h>
 
 #include <deal.II/numerics/data_out.h>
 #include <deal.II/numerics/vector_tools.h>
 
-#include <deal.II/matrix_free/matrix_free.h>
 #include <deal.II/matrix_free/fe_evaluation.h>
+#include <deal.II/matrix_free/matrix_free.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
-#include <dealii/matrix_free_integrator.h>
-#include <dealii/fe_data.h>
 #include <cfl/dealii_matrixfree.h>
 #include <cfl/forms.h>
+#include <dealii/fe_data.h>
+#include <dealii/matrix_free_integrator.h>
 
 const unsigned int degree_finite_element = 2;
 const unsigned int dimension = 3;
@@ -407,7 +407,8 @@ main(int argc, char* argv[])
     LaplaceProblem<dimension,
                    decltype(fe_datas_system),
                    decltype(fe_datas_level),
-                   decltype(f_system)> laplace_problem(fe_datas_system, fe_datas_level, f_system);
+                   decltype(f_system)>
+      laplace_problem(fe_datas_system, fe_datas_level, f_system);
     laplace_problem.run();
   }
   catch (std::exception& exc)

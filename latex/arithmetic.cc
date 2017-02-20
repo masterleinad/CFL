@@ -22,7 +22,8 @@ print_form(const T& t)
 }
 
 template <class A, class B>
-auto make_form(const A& a, const B& b)
+auto
+make_form(const A& a, const B& b)
 {
   return Form<A, B>(a, b);
 }

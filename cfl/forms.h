@@ -12,7 +12,8 @@ namespace CFL
 template <int rank, class Test, class Expr>
 struct form_latex_aux
 {
-  std::string operator()(const Test& test, const Expr& expr)
+  std::string
+  operator()(const Test& test, const Expr& expr)
   {
     return std::string("Not implemented for rank ") + std::to_string(rank);
   }
@@ -21,7 +22,8 @@ struct form_latex_aux
 template <class Test, class Expr>
 struct form_latex_aux<0, Test, Expr>
 {
-  std::string operator()(const Test& test, const Expr& expr)
+  std::string
+  operator()(const Test& test, const Expr& expr)
   {
     return "\\left(" + expr.latex() + "," + test.latex() + "\\right)";
   }
@@ -30,7 +32,8 @@ struct form_latex_aux<0, Test, Expr>
 template <class Test, class Expr>
 struct form_latex_aux<1, Test, Expr>
 {
-  std::string operator()(const Test& test, const Expr& expr)
+  std::string
+  operator()(const Test& test, const Expr& expr)
   {
     std::string output;
     for (unsigned int i = 0; i < Test::TensorTraits::dim; ++i)
@@ -46,7 +49,8 @@ struct form_latex_aux<1, Test, Expr>
 template <class Test, class Expr>
 struct form_latex_aux<2, Test, Expr>
 {
-  std::string operator()(const Test& test, const Expr& expr)
+  std::string
+  operator()(const Test& test, const Expr& expr)
   {
     std::string output;
     for (unsigned int i = 0; i < Test::TensorTraits::dim; ++i)
@@ -63,7 +67,8 @@ struct form_latex_aux<2, Test, Expr>
 template <int rank, class Test, class Expr>
 struct form_evaluate_aux
 {
-  double operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
+  double
+  operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
   {
     static_assert(rank < 2, "Not implemented for this rank");
     return 0.;
@@ -73,7 +78,8 @@ struct form_evaluate_aux
 template <class Test, class Expr>
 struct form_evaluate_aux<0, Test, Expr>
 {
-  double operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
+  double
+  operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
   {
     return test.evaluate(k, i) * expr.evaluate(k);
   }
@@ -82,7 +88,8 @@ struct form_evaluate_aux<0, Test, Expr>
 template <class Test, class Expr>
 struct form_evaluate_aux<1, Test, Expr>
 {
-  double operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
+  double
+  operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
   {
     double sum = 0.;
     for (unsigned int d = 0; d < Test::TensorTraits::dim; ++d)
@@ -169,7 +176,8 @@ public:
   }
 
   template <class FEEvaluation>
-  auto value(FEEvaluation& phi, unsigned int q) const
+  auto
+  value(FEEvaluation& phi, unsigned int q) const
   {
     return expr.value(phi, q);
   }
@@ -182,20 +190,22 @@ public:
   }
 
   template <class TestNew, class ExprNew>
-  Forms<Form<Test, Expr>, Form<TestNew, ExprNew>> operator+(
-    const Form<TestNew, ExprNew>& new_form) const
+  Forms<Form<Test, Expr>, Form<TestNew, ExprNew>>
+  operator+(const Form<TestNew, ExprNew>& new_form) const
   {
     std::cout << "operator+1" << std::endl;
     return Forms<Form<Test, Expr>, Form<TestNew, ExprNew>>(*this, new_form);
   }
 
   template <class... Types>
-  auto operator+(const Forms<Types...>& old_form) const
+  auto
+  operator+(const Forms<Types...>& old_form) const
   {
     return old_form + *this;
   }
 
-  Form<Test, Expr, number> operator-() const
+  Form<Test, Expr, number>
+  operator-() const
   {
     const typename std::remove_reference<decltype(*this)>::type newform(test, -expr);
     return newform;
@@ -339,7 +349,8 @@ public:
   }
 
   template <class Test, class Expr>
-  Forms<Form<Test, Expr>, FormType, Types...> operator+(const Form<Test, Expr>& new_form) const
+  Forms<Form<Test, Expr>, FormType, Types...>
+  operator+(const Form<Test, Expr>& new_form) const
   {
     std::cout << "operator+2" << std::endl;
     return Forms<Form<Test, Expr>, FormType, Types...>(new_form, *this);

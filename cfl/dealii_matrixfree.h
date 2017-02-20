@@ -470,14 +470,8 @@ namespace dealii
         return Derived<rank, dim, idx>(data_name, scalar_factor * scalar_factor_);
       }
 
-      template <typename Number>
-      std::enable_if_t<std::is_arithmetic_v<Number>>
-      multiply_by_scalar(const Number scalar)
-      {
-        scalar_factor *= scalar;
-      }
-
-      Derived<rank, dim, idx> operator-() const
+      Derived<rank, dim, idx>
+      operator-() const
       {
         const Derived<rank, dim, idx> newfunction(-scalar_factor);
         return newfunction;
@@ -493,7 +487,8 @@ namespace dealii
       using Base::FEFunctionBase;
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         return Base::scalar_factor * phi.template get_value<Base::index>(q);
       }
@@ -526,7 +521,8 @@ namespace dealii
       }
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         return Base::scalar_factor * phi.template get_divergence<Base::index>(q);
       }
@@ -550,7 +546,8 @@ namespace dealii
 
     public:
       typedef Traits::Tensor<FEFunctionType::TensorTraits::rank + 2,
-                             FEFunctionType::TensorTraits::dim> TensorTraits;
+                             FEFunctionType::TensorTraits::dim>
+        TensorTraits;
       static constexpr unsigned int index = FEFunctionType::idx;
 
       FELiftDivergence(const FEFunctionType& fe_function)
@@ -559,7 +556,8 @@ namespace dealii
       }
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         auto value = fefunction.value(phi, q);
         ::dealii::Tensor<TensorTraits::rank, TensorTraits::dim, decltype(value)> lifted_tensor;
@@ -568,7 +566,11 @@ namespace dealii
         return lifted_tensor;
       }
 
-      auto operator-() const { return FELiftDivergence(-fefunction); }
+      auto
+      operator-() const
+      {
+        return FELiftDivergence(-fefunction);
+      }
 
       template <typename Number>
       typename std::enable_if_t<std::is_arithmetic_v<Number>, FELiftDivergence<FEFunctionType>>
@@ -595,7 +597,8 @@ namespace dealii
       using Base::FEFunctionBase;
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         return Base::scalar_factor * phi.template get_symmetric_gradient<Base::index>(q);
       }
@@ -628,7 +631,8 @@ namespace dealii
       }
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         return Base::scalar_factor * phi.template get_curl<Base::index>(q);
       }
@@ -661,7 +665,8 @@ namespace dealii
       }
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         return Base::scalar_factor * phi.template get_gradient<Base::index>(q);
       }
@@ -694,7 +699,8 @@ namespace dealii
       }
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         return Base::scalar_factor * phi.template get_laplacian<Base::index>(q);
       }
@@ -722,7 +728,8 @@ namespace dealii
       using Base::FEFunctionBase;
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         return Base::scalar_factor * phi.template get_hessian_diagonal<Base::index>(q);
       }
@@ -752,7 +759,8 @@ namespace dealii
       explicit FEHessian(const FEGradient<rank - 1, dim, idx>&) {}
 
       template <class FEDatas>
-      auto value(const FEDatas& phi, unsigned int q) const
+      auto
+      value(const FEDatas& phi, unsigned int q) const
       {
         return Base::scalar_factor * phi.template get_hessian<index>(q);
       }
@@ -830,7 +838,8 @@ namespace dealii
       }
 
       template <class NewFEFunction>
-      SumFEFunctions<NewFEFunction, FEFunction> operator+(const NewFEFunction& new_summand) const
+      SumFEFunctions<NewFEFunction, FEFunction>
+      operator+(const NewFEFunction& new_summand) const
       {
         static_assert(Traits::is_fe_function_set<NewFEFunction>::value,
                       "Only FEFunction objects can be added!");
@@ -842,13 +851,15 @@ namespace dealii
       }
 
       template <class NewFEFunction>
-      SumFEFunctions<NewFEFunction, FEFunction> operator-(const NewFEFunction& new_summand) const
+      SumFEFunctions<NewFEFunction, FEFunction>
+      operator-(const NewFEFunction& new_summand) const
       {
         return operator+(-new_summand);
       }
 
       template <class FEEvaluation>
-      auto value(FEEvaluation& phi, unsigned int q) const
+      auto
+      value(FEEvaluation& phi, unsigned int q) const
       {
         return summand.value(phi, q);
       }
@@ -878,7 +889,8 @@ namespace dealii
         TensorTraits;
 
       template <class FEEvaluation>
-      auto value(const FEEvaluation& phi, unsigned int q) const
+      auto
+      value(const FEEvaluation& phi, unsigned int q) const
       {
         const auto own_value = summand.value(phi, q);
         const auto other_value = SumFEFunctions<Types...>::value(phi, q);
@@ -1054,7 +1066,8 @@ namespace dealii
       }
 
       template <class FEEvaluation>
-      auto value(FEEvaluation& phi, unsigned int q) const
+      auto
+      value(FEEvaluation& phi, unsigned int q) const
       {
         return factor.value(phi, q);
       }
@@ -1084,7 +1097,8 @@ namespace dealii
         TensorTraits;
 
       template <class FEEvaluation>
-      auto value(const FEEvaluation& phi, unsigned int q) const
+      auto
+      value(const FEEvaluation& phi, unsigned int q) const
       {
         const auto own_value = factor.value(phi, q);
         const auto other_value = ProductFEFunctions<Types...>::value(phi, q);

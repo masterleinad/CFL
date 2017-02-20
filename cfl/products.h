@@ -29,7 +29,8 @@ public:
   }
 
   template <typename... Comp>
-  std::string latex(Comp... comp) const
+  std::string
+  latex(Comp... comp) const
   {
     return a.latex() + " " + b.latex(comp...);
   }

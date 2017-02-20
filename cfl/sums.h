@@ -30,7 +30,8 @@ public:
   }
 
   template <typename... Comp>
-  std::string latex(Comp... comp) const
+  std::string
+  latex(Comp... comp) const
   {
     std::string output = a.latex(comp...) + "+" + b.latex(comp...);
     return output;
@@ -42,7 +43,8 @@ public:
 
 template <class A, class B>
 template <class FEEvaluation>
-auto Sum<A, B>::value(const FEEvaluation& phi, unsigned int q) const
+auto
+Sum<A, B>::value(const FEEvaluation& phi, unsigned int q) const
 {
   return a.value(phi, q) + b.value(phi, q);
 }

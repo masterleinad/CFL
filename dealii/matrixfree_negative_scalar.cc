@@ -9,9 +9,9 @@
 
 #include <deal.II/base/multithread_info.h>
 
-#include <deal.II/lac/vector.h>
-#include <deal.II/lac/la_parallel_block_vector.h>
 #include <deal.II/lac/block_sparse_matrix.h>
+#include <deal.II/lac/la_parallel_block_vector.h>
+#include <deal.II/lac/vector.h>
 
 #include <cfl/cfl.h>
 #include <cfl/dealii_matrixfree.h>

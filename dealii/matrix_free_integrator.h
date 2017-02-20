@@ -3,8 +3,8 @@
 
 //#include <deal.II/matrix_free/operators.h>
 
-#include <deal.II/lac/la_parallel_block_vector.h>
 #include <cfl/static_for.h>
+#include <deal.II/lac/la_parallel_block_vector.h>
 #include <dealii/operators.h>
 
 using namespace dealii;
@@ -91,7 +91,7 @@ public:
     }
   }
 
-  virtual void
+  void
   compute_diagonal() override
   {
     if

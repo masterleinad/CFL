@@ -14,19 +14,19 @@
 
 
 #include <cfl/forms.h>
-#include <cfl/traits.h>
 #include <cfl/static_for.h>
+#include <cfl/traits.h>
 
 #include <string>*/
 
+#include <deal.II/fe/mapping_q.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/manifold_lib.h>
-#include <deal.II/fe/mapping_q.h>
 
 #include <cfl/dealii_matrixfree.h>
 
-#include <dealii/matrix_free_integrator.h>
 #include <dealii/fe_data.h>
+#include <dealii/matrix_free_integrator.h>
 
 using namespace dealii;
 using namespace CFL::dealii::MatrixFree;
@@ -168,8 +168,9 @@ make_matrix_free_data(unsigned int grid_index, unsigned int refine,
 }
 
 template <int dim, class FEData>
-auto make_matrix_free_data(unsigned int grid_index, unsigned int refine, FiniteElement<dim>& fe,
-                           FEData& fe_data)
+auto
+make_matrix_free_data(unsigned int grid_index, unsigned int refine, FiniteElement<dim>& fe,
+                      FEData& fe_data)
 {
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe);

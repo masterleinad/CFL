@@ -22,14 +22,16 @@ public:
   }
 
   template <typename... Comp>
-  std::string latex(Comp... comp) const
+  std::string
+  latex(Comp... comp) const
   {
     return std::to_string(factor) + " " + t.latex(comp...);
   }
 };
 
 template <typename number, class T>
-auto scale(number factor, const T& t)
+auto
+scale(number factor, const T& t)
 {
   return ConstantScaled<number, T>(factor, t);
 }

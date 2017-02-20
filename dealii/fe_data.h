@@ -1,8 +1,8 @@
 #ifndef FE_DATA_H
 #define FE_DATA_H
 
-#include <cfl/traits.h>
 #include <cfl/dealii_matrixfree.h>
+#include <cfl/traits.h>
 
 template <int fe_degree, int n_components, int dim, unsigned int fe_no, unsigned int max_fe_degree,
           typename Number = double>
@@ -45,7 +45,8 @@ public:
   FEDatas() = delete;
 
   template <class FEData>
-  FEDatas<FEData, Types...> operator, (const FEData&)
+  FEDatas<FEData, Types...>
+  operator,(const FEData&)
   {
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "You need to construct this with a FEData object!");
@@ -109,7 +110,8 @@ public:
   }
 
   template <class NewFEData>
-  FEDatas<NewFEData, FEData> operator, (const NewFEData&)
+  FEDatas<NewFEData, FEData>
+  operator,(const NewFEData&)
   {
     static_assert(CFL::Traits::is_fe_data<NewFEData>::value, "Only FEData objects can be added!");
 
@@ -218,7 +220,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_gradient(unsigned int q) const
+  auto
+  get_gradient(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -228,7 +231,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_symmetric_gradient(unsigned int q) const
+  auto
+  get_symmetric_gradient(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -238,7 +242,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_divergence(unsigned int q) const
+  auto
+  get_divergence(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get divergence FEDatas " << fe_number << " " << q << std::endl;
@@ -248,7 +253,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_laplacian(unsigned int q) const
+  auto
+  get_laplacian(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get laplacian FEDatas " << fe_number << " " << q << std::endl;
@@ -258,7 +264,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_hessian_diagonal(unsigned int q) const
+  auto
+  get_hessian_diagonal(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get hessian_diagonal FEDatas " << fe_number << " " << q << std::endl;
@@ -268,7 +275,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_hessian(unsigned int q) const
+  auto
+  get_hessian(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get hessian FEDatas " << fe_number << " " << q << std::endl;
@@ -278,7 +286,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_value(unsigned int q) const
+  auto
+  get_value(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
@@ -391,7 +400,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto begin_dof_values()
+  auto
+  begin_dof_values()
   {
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->begin_dof_values();
@@ -429,7 +439,8 @@ public:
   }
 
   template <int dim, typename OtherNumber>
-  auto initialize(const MatrixFree<dim, OtherNumber>& mf)
+  auto
+  initialize(const MatrixFree<dim, OtherNumber>& mf)
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "Initialize FEDatas " << fe_number << std::endl;
@@ -577,7 +588,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_gradient(unsigned int q) const
+  auto
+  get_gradient(unsigned int q) const
   {
     if
       constexpr(fe_number == fe_number_extern)
@@ -592,7 +604,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_symmetric_gradient(unsigned int q) const
+  auto
+  get_symmetric_gradient(unsigned int q) const
   {
     if
       constexpr(fe_number == fe_number_extern)
@@ -607,7 +620,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_divergence(unsigned int q) const
+  auto
+  get_divergence(unsigned int q) const
   {
     if
       constexpr(fe_number == fe_number_extern)
@@ -622,7 +636,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_laplacian(unsigned int q) const
+  auto
+  get_laplacian(unsigned int q) const
   {
     if
       constexpr(fe_number == fe_number_extern)
@@ -637,7 +652,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_hessian_diagonal(unsigned int q) const
+  auto
+  get_hessian_diagonal(unsigned int q) const
   {
     if
       constexpr(fe_number == fe_number_extern)
@@ -652,7 +668,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_hessian(unsigned int q) const
+  auto
+  get_hessian(unsigned int q) const
   {
     if
       constexpr(fe_number == fe_number_extern)
@@ -667,7 +684,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto get_value(unsigned int q) const
+  auto
+  get_value(unsigned int q) const
   {
     if
       constexpr(fe_number == fe_number_extern)
@@ -770,7 +788,8 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto begin_dof_values()
+  auto
+  begin_dof_values()
   {
     if
       constexpr(fe_number == fe_number_extern) return fe_evaluation->begin_dof_values();
@@ -818,7 +837,7 @@ private:
 
 template <class FEData1, class FEData2>
 std::enable_if_t<CFL::Traits::is_fe_data<FEData1>::value, FEDatas<FEData1, FEData2>>
-operator, (const FEData1&, const FEData2&)
+operator,(const FEData1&, const FEData2&)
 {
   static_assert(CFL::Traits::is_fe_data<FEData2>::value, "Only FEData objects can be added!");
   return FEDatas<FEData1, FEData2>();

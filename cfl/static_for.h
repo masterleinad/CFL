@@ -5,7 +5,8 @@ template <int First, int Last, template <int> class FunctorT>
 struct static_for_new
 {
   // iterator count as template parameter
-  inline void operator()() const
+  inline void
+  operator()() const
   {
     if (First < Last)
     {
@@ -19,7 +20,10 @@ template <int N, template <int> class FunctorT>
 struct static_for_new<N, N, FunctorT>
 {
   // iterator count as template parameter
-  inline void operator()() const {}
+  inline void
+  operator()() const
+  {
+  }
 };
 
 template <int First, int Last>
@@ -27,7 +31,8 @@ struct static_for_old
 {
   // iterator count as regular parameter
   template <typename Fn>
-  inline void operator()(Fn const& fn) const
+  inline void
+  operator()(Fn const& fn) const
   {
     if (First < Last)
     {
@@ -42,7 +47,8 @@ struct static_for_old<N, N>
 {
   // iterator count as regular parameter
   template <typename Fn>
-  inline void operator()(Fn const&) const
+  inline void
+  operator()(Fn const&) const
   {
   }
 };
