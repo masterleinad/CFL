@@ -22,37 +22,12 @@ namespace dealii
    */
   namespace MatrixFree
   {
-    template <int rank, int dim, unsigned int idx>
-    class TestFunction;
-    template <int rank, int dim, unsigned int idx>
-    class TestDivergence;
-    template <int rank, int dim, unsigned int idx>
-    class TestCurl;
-    template <int rank, int dim, unsigned int idx>
-    class TestSymmetricGradient;
-    template <int rank, int dim, unsigned int idx>
-    class TestGradient;
-    template <int rank, int dim, unsigned int idx>
-    class TestHessian;
+    template <class Derived>
+    class TestFunctionBase;
 
     template <class Derived>
     class FEFunctionBase;
-    template <int rank, int dim, unsigned int idx>
-    class FEFunction;
-    template <int rank, int dim, unsigned int idx>
-    class FECurl;
-    template <int rank, int dim, unsigned int idx>
-    class FEDivergence;
-    template <int rank, int dim, unsigned int idx>
-    class FESymmetricGradient;
-    template <int rank, int dim, unsigned int idx>
-    class FEGradient;
-    template <int rank, int dim, unsigned int idx>
-    class FEHessian;
-    template <int rank, int dim, unsigned int idx>
-    class FEDiagonalHessian;
-    template <int rank, int dim, unsigned int idx>
-    class FELaplacian;
+
     template <typename... Types>
     class SumFEFunctions;
     template <typename... Types>
@@ -80,12 +55,6 @@ namespace Traits
   template <int dim, int rank, typename Number>
   struct is_compatible<::dealii::SymmetricTensor<rank, dim, Number>,
                        ::dealii::Tensor<rank, dim, Number>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::TestFunction<rank, dim, idx>>
   {
     static const bool value = true;
   };
@@ -145,68 +114,20 @@ namespace Traits
     static const bool value = true;
   };
 
-  template <int rank, int dim, unsigned int idx>
-  struct is_test_function_set<dealii::MatrixFree::TestFunction<rank, dim, idx>>
+  template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
+  struct is_cfl_object<
+    T<rank, dim, idx>,
+    std::enable_if_t<std::is_base_of_v<dealii::MatrixFree::TestFunctionBase<T<rank, dim, idx>>,
+                                       T<rank, dim, idx>>>>
   {
     static const bool value = true;
   };
 
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::TestDivergence<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_test_function_set<dealii::MatrixFree::TestDivergence<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::TestCurl<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_test_function_set<dealii::MatrixFree::TestCurl<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::TestSymmetricGradient<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_test_function_set<dealii::MatrixFree::TestSymmetricGradient<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::TestGradient<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_test_function_set<dealii::MatrixFree::TestGradient<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_cfl_object<dealii::MatrixFree::TestHessian<rank, dim, idx>>
-  {
-    static const bool value = true;
-  };
-
-  template <int rank, int dim, unsigned int idx>
-  struct is_test_function_set<dealii::MatrixFree::TestHessian<rank, dim, idx>>
+  template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
+  struct is_test_function_set<
+    T<rank, dim, idx>,
+    std::enable_if_t<std::is_base_of_v<dealii::MatrixFree::TestFunctionBase<T<rank, dim, idx>>,
+                                       T<rank, dim, idx>>>>
   {
     static const bool value = true;
   };
@@ -256,145 +177,161 @@ namespace dealii
 {
   namespace MatrixFree
   {
-    template <int rank, int dim, unsigned int idx>
-    class TestFunction
+
+    // CRTP
+    template <class T>
+    class TestFunctionBase
+    {
+    public:
+      // This class should never be constructed
+      TestFunctionBase() = delete;
+    };
+
+    template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
+    class TestFunctionBase<T<rank, dim, idx>>
     {
     public:
       typedef Traits::Tensor<rank, dim> TensorTraits;
 
       static constexpr unsigned int index = idx;
+      static constexpr bool scalar_valued = (TensorTraits::rank > 0);
+    };
+
+    template <int rank, int dim, unsigned int idx>
+    class TestFunction : public TestFunctionBase<TestFunction<rank, dim, idx>>
+    {
+    public:
+      typedef TestFunctionBase<TestFunction<rank, dim, idx>> Base;
       static constexpr bool integrate_value = true;
       static constexpr bool integrate_gradient = false;
-      static constexpr bool scalar_valued = (TensorTraits::rank > 0);
 
       template <class FEEvaluation, typename ValueType>
       static void
       submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 0),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 0),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the TestFunction is vector valued or "
                       "the TestFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit TestFunction " << index << " " << q << std::endl;
+        std::cout << "submit TestFunction " << Base::index << " " << q << std::endl;
 #endif
-        phi.template submit_value<index>(value, q);
+        phi.template submit_value<Base::index>(value, q);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestDivergence
+    class TestDivergence : public TestFunctionBase<TestDivergence<rank, dim, idx>>
     {
     public:
-      static constexpr unsigned int index = idx;
+      typedef TestFunctionBase<TestDivergence<rank, dim, idx>> Base;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
-      typedef Traits::Tensor<rank, dim> TensorTraits;
 
       template <class FEEvaluation, typename ValueType>
       static void
       submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
-        static_assert(FEEvaluation::template rank<index>() > 0,
+        static_assert(FEEvaluation::template rank<Base::index>() > 0,
                       "The proposed FiniteElement has to be "
                       "vector valued for using TestDivergence!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit TestDivergence " << index << " " << q << std::endl;
+        std::cout << "submit TestDivergence " << Base::index << " " << q << std::endl;
 #endif
-        phi.template submit_divergence<index>(value, q);
+        phi.template submit_divergence<Base::index>(value, q);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestSymmetricGradient
+    class TestSymmetricGradient : public TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>
     {
     public:
-      static constexpr unsigned int index = idx;
+      typedef TestFunctionBase<TestSymmetricGradient<rank, dim, idx>> Base;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
-      typedef Traits::Tensor<rank, dim> TensorTraits;
 
       template <class FEEvaluation, typename ValueType>
       static void
       submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
+        static_assert((FEEvaluation::template rank<index>() > 0) == (Base::TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the TestGradient is vector valued or "
                       "the TestGradient is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit SymmetricGradient " << index << " " << q << std::endl;
+        std::cout << "submit SymmetricGradient " << Base::index << " " << q << std::endl;
 #endif
-        phi.template submit_symmetric_gradient<index>(value, q);
+        phi.template submit_symmetric_gradient<Base::index>(value, q);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestCurl
+    class TestCurl : public TestFunctionBase<TestCurl<rank, dim, idx>>
     {
     public:
-      static constexpr unsigned int index = idx;
+      typedef TestFunctionBase<TestCurl<rank, dim, idx>> Base;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
-      typedef Traits::Tensor<rank, dim> TensorTraits;
 
       template <class FEEvaluation, typename ValueType>
       static void
       submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the TestCurl is vector valued or "
                       "the TestCurl is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit TestCurl " << index << " " << q << std::endl;
+        std::cout << "submit TestCurl " << Base::index << " " << q << std::endl;
 #endif
-        phi.template submit_curl<index>(value, q);
+        phi.template submit_curl<Base::index>(value, q);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestGradient
+    class TestGradient : public TestFunctionBase<TestGradient<rank, dim, idx>>
     {
     public:
-      static constexpr unsigned int index = idx;
+      typedef TestFunctionBase<TestGradient<rank, dim, idx>> Base;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
-      typedef Traits::Tensor<rank, dim> TensorTraits;
 
       template <class FEEvaluation, typename ValueType>
       static void
       submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 1),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 1),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the TestGradient is vector valued or "
                       "the TestGradient is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit TestGradient " << index << " " << q << std::endl;
+        std::cout << "submit TestGradient " << Base::index << " " << q << std::endl;
 #endif
-        phi.template submit_gradient<index>(value, q);
+        phi.template submit_gradient<Base::index>(value, q);
       }
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestHessian
+    class TestHessian : public TestFunctionBase<TestHessian<rank, dim, idx>>
     {
     public:
-      static constexpr unsigned int index = idx;
+      typedef TestFunctionBase<TestHessian<rank, dim, idx>> Base;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = false;
-      typedef Traits::Tensor<rank, dim> TensorTraits;
 
       template <class FEEvaluation, typename ValueType>
       static void
       submit(FEEvaluation& /*phi*/, unsigned int /*q*/, const ValueType& /*value*/)
       {
-        static_assert((FEEvaluation::template rank<index>() > 0) == (TensorTraits::rank > 2),
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 2),
                       "Either the proposed FiniteElement is scalar valued "
                       "and the TestHessian is vector valued or "
                       "the TestHessian is scalar valued and "
