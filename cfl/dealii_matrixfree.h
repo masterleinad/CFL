@@ -102,14 +102,14 @@ namespace Traits
 
   template <typename A, typename B>
   struct is_multiplicable<
-    A, B, typename std::enable_if_t<std::is_arithmetic_v<A> && is_fe_function_set<B>::value>>
+    A, B, typename std::enable_if_t<std::is_arithmetic<A>() && is_fe_function_set<B>::value>>
   {
     static const bool value = true;
   };
 
   template <typename A, typename B>
   struct is_multiplicable<
-    A, B, typename std::enable_if_t<is_fe_function_set<A>::value && std::is_arithmetic_v<B>>>
+    A, B, typename std::enable_if_t<is_fe_function_set<A>::value && std::is_arithmetic<B>()>>
   {
     static const bool value = true;
   };
@@ -117,8 +117,8 @@ namespace Traits
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct is_cfl_object<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of_v<dealii::MatrixFree::TestFunctionBase<T<rank, dim, idx>>,
-                                       T<rank, dim, idx>>>>
+    std::enable_if_t<std::is_base_of<dealii::MatrixFree::TestFunctionBase<T<rank, dim, idx>>,
+                                     T<rank, dim, idx>>::value>>
   {
     static const bool value = true;
   };
@@ -126,8 +126,8 @@ namespace Traits
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct is_test_function_set<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of_v<dealii::MatrixFree::TestFunctionBase<T<rank, dim, idx>>,
-                                       T<rank, dim, idx>>>>
+    std::enable_if_t<std::is_base_of<dealii::MatrixFree::TestFunctionBase<T<rank, dim, idx>>,
+                                     T<rank, dim, idx>>::value>>
   {
     static const bool value = true;
   };
@@ -145,17 +145,19 @@ namespace Traits
   };
 
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
-  struct is_cfl_object<T<rank, dim, idx>,
-                       std::enable_if_t<std::is_base_of_v<
-                         dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>, T<rank, dim, idx>>>>
+  struct is_cfl_object<
+    T<rank, dim, idx>,
+    std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>,
+                                     T<rank, dim, idx>>::value>>
   {
     static const bool value = true;
   };
 
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct is_fe_function_set<
-    T<rank, dim, idx>, std::enable_if_t<std::is_base_of_v<
-                         dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>, T<rank, dim, idx>>>>
+    T<rank, dim, idx>,
+    std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>,
+                                     T<rank, dim, idx>>::value>>
   {
     static const bool value = true;
   };
@@ -401,8 +403,8 @@ namespace dealii
       }
 
       template <typename Number>
-      typename std::enable_if_t<std::is_arithmetic_v<Number>, Derived<rank, dim, idx>> operator*(
-        const Number scalar_factor_) const
+      typename std::enable_if_t<std::is_arithmetic<Number>::value, Derived<rank, dim, idx>>
+      operator*(const Number scalar_factor_) const
       {
         return Derived<rank, dim, idx>(data_name, scalar_factor * scalar_factor_);
       }
@@ -421,7 +423,7 @@ namespace dealii
     public:
       typedef FEFunctionBase<FEFunction<rank, dim, idx>> Base;
       // inherit constructors
-      using Base::FEFunctionBase;
+      using Base::Base;
 
       template <class FEDatas>
       auto
@@ -450,7 +452,7 @@ namespace dealii
     public:
       typedef FEFunctionBase<FEDivergence<rank, dim, idx>> Base;
       // inherit constructors
-      using Base::FEFunctionBase;
+      using Base::Base;
 
       FEDivergence(const FEFunction<rank + 1, dim, idx>& fefunction)
         : FEDivergence(fefunction.name(), fefunction.scalar_factor)
@@ -510,7 +512,7 @@ namespace dealii
       }
 
       template <typename Number>
-      typename std::enable_if_t<std::is_arithmetic_v<Number>, FELiftDivergence<FEFunctionType>>
+      typename std::enable_if_t<std::is_arithmetic<Number>::value, FELiftDivergence<FEFunctionType>>
       operator*(const Number scalar_factor_) const
       {
         return FELiftDivergence<FEFunctionType>(
@@ -531,7 +533,7 @@ namespace dealii
     public:
       typedef FEFunctionBase<FESymmetricGradient<rank, dim, idx>> Base;
       // inherit constructors
-      using Base::FEFunctionBase;
+      using Base::Base;
 
       template <class FEDatas>
       auto
@@ -560,7 +562,7 @@ namespace dealii
     public:
       typedef FEFunctionBase<FESymmetricGradient<rank, dim, idx>> Base;
       // inherit constructors
-      using Base::FEFunctionBase;
+      using Base::Base;
 
       explicit FECurl(const FEFunction<rank - 1, dim, idx>& fefunction)
         : FECurl(fefunction.name(), fefunction.scalar_factor)
@@ -594,7 +596,7 @@ namespace dealii
     public:
       typedef FEFunctionBase<FEGradient<rank, dim, idx>> Base;
       // inherit constructors
-      using Base::FEFunctionBase;
+      using Base::Base;
 
       explicit FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
         : FEGradient(fefunction.name(), fefunction.scalar_factor)
@@ -628,7 +630,7 @@ namespace dealii
     public:
       typedef FEFunctionBase<FELaplacian<rank, dim, idx>> Base;
       // inherit constructors
-      using Base::FEFunctionBase;
+      using Base::Base;
 
       FELaplacian(const FEGradient<rank + 1, dim, idx>& fe_function)
         : FELaplacian(fe_function.name(), fe_function.scalar_factor)
@@ -662,7 +664,7 @@ namespace dealii
     public:
       typedef FEFunctionBase<FEDiagonalHessian<rank, dim, idx>> Base;
       // inherit constructors
-      using Base::FEFunctionBase;
+      using Base::Base;
 
       template <class FEDatas>
       auto
@@ -691,7 +693,7 @@ namespace dealii
     public:
       typedef FEFunctionBase<FEHessian<rank, dim, idx>> Base;
       // inherit constructors
-      using Base::FEFunctionBase;
+      using Base::Base;
 
       explicit FEHessian(const FEGradient<rank - 1, dim, idx>&) {}
 
@@ -746,7 +748,7 @@ namespace dealii
 
     template <typename Number, class A>
     typename std::enable_if_t<
-      CFL::Traits::is_fe_function_set<A>::value && std::is_arithmetic_v<Number>, A>
+      CFL::Traits::is_fe_function_set<A>::value && std::is_arithmetic<Number>::value, A>
     operator*(const Number scalar_factor, const A& a)
     {
       return a * scalar_factor;
@@ -1084,7 +1086,7 @@ namespace dealii
       }
 
       template <typename Number>
-      typename std::enable_if<std::is_arithmetic_v<Number>,
+      typename std::enable_if<std::is_arithmetic<Number>::value,
                               ProductFEFunctions<FEFunction, Types...>>::type
       operator*(const Number scalar_factor) const
       {
@@ -1094,7 +1096,7 @@ namespace dealii
       }
 
       template <typename Number>
-      std::enable_if_t<std::is_arithmetic_v<Number>>
+      std::enable_if_t<std::is_arithmetic<Number>::value>
       multiply_by_scalar(const Number scalar)
       {
         factor.scalar_factor *= scalar;

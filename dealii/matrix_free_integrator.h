@@ -49,6 +49,24 @@ public:
   }
 
   void
+  initialize(const MatrixFree<dim, Number>& data,
+             const std::vector<MGConstrainedDoFs>& mg_constrained_dofs, const unsigned int level,
+             const std::shared_ptr<FORM>& form_, std::shared_ptr<FEDatas> fe_datas_)
+  {
+    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data, mg_constrained_dofs, level);
+    initialize(form_, fe_datas_);
+  }
+
+  void
+  initialize(const MatrixFree<dim, Number>& data,
+             const std::vector<MGConstrainedDoFs>& mg_constrained_dofs, const unsigned int level,
+             const FORM& form_, FEDatas fe_datas_)
+  {
+    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data, mg_constrained_dofs, level);
+    initialize(form_, fe_datas_);
+  }
+
+  void
   set_nonlinearities(std::vector<bool> nonlinear_components_,
                      LinearAlgebra::distributed::BlockVector<Number> dst)
   {
@@ -236,7 +254,7 @@ private:
   do_operation_on_cell(FEEvaluation& phi, const unsigned int /*cell*/) const
   {
     phi.evaluate();
-    constexpr unsigned int n_q_points = phi.get_n_q_points();
+    constexpr unsigned int n_q_points = FEEvaluation::get_n_q_points();
     // static_for_old<0, n_q_points>()([&](int q)
     for (unsigned int q = 0; q < n_q_points; ++q)
     {
@@ -251,10 +269,11 @@ private:
   local_apply_cell(const MatrixFree<dim, Number>& data_, VectorType& dst, const VectorType& src,
                    const std::pair<unsigned int, unsigned int>& cell_range) const
   {
-    static_assert(std::is_same_v<VectorType, LinearAlgebra::distributed::Vector<Number>> ||
-                    std::is_same_v<VectorType, LinearAlgebra::distributed::BlockVector<Number>>,
-                  "This is only implemented for LinearAlgebra::distributed::Vector<Number> "
-                  "and LinearAlgebra::distributed::BlockVector<Number> objects!");
+    static_assert(
+      std::is_same<VectorType, LinearAlgebra::distributed::Vector<Number>>::value ||
+        std::is_same<VectorType, LinearAlgebra::distributed::BlockVector<Number>>::value,
+      "This is only implemented for LinearAlgebra::distributed::Vector<Number> "
+      "and LinearAlgebra::distributed::BlockVector<Number> objects!");
     (void)data_;
     Assert(&data_ == &(this->get_matrix_free()), ExcInternalError());
     for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)

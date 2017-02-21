@@ -164,10 +164,10 @@ private:
   typedef MatrixFreeIntegrator<dim, double, FormRHS, FEDatasSystem> RHSOperatorType;
   RHSOperatorType rhs_operator;
 
-  // MGLevelObject<MatrixFree<dim, float>> mg_mf_storage;
-  // typedef MatrixFreeIntegrator<dim, float, Form, FEDatasLevel> LevelMatrixType;
-  // MGLevelObject<LevelMatrixType> mg_matrices;
-  // MGConstrainedDoFs mg_constrained_dofs;
+  MGLevelObject<MatrixFree<dim, float>> mg_mf_storage;
+  typedef MatrixFreeIntegrator<dim, float, FormSystem, FEDatasLevel> LevelMatrixType;
+  MGLevelObject<LevelMatrixType> mg_matrices;
+  std::vector<MGConstrainedDoFs> mg_constrained_dofs;
 
   LinearAlgebra::distributed::BlockVector<double> solution;
   LinearAlgebra::distributed::BlockVector<double> solution_update;
@@ -199,6 +199,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::LaplacePr
   , dof_handler(triangulation)
   , constraints(2)
   , system_matrix()
+  , mg_constrained_dofs(2)
   , solution(2)
   , solution_update(2)
   , system_rhs(2)
@@ -217,10 +218,10 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
 
   system_matrix.clear();
   rhs_operator.clear();
-  // mg_matrices.clear_elements();
+  mg_matrices.clear_elements();
 
   dof_handler.distribute_dofs(fe);
-  // dof_handler.distribute_mg_dofs(fe);
+  dof_handler.distribute_mg_dofs(fe);
 
   pcout << "Number of degrees of freedom: " << dof_handler.n_dofs() << std::endl;
 
@@ -239,7 +240,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   constraints[1].reinit(locally_relevant_dofs);
   constraints[1].close();
 
-  std::cout << "n_constraints: " << constraints[0].n_constraints() << std::endl;
+  pcout << "n_constraints: " << constraints[0].n_constraints() << std::endl;
 
   setup_time += time.wall_time();
   time_details << "Distribute DoFs & B.C.     (CPU/wall) " << time() << "s/" << time.wall_time()
@@ -256,7 +257,6 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
     dh_pointers.push_back(&dof_handler);
     dh_pointers.push_back(&dof_handler);
     std::vector<const ConstraintMatrix*> constraints_pointers;
-    // const ConstraintMatrix &test=constraints[0];
     constraints_pointers.push_back(&(constraints[0]));
     constraints_pointers.push_back(&(constraints[1]));
 
@@ -278,11 +278,10 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   system_matrix.initialize_dof_vector(system_rhs);
   system_matrix.initialize_dof_vector(solution_update);
 
-  //  solution = 100.;
-  /*  std::srand(std::time(0));
-    for (unsigned int i = 0; i < dof_handler.n_dofs(); ++i)
-      solution(i) = ((2. * std::rand()) / RAND_MAX - 1.) * alpha;*/
-  solution = alpha;
+  std::srand(std::time(0));
+  for (unsigned int i = 0; i < dof_handler.n_dofs(); ++i)
+    solution(i) = ((2. * std::rand()) / RAND_MAX - 1.) * alpha;
+  // solution = alpha;
   constraints[0].distribute(solution);
 
   setup_time += time.wall_time();
@@ -290,23 +289,26 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
                << "s" << std::endl;
   time.restart();
 
-  //  const unsigned int nlevels = triangulation.n_global_levels();
-  //  mg_matrices.resize(0, nlevels - 1);
-  //  mg_mf_storage.resize(0, nlevels - 1);
+  const unsigned int nlevels = triangulation.n_global_levels();
+  mg_matrices.resize(0, nlevels - 1);
+  mg_mf_storage.resize(0, nlevels - 1);
 
-  // std::set<types::boundary_id> dirichlet_boundary;
-  // dirichlet_boundary.insert(0);
-  // mg_constrained_dofs.initialize(dof_handler);
-  // mg_constrained_dofs.make_zero_boundary_constraints(dof_handler, dirichlet_boundary);
+  std::set<types::boundary_id> dirichlet_boundary{ 0, 1, 2, 3 };
+  mg_constrained_dofs[0].initialize(dof_handler);
+  mg_constrained_dofs[0].make_zero_boundary_constraints(dof_handler, dirichlet_boundary);
+  mg_constrained_dofs[1].initialize(dof_handler);
 
-  /*for (unsigned int level = 0; level < nlevels; ++level)
+  for (unsigned int level = 0; level < nlevels; ++level)
   {
     IndexSet relevant_dofs;
     DoFTools::extract_locally_relevant_level_dofs(dof_handler, level, relevant_dofs);
-    ConstraintMatrix level_constraints;
-    level_constraints.reinit(relevant_dofs);
-    level_constraints.add_lines(mg_constrained_dofs.get_boundary_indices(level));
-    level_constraints.close();
+    std::vector<ConstraintMatrix> level_constraints(2);
+    level_constraints[0].reinit(relevant_dofs);
+    level_constraints[0].add_lines(mg_constrained_dofs[0].get_boundary_indices(level));
+    level_constraints[0].close();
+    level_constraints[1].reinit(relevant_dofs);
+//    level_constraints[1].add_lines(mg_constrained_dofs[1].get_boundary_indices(level));
+    level_constraints[1].close();
 
     typename MatrixFree<dim, float>::AdditionalData additional_data;
     additional_data.tasks_parallel_scheme = MatrixFree<dim, float>::AdditionalData::none;
@@ -314,16 +316,24 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
       (update_gradients | update_JxW_values | update_quadrature_points);
     additional_data.level_mg_handler = level;
 
+    std::vector<const DoFHandler<dim>*> dh_pointers;
+    dh_pointers.push_back(&dof_handler);
+    dh_pointers.push_back(&dof_handler);
+    std::vector<const ConstraintMatrix*> constraints_pointers;
+    constraints_pointers.push_back(&(level_constraints[0]));
+    constraints_pointers.push_back(&(level_constraints[1]));
+
+    std::vector<QGauss<1>> quadrature_pointers(2, QGauss<1>(fe.degree + 1));
+
     mg_mf_storage[level].reinit(
-      dof_handler, level_constraints, QGauss<1>(fe.degree + 1), additional_data);
+      dh_pointers, constraints_pointers, quadrature_pointers, additional_data);
 
     mg_matrices[level].initialize(mg_mf_storage[level],
                                   mg_constrained_dofs,
                                   level,
-                                  std::make_shared<Form>(form),
+                                  std::make_shared<FormSystem>(form_system),
                                   std::make_shared<FEDatasLevel>(mf_cfl_data_level));
-    // mg_matrices[level].evaluate_coefficient(Coefficient<dim>());
-  }*/
+  }
   setup_time += time.wall_time();
   time_details << "Setup matrix-free levels   (CPU/wall) " << time() << "s/" << time.wall_time()
                << "s" << std::endl;
@@ -333,15 +343,7 @@ template <int dim, class FEDatasSystem, class FEDatasLevel, class FormSystem, cl
 void
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::assemble_rhs()
 {
-  /*  std::cout << "solution_before_assembly\n";
-    solution.print(std::cout);*/
-
   Timer time;
-
-  /*  std::vector<bool> nonlinear_components;
-    nonlinear_components.push_back(false);
-    nonlinear_components.push_back(true);
-    system_matrix.set_nonlinearities(nonlinear_components, solution);*/
 
   QGauss<dim> quadrature(fe.get_degree() + 1);
   FEValues<dim> fev(fe,
@@ -360,7 +362,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::assemble_
 
   system_rhs = 0.;
 
-  LinearAlgebra::distributed::BlockVector system_rhs_new = system_rhs;
+  LinearAlgebra::distributed::BlockVector<double> system_rhs_new = system_rhs;
 
   ReferenceFunction<dim> ref_function;
   typename DoFHandler<dim>::active_cell_iterator cell = dof_handler.begin_active(),
@@ -379,54 +381,23 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::assemble_
     {
       for (unsigned int i = 0; i < dpc; ++i)
       {
-        // rhs wrt old_solution
-        /*double tmp1 = fev.shape_grad(i,q) * old_local_gradients[q];
-         double tmp2a = fev.shape_value(i,q);
-                      double tmp2b = old_local_values[q];
-                      double tmp2c = alpha;
-                      double tmp3 = - fev.shape_value(i,q) * rhs_values[q];*/
         local_rhs(i) += -fev.JxW(q) * (fev.shape_grad(i, q) * old_local_gradients[q] +
                                        fev.shape_value(i, q) * old_local_values[q] *
                                          (old_local_values[q] * old_local_values[q] - alpha) -
                                        fev.shape_value(i, q) * rhs_values[q]);
-        /*              std::cout << i << ": " << local_rhs(i) << std::endl;
-                      std::cout << "tmp2a: " << tmp2a << std::endl;
-                      std::cout << "tmp2b: " << tmp2b << std::endl;
-                      std::cout << "tmp2c: " << tmp2c << std::endl;
-                      std::cout << "JxW: " << fev.JxW(q) << std::endl;*/
       }
     }
-    /*    local_rhs.print(std::cout);*/
     constraints[0].distribute_local_to_global(local_rhs, global_dof_idx, system_rhs_new.block(0));
   }
   system_rhs_new.compress(VectorOperation::add);
 
-  /*  std::cout << "rhs: \n";
-    system_rhs.block(0).print(std::cout);*/
   Assert(system_rhs_new.block(1).l2_norm() < 1e-10, ExcInternalError());
 
   solution.block(1) = solution.block(0);
   rhs_operator.vmult(system_rhs, solution);
 
-  /*  system_rhs.print(std::cout);
-    system_rhs_new.print(std::cout);*/
-
   system_rhs_new -= system_rhs;
-  //  system_rhs_new.print(std::cout);
-  //  std::cout << system_rhs_new.l2_norm() << std::endl;
   Assert(system_rhs_new.l2_norm() < 1.e-10 * system_rhs.l2_norm(), ExcInternalError());
-
-  /*  system_rhs = 0;
-    FEEvaluation<dim, degree_finite_element> phi(system_mf_storage);
-    for (unsigned int cell = 0; cell < system_mf_storage.n_macro_cells(); ++cell)
-    {
-      phi.reinit(cell);
-      for (unsigned int q = 0; q < phi.n_q_points; ++q)
-        phi.submit_value(make_vectorized_array<double>(1.0), q);
-      phi.integrate(true, false);
-      phi.distribute_local_to_global(system_rhs);
-    }
-    system_rhs.compress(VectorOperation::add);*/
 
   setup_time += time.wall_time();
   time_details << "Assemble right hand side   (CPU/wall) " << time() << "s/" << time.wall_time()
@@ -438,55 +409,59 @@ double
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
 {
   Timer time;
-  // MGTransferMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
-  // mg_transfer.build(dof_handler);
-  setup_time += time.wall_time();
-  time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s\n";
-  time.restart();
+  /*
+    //MGTransferMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
+    MGTransferPrebuilt<LinearAlgebra::distributed::BlockVector<float> >
+    mg_transfer(mg_constrained_dofs);
+    mg_transfer.build_matrices(dof_handler);
+    setup_time += time.wall_time();
+    time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
+                 << "s\n";
+    time.restart();
 
-  /*typedef PreconditionChebyshev<LevelMatrixType, LinearAlgebra::distributed::BlockVector<float>>
-    SmootherType;
-  mg::SmootherRelaxation<SmootherType, LinearAlgebra::distributed::BlockVector<float>> mg_smoother;
-  MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
-  smoother_data.resize(0, triangulation.n_global_levels() - 1);
-  for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
-  {
-    if (level > 0)
+    typedef PreconditionChebyshev<LevelMatrixType, LinearAlgebra::distributed::BlockVector<float>>
+      SmootherType;
+    mg::SmootherRelaxation<SmootherType, LinearAlgebra::distributed::BlockVector<float>>
+    mg_smoother;
+    MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
+    smoother_data.resize(0, triangulation.n_global_levels() - 1);
+    for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
     {
-      smoother_data[level].smoothing_range = 15.;
-      smoother_data[level].degree = 4;
-      smoother_data[level].eig_cg_n_iterations = 10;
+      if (level > 0)
+      {
+        smoother_data[level].smoothing_range = 15.;
+        smoother_data[level].degree = 4;
+        smoother_data[level].eig_cg_n_iterations = 10;
+      }
+      else
+      {
+        smoother_data[0].smoothing_range = 1e-3;
+        smoother_data[0].degree = numbers::invalid_unsigned_int;
+        smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
+      }
+      mg_matrices[level].compute_diagonal();
+      //smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
     }
-    else
-    {
-      smoother_data[0].smoothing_range = 1e-3;
-      smoother_data[0].degree = numbers::invalid_unsigned_int;
-      smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
-    }
-    mg_matrices[level].compute_diagonal();
-    smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
-  }
-  mg_smoother.initialize(mg_matrices, smoother_data);
+    mg_smoother.initialize(mg_matrices, smoother_data);
 
-  MGCoarseGridApplySmoother<LinearAlgebra::distributed::BlockVector<float>> mg_coarse;
-  mg_coarse.initialize(mg_smoother);
+    MGCoarseGridApplySmoother<LinearAlgebra::distributed::BlockVector<float>> mg_coarse;
+    mg_coarse.initialize(mg_smoother);
 
-  mg::Matrix<LinearAlgebra::distributed::BlockVector<float>> mg_matrix(mg_matrices);
+    mg::Matrix<LinearAlgebra::distributed::BlockVector<float>> mg_matrix(mg_matrices);
 
-  MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>> mg_interface_matrices;
-  mg_interface_matrices.resize(0, triangulation.n_global_levels() - 1);
-  for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
-    mg_interface_matrices[level].initialize(mg_matrices[level]);
-  mg::Matrix<LinearAlgebra::distributed::BlockVector<float>> mg_interface(mg_interface_matrices);
+    MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>> mg_interface_matrices;
+    mg_interface_matrices.resize(0, triangulation.n_global_levels() - 1);
+    for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
+      mg_interface_matrices[level].initialize(mg_matrices[level]);
+    mg::Matrix<LinearAlgebra::distributed::BlockVector<float>> mg_interface(mg_interface_matrices);
 
-  Multigrid<LinearAlgebra::distributed::BlockVector<float>> mg(
-    mg_matrix, mg_coarse, mg_transfer, mg_smoother, mg_smoother);
-  mg.set_edge_matrices(mg_interface, mg_interface);
+    Multigrid<LinearAlgebra::distributed::BlockVector<float>> mg(
+      mg_matrix, mg_coarse, mg_transfer, mg_smoother, mg_smoother);
+    mg.set_edge_matrices(mg_interface, mg_interface);
 
-  PreconditionMG<dim, LinearAlgebra::distributed::BlockVector<float>, MGTransferMatrixFree<dim,
-  float>>
-    preconditioner(dof_handler, mg, mg_transfer);*/
+    PreconditionMG<dim, LinearAlgebra::distributed::BlockVector<float>,
+    MGTransferPrebuilt<LinearAlgebra::distributed::BlockVector<float> > >
+      preconditioner(dof_handler, mg, mg_transfer);*/
 
   SolverControl solver_control(dof_handler.n_dofs(), 1e-12 * system_rhs.l2_norm(), false, false);
   SolverCG<LinearAlgebra::distributed::BlockVector<double>> cg(solver_control);
@@ -505,14 +480,14 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
   nonlinear_components.push_back(true);
   system_matrix.set_nonlinearities(nonlinear_components, solution);
 
-  cg.solve(system_matrix, solution_update, system_rhs, PreconditionIdentity());
+  cg.solve(system_matrix, solution_update, system_rhs, /*preconditioner*/ PreconditionIdentity());
 
   constraints[0].distribute(solution_update.block(0));
   const double b = .2;
   solution_update *= b;
   solution += solution_update;
-  std::cout << "update: " << solution_update.l2_norm() << std::endl;
-  std::cout << "solution: " << solution.l2_norm() << std::endl;
+  pcout << "update: " << solution_update.l2_norm() << std::endl;
+  pcout << "solution: " << solution.l2_norm() << std::endl;
 
   pcout << "Time solve (" << solver_control.last_step() << " iterations)  (CPU/wall) " << time()
         << "s/" << time.wall_time() << "s\n";
