@@ -171,18 +171,18 @@ namespace Traits
   {
     static constexpr bool value = false;
   };
-}
+} // namespace Traits
 
 template <class A, class B>
 void
-assert_is_summable(const A&, const B&)
+assert_is_summable(const A& /*unused*/, const B& /*unused*/)
 {
   static_assert(CFL::Traits::is_summable<A, B>::value, "The sum of these objects is not defined!");
 }
 
 template <class A, class B>
 void
-assert_is_multiplicable(const A&, const B&)
+assert_is_multiplicable(const A& /*unused*/, const B& /*unused*/)
 {
   static_assert(CFL::Traits::is_multiplicable<A, B>::value,
                 "The product of these objects is not defined!");
@@ -190,12 +190,12 @@ assert_is_multiplicable(const A&, const B&)
 
 template <class A, class B>
 void
-assert_is_compatible(const A&, const B&)
+assert_is_compatible(const A& /*unused*/, const B& /*unused*/)
 {
   static_assert(CFL::Traits::is_compatible<A, B>::value,
                 "Types must be compatible to be added! "
                 "Probably, the ansatz functions don't match the bilinear form!");
 }
-}
+} // namespace CFL
 
 #endif

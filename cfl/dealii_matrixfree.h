@@ -7,6 +7,8 @@
 #include <cfl/forms.h>
 #include <cfl/traits.h>
 
+#include <utility>
+
 #define AssertIndexInRange(index, range)                                                           \
   Assert((index) < (range), ::dealii::ExcIndexRange((index), 0, (range)))
 
@@ -34,8 +36,8 @@ namespace dealii
     class ProductFEFunctions;
     template <class FEFunctionType>
     class FELiftDivergence;
-  }
-}
+  } // namespace MatrixFree
+} // namespace dealii
 
 namespace Traits
 {
@@ -173,7 +175,7 @@ namespace Traits
   {
     static const bool value = true;
   };
-}
+} // namespace Traits
 
 namespace dealii
 {
@@ -344,21 +346,21 @@ namespace dealii
 
     template <int rank, int dim, unsigned int idx>
     TestDivergence<rank - 1, dim, idx>
-    div(const TestFunction<rank, dim, idx>&)
+    div(const TestFunction<rank, dim, idx>& /*unused*/)
     {
       return TestDivergence<rank - 1, dim, idx>();
     }
 
     template <int rank, int dim, unsigned int idx>
     TestGradient<rank + 1, dim, idx>
-    grad(const TestFunction<rank, dim, idx>&)
+    grad(const TestFunction<rank, dim, idx>& /*unused*/)
     {
       return TestGradient<rank + 1, dim, idx>();
     }
 
     template <int rank, int dim, unsigned int idx>
     TestHessian<rank + 1, dim, idx>
-    grad(const TestGradient<rank, dim, idx>&)
+    grad(const TestGradient<rank, dim, idx>& /*unused*/)
     {
       return TestHessian<rank + 1, dim, idx>();
     }
@@ -385,8 +387,8 @@ namespace dealii
 
       FEFunctionBase() = delete;
 
-      FEFunctionBase(const std::string& name, double new_factor = 1.)
-        : data_name(name)
+      explicit FEFunctionBase(std::string name, double new_factor = 1.)
+        : data_name(std::move(name))
         , scalar_factor(new_factor)
       {
       }
@@ -454,7 +456,7 @@ namespace dealii
       // inherit constructors
       using Base::Base;
 
-      FEDivergence(const FEFunction<rank + 1, dim, idx>& fefunction)
+      explicit FEDivergence(const FEFunction<rank + 1, dim, idx>& fefunction)
         : FEDivergence(fefunction.name(), fefunction.scalar_factor)
       {
       }
@@ -489,7 +491,7 @@ namespace dealii
         TensorTraits;
       static constexpr unsigned int index = FEFunctionType::idx;
 
-      FELiftDivergence(const FEFunctionType& fe_function)
+      explicit FELiftDivergence(const FEFunctionType& fe_function)
         : fefunction(fe_function)
       {
       }
@@ -501,7 +503,9 @@ namespace dealii
         auto value = fefunction.value(phi, q);
         ::dealii::Tensor<TensorTraits::rank, TensorTraits::dim, decltype(value)> lifted_tensor;
         for (unsigned int i = 0; i < TensorTraits::dim; ++i)
+        {
           lifted_tensor[i][i] = value;
+        }
         return lifted_tensor;
       }
 
@@ -632,7 +636,7 @@ namespace dealii
       // inherit constructors
       using Base::Base;
 
-      FELaplacian(const FEGradient<rank + 1, dim, idx>& fe_function)
+      explicit FELaplacian(const FEGradient<rank + 1, dim, idx>& fe_function)
         : FELaplacian(fe_function.name(), fe_function.scalar_factor)
       {
       }
@@ -695,7 +699,7 @@ namespace dealii
       // inherit constructors
       using Base::Base;
 
-      explicit FEHessian(const FEGradient<rank - 1, dim, idx>&) {}
+      explicit FEHessian(const FEGradient<rank - 1, dim, idx>& /*unused*/) {}
 
       template <class FEDatas>
       auto
@@ -769,7 +773,7 @@ namespace dealii
       typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
         TensorTraits;
 
-      SumFEFunctions(const FEFunction& summand)
+      explicit SumFEFunctions(const FEFunction& summand)
         : summand(summand)
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
@@ -845,7 +849,7 @@ namespace dealii
         SumFEFunctions<Types...>::set_evaluation_flags(phi);
       }
 
-      SumFEFunctions(const FEFunction& summand, const Types&... old_sum)
+      explicit SumFEFunctions(const FEFunction& summand, const Types&... old_sum)
         : SumFEFunctions<Types...>(old_sum...)
         , summand(summand)
       {
@@ -985,7 +989,7 @@ namespace dealii
       typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
         TensorTraits;
 
-      ProductFEFunctions(const FEFunction& factor)
+      explicit ProductFEFunctions(const FEFunction& factor)
         : factor(factor)
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
@@ -1053,7 +1057,7 @@ namespace dealii
         ProductFEFunctions<Types...>::set_evaluation_flags(phi);
       }
 
-      ProductFEFunctions(const FEFunction& factor, const Types&... old_product)
+      explicit ProductFEFunctions(const FEFunction& factor, const Types&... old_product)
         : ProductFEFunctions<Types...>(old_product...)
         , factor(factor)
       {
@@ -1156,8 +1160,8 @@ namespace dealii
     {
       return old_fe_function * new_fe_function;
     }
-  }
-}
-}
+  } // namespace MatrixFree
+} // namespace dealii
+} // namespace CFL
 
 #endif // CFL_DEALII_MATRIXFREE_H

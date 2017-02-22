@@ -66,12 +66,18 @@ test(unsigned int refine, unsigned int degree,
       local_matrix = 0;
 
       for (unsigned int q = 0; q < n_q_points; ++q)
+      {
         for (unsigned int i = 0; i < dofs_per_cell; ++i)
+        {
           for (unsigned int j = 0; j < dofs_per_cell; ++j)
+          {
             local_matrix(i, j) += (fe_values.shape_grad(i, q) * fe_values.shape_grad(j, q) +
                                    fe_values.shape_value(i, q) * fe_values.shape_value(j, q) *
                                      (3 * std::pow(old_solution_local[q], 2.) - alpha)) *
                                   fe_values.JxW(q);
+          }
+        }
+      }
 
       cell->get_dof_indices(local_dof_indices);
       constraints.distribute_local_to_global(local_matrix, local_dof_indices, system_matrix);
@@ -119,8 +125,10 @@ run()
   ref = out.block(0);
 
   for (size_t i = 0; i < in.n_blocks(); ++i)
+  {
     for (types::global_dof_index j = 0; j < in.block(i).size(); ++j)
       in.block(i)[j] = j;
+  }
 
   in.print(std::cout);
 
@@ -128,8 +136,10 @@ run()
   {
     data.vmult(out, in, f);
     for (size_t k = 0; k < in.n_blocks(); ++k)
+    {
       for (types::global_dof_index j = 0; j < in.block(k).size(); ++j)
         std::cout << j << '\t' << k << '\t' << out.block(k)[j] << std::endl;
+    }
 
     ref -= out.block(0);
     std::cout << "error: " << ref.l2_norm() << std::endl;

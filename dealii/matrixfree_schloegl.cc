@@ -81,14 +81,14 @@ public:
   }
 
   double
-  value(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
+  value(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const override
   {
     Assert(component == 0, ExcInternalError());
     return std::sin(numbers::PI * p(0)) * std::sin(numbers::PI * p(1));
   }
 
   Tensor<1, dim>
-  gradient(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
+  gradient(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const override
   {
     Assert(component == 0, ExcInternalError());
     Tensor<1, dim> ret_value;
@@ -98,7 +98,7 @@ public:
   }
 
   double
-  laplacian(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
+  laplacian(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const override
   {
     Assert(component == 0, ExcInternalError());
     return -2 * numbers::PI * numbers::PI * std::sin(numbers::PI * p(0)) *
@@ -110,14 +110,14 @@ template <int dim>
 class RHS : public Function<dim>
 {
 public:
-  RHS(double a)
+  explicit RHS(double a)
     : Function<dim>(1)
     , alpha(a)
   {
   }
 
   double
-  value(const Point<dim>& p, const unsigned int /* component*/) const
+  value(const Point<dim>& p, const unsigned int /* component*/) const override
   {
     return -ref_func.laplacian(p) + ref_func.value(p) * ref_func.value(p) * ref_func.value(p) -
            alpha * ref_func.value(p);
@@ -141,7 +141,7 @@ private:
   void setup_system();
   void assemble_rhs();
   double solve();
-  void output_results(const unsigned int cycle) const;
+  void output_results(unsigned int cycle) const;
 
   const FEDatasSystem& mf_cfl_data_system;
   const FEDatasLevel& mf_cfl_data_level;
@@ -173,7 +173,7 @@ private:
   LinearAlgebra::distributed::BlockVector<double> solution_update;
   LinearAlgebra::distributed::BlockVector<double> system_rhs;
 
-  double setup_time;
+  double setup_time{};
   ConditionalOStream pcout;
   ConditionalOStream time_details;
 };
@@ -204,7 +204,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::LaplacePr
   , solution_update(2)
   , system_rhs(2)
   , pcout(std::cout, Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
-  , time_details(std::cout, false && Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
+  , time_details(std::cout, false)
 {
 }
 
@@ -246,7 +246,6 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   time_details << "Distribute DoFs & B.C.     (CPU/wall) " << time() << "s/" << time.wall_time()
                << "s" << std::endl;
   time.restart();
-
   {
     typename MatrixFree<dim, double>::AdditionalData additional_data;
     additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::none;
@@ -278,7 +277,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   system_matrix.initialize_dof_vector(system_rhs);
   system_matrix.initialize_dof_vector(solution_update);
 
-  std::srand(std::time(0));
+  std::srand(std::time(nullptr));
   for (unsigned int i = 0; i < dof_handler.n_dofs(); ++i)
     solution(i) = ((2. * std::rand()) / RAND_MAX - 1.) * alpha;
   // solution = alpha;
@@ -307,7 +306,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
     level_constraints[0].add_lines(mg_constrained_dofs[0].get_boundary_indices(level));
     level_constraints[0].close();
     level_constraints[1].reinit(relevant_dofs);
-//    level_constraints[1].add_lines(mg_constrained_dofs[1].get_boundary_indices(level));
+    //    level_constraints[1].add_lines(mg_constrained_dofs[1].get_boundary_indices(level));
     level_constraints[1].close();
 
     typename MatrixFree<dim, float>::AdditionalData additional_data;
@@ -524,7 +523,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::output_re
       std::ostringstream filename;
       filename << "solution-" << cycle << "." << i << ".vtu";
 
-      filenames.push_back(filename.str().c_str());
+      filenames.emplace_back(filename.str());
     }
     std::string master_name = "solution-" + Utilities::to_string(cycle) + ".pvtu";
     std::ofstream master_output(master_name.c_str());
@@ -553,7 +552,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::run()
     pcout << std::endl;
   }
 }
-}
+} // namespace Step37
 
 int
 main(int argc, char* argv[])

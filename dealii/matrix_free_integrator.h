@@ -91,7 +91,7 @@ public:
   vmult(LinearAlgebra::distributed::BlockVector<Number>& dst,
         const LinearAlgebra::distributed::BlockVector<Number>& src) const
   {
-    if (nonlinear_components.size() == 0)
+    if (nonlinear_components.empty())
       ::dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, src);
     else
     {
@@ -115,7 +115,7 @@ public:
     if
       constexpr(FEDatas::n == 1)
       {
-        Assert((::dealii::MatrixFreeOperators::Base<dim, Number>::data != NULL),
+        Assert((::dealii::MatrixFreeOperators::Base<dim, Number>::data != nullptr),
                ExcNotInitialized());
         unsigned int dummy = 0;
         this->inverse_diagonal_entries.reset(
@@ -135,12 +135,16 @@ public:
 
         const unsigned int local_size = inverse_diagonal_vector.local_size();
         for (unsigned int i = 0; i < local_size; ++i)
+        {
           if (std::abs(inverse_diagonal_vector.local_element(i)) >
               std::sqrt(std::numeric_limits<Number>::epsilon()))
+          {
             inverse_diagonal_vector.local_element(i) =
               1. / inverse_diagonal_vector.local_element(i);
+          }
           else
             inverse_diagonal_vector.local_element(i) = 1.;
+        }
 
         inverse_diagonal_vector.update_ghost_values();
         // inverse_diagonal_vector.print(std::cout);
@@ -149,10 +153,11 @@ public:
       AssertThrow(false, ExcNotImplemented());
   }
 
-  // TODO this is hacky and just tries to get comparable output w.r.t. step-37
+  // TODO(darndt): this is hacky and just tries to get comparable output w.r.t. step-37
   void
   local_diagonal_cell(const MatrixFree<dim, Number>& data_,
-                      LinearAlgebra::distributed::Vector<Number>& dst, const unsigned int&,
+                      LinearAlgebra::distributed::Vector<Number>& dst,
+                      const unsigned int& /*unused*/,
                       const std::pair<unsigned int, unsigned int>& cell_range) const
   {
     (void)data_;
@@ -201,7 +206,7 @@ private:
   {
     form = form_;
     fe_datas = fe_datas_;
-    // TODO: Determine from form.
+    // TODO(darndt): Determine from form.
     use_cell = true;
     use_face = false;
     use_boundary = false;
@@ -211,13 +216,15 @@ private:
     fe_datas->initialize(*(this->data));
   }
 
-  virtual void
+  void
   apply_add(LinearAlgebra::distributed::Vector<Number>& dst,
             const LinearAlgebra::distributed::Vector<Number>& src) const override
   {
     if (use_cell)
+    {
       dealii::MatrixFreeOperators::Base<dim, Number>::data->cell_loop(
         &MatrixFreeIntegrator::local_apply_cell, this, dst, src);
+    }
     if (use_face)
     {
       /* Base<dim, Number>::data->face_loop (&MatrixFreeIntegrator::local_apply_face,
@@ -230,13 +237,15 @@ private:
     }
   }
 
-  virtual void
+  void
   apply_add(LinearAlgebra::distributed::BlockVector<Number>& dst,
             const LinearAlgebra::distributed::BlockVector<Number>& src) const override
   {
     if (use_cell)
+    {
       dealii::MatrixFreeOperators::Base<dim, Number>::data->cell_loop(
         &MatrixFreeIntegrator::local_apply_cell, this, dst, src);
+    }
     if (use_face)
     {
       /* Base<dim, Number>::data->face_loop (&MatrixFreeIntegrator::local_apply_face,
@@ -257,9 +266,7 @@ private:
     constexpr unsigned int n_q_points = FEEvaluation::get_n_q_points();
     // static_for_old<0, n_q_points>()([&](int q)
     for (unsigned int q = 0; q < n_q_points; ++q)
-    {
       form->evaluate(phi, q);
-    }
 
     phi.integrate();
   }

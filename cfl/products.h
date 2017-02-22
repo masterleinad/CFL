@@ -18,7 +18,7 @@ public:
   S a;
   T b;
 
-  typedef typename T::TensorTraits TensorTraits;
+  using TensorTraits = typename T::TensorTraits;
 
   ScalarMultiplication(const S& s, const T& t)
     : a(s)
@@ -70,7 +70,7 @@ namespace Traits
   {
     static const bool value = true;
   };
-}
-}
+} // namespace Traits
+} // namespace CFL
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef MESHWORKER_DATA_H
-#define MESHWORKER_DATA_H
+#ifndef _MESHWORKER_DATA_H
+#define _MESHWORKER_DATA_H
 
 #include <deal.II/dofs/dof_handler.h>
 #include <deal.II/fe/fe.h>
@@ -33,12 +33,12 @@ public:
   {
     this->use_boundary = false;
     this->use_face = false;
-    // TODO: Determine from form.
+    // TODO(darndt): Determine from form.
     this->input_vector_names.push_back("u");
   }
 
-  virtual void
-  cell(MeshWorker::DoFInfo<dim>& dinfo, MeshWorker::IntegrationInfo<dim>& info) const
+  void
+  cell(MeshWorker::DoFInfo<dim>& dinfo, MeshWorker::IntegrationInfo<dim>& info) const override
   {
     anchor(form, info, *this);
     reinit(form, info);
@@ -48,9 +48,7 @@ public:
       //    << ',' << info.gradients[0][0][k]
       // << '>';
       for (unsigned int i = 0; i < info.fe_values(0).dofs_per_cell; ++i)
-      {
         dinfo.vector(0).block(0)[i] += form.evaluate(k, i) * info.fe_values(0).JxW(k);
-      }
     }
   }
 };
@@ -108,9 +106,7 @@ public:
 
     MeshWorker::IntegrationInfoBox<dim> info_box;
     // Determine degree of form and adjust
-    for (typename std::vector<std::string>::const_iterator i =
-           integrator.input_vector_names.begin();
-         i != integrator.input_vector_names.end();
+    for (auto i = integrator.input_vector_names.begin(); i != integrator.input_vector_names.end();
          ++i)
     {
       // std::cerr << "Vector " << *i << std::endl;
@@ -134,4 +130,4 @@ public:
   }
 };
 
-#endif // MESHWORKER_DATA_H
+#endif // _MESHWORKER_DATA_H

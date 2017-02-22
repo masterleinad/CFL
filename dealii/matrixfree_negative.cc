@@ -48,17 +48,22 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   data.resize_vector(out3);
 
   for (size_t i = 0; i < in.n_blocks(); ++i)
+  {
     for (types::global_dof_index j = 0; j < in.block(i).size(); ++j)
       in.block(i)[j] = j;
-
+  }
   {
     data.vmult(out1, in, f1);
     data.vmult(out2, in, f2);
     data.vmult(out3, in, f3);
     for (size_t k = 0; k < in.n_blocks(); ++k)
+    {
       for (types::global_dof_index j = 0; j < in.block(k).size(); ++j)
+      {
         std::cout << j << '\t' << k << '\t' << out1.block(k)[j] << '\t' << out2.block(k)[j] << '\t'
                   << out3.block(k)[j] << std::endl;
+      }
+    }
 
     for (size_t k = 0; k < in.n_blocks(); ++k)
     {

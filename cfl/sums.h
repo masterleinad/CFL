@@ -56,7 +56,7 @@ namespace Traits
   {
     static const bool value = is_terminal_string<T>::value && is_terminal_string<U>::value;
   };
-}
+} // namespace Traits
 
 template <class A, class B>
 typename std::enable_if_t<((CFL::Traits::is_cfl_object<A>::value ||
@@ -69,6 +69,6 @@ operator+(const A& a, const B& b)
   throw std::runtime_error("Internal error! This line should never be invoked!");
   return a;
 }
-}
+} // namespace CFL
 
 #endif

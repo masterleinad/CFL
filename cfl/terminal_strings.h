@@ -69,9 +69,7 @@ public:
   {
     std::string result = value;
     if (rank > 0)
-    {
       result += std::string("_{") + compose_indices(comp...) + std::string("}");
-    }
     return result;
   }
 
@@ -92,9 +90,7 @@ public:
       }
     result += value;
     if (rank > 0)
-    {
       result += std::string("_{") + compose_indices(comp...) + std::string("}");
-    }
     return result;
   }
 };

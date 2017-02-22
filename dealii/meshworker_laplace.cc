@@ -30,9 +30,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   data.resize_vector(b);
 
   for (unsigned int i = 0; i < b.size(); ++i)
-  {
     b[i] = i;
-  }
 
   for (unsigned int i = 0; i < 2; ++i)
   {
@@ -40,8 +38,10 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
     x_new = 0.;
     data.vmult(x_new, b, f);
     for (unsigned int j = 0; j < x_new.size(); ++j)
+    {
       if (x_new[j] != 0.)
         std::cout << i << '\t' << j << '\t' << x_new[j] << std::endl;
+    }
     Assert(i == 0 || x_new == x_old, ExcInternalError());
     std::cout << std::endl;
   }

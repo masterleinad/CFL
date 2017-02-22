@@ -48,7 +48,7 @@ struct static_for_old<N, N>
   // iterator count as regular parameter
   template <typename Fn>
   inline void
-  operator()(Fn const&) const
+  operator()(Fn const& /*unused*/) const
   {
   }
 };
@@ -101,6 +101,7 @@ private:
                : pt_start + points_in_sequence(sequence_count()) * (index + 1) -
                    (index < count_ ? 1 : 0);
     }
+
     static constexpr size_t
     points_in_sequence(size_t max)
     {
@@ -128,14 +129,15 @@ private:
 
   private:
     // Loop termination
-    static inline void flat_next(std::integral_constant<size_t, flat_end + 1>, functor_types&&...)
+    static inline void flat_next(std::integral_constant<size_t, flat_end + 1> /*unused*/,
+                                 functor_types&&... /*unused*/)
     {
     }
 
     // Loop function that calls the function passed to it, as well as recurses
     template <size_t index>
     static inline void
-    flat_next(std::integral_constant<size_t, index>, functor_types&&... functor_args)
+    flat_next(std::integral_constant<size_t, index> /*unused*/, functor_types&&... functor_args)
     {
       flat_functor::template func<index>(std::forward<functor_types>(functor_args)...);
       flat_next(std::integral_constant<size_t, index + 1>(),
@@ -162,7 +164,7 @@ private:
   // and call the main functor that was provided to us
   template <typename sequence>
   static inline void
-  next(std::true_type, functor_types&&... functor_args)
+  next(std::true_type /*unused*/, functor_types&&... functor_args)
   {
     flat_for<sequence::start_, sequence::end_, functor>::flat_loop(
       std::forward<functor_types>(functor_args)...);
@@ -172,7 +174,7 @@ private:
   // run an internal flat_for loop on the child sequence_points
   template <typename sequence>
   static inline void
-  next(std::false_type, functor_types&&... functor_args)
+  next(std::false_type /*unused*/, functor_types&&... functor_args)
   {
     flat_for<0, sequence::sequence_count() - 1, flat_sequence<sequence>>::flat_loop(
       std::forward<functor_types>(functor_args)...);

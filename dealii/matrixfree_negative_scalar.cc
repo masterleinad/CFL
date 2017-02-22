@@ -44,7 +44,6 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 
   for (types::global_dof_index j = 0; j < in.size(); ++j)
     in[j] = j;
-
   {
     data.vmult(out1, in, f1);
     data.vmult(out2, in, f2);

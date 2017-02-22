@@ -14,7 +14,7 @@ class ConstantScaled
   const T t;
 
 public:
-  typedef typename T::TensorTraits TensorTraits;
+  using TensorTraits = typename T::TensorTraits;
   constexpr ConstantScaled(const number& factor, const T& t)
     : factor(factor)
     , t(t)
@@ -35,6 +35,6 @@ scale(number factor, const T& t)
 {
   return ConstantScaled<number, T>(factor, t);
 }
-}
+} // namespace CFL
 
 #endif

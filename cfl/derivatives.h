@@ -41,7 +41,7 @@ namespace Traits
   {
     static const bool value = is_terminal_string<T>::value;
   };
-}
+} // namespace Traits
 /**
  * \brief The gradient as a tensor as a tensor of higher rank
  *
@@ -56,12 +56,12 @@ template <class T>
 class Gradient
 {
 public:
-  typedef T BaseType;
+  using BaseType = T;
   const T base;
 
   typedef Traits::Tensor<T::TensorTraits::rank + 1, T::TensorTraits::dim> TensorTraits;
 
-  Gradient(const T& t)
+  explicit Gradient(const T& t)
     : base(t)
   {
     static_assert(Traits::has_simple_derivative<T>::value,
@@ -94,6 +94,6 @@ grad(const T t)
 {
   return Gradient<T>(t);
 }
-}
+} // namespace CFL
 
 #endif

@@ -29,7 +29,7 @@
 
 using namespace dealii;
 
-// TODO:
+// TODO(darndt):
 // nonlinear equations
 
 // template <int dim>
@@ -57,13 +57,13 @@ public:
   }
 
   double
-  value(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
+  value(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const override
   {
     return std::sin(numbers::PI * p(0)) * std::sin(numbers::PI * p(1));
   }
 
   Tensor<1, dim>
-  gradient(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
+  gradient(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const override
   {
     Tensor<1, dim> ret_value;
     ret_value[0] = numbers::PI * std::cos(numbers::PI * p(0)) * std::sin(numbers::PI * p(1));
@@ -72,7 +72,7 @@ public:
   }
 
   double
-  laplacian(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const
+  laplacian(const Point<dim>& p, [[maybe_unused]] const unsigned int component = 0) const override
   {
     return -2 * numbers::PI * numbers::PI * std::sin(numbers::PI * p(0)) *
            std::sin(numbers::PI * p(1));
@@ -83,14 +83,14 @@ template <int dim>
 class RHS : public Function<dim>
 {
 public:
-  RHS(double a)
+  explicit RHS(double a)
     : Function<dim>(1)
     , alpha(a)
   {
   }
 
   double
-  value(const Point<dim>& p, const unsigned int /*component*/) const
+  value(const Point<dim>& p, const unsigned int /*component*/) const override
   {
     return -ref_func.laplacian(p) + ref_func.value(p) * ref_func.value(p) * ref_func.value(p) -
            alpha * ref_func.value(p);
@@ -132,7 +132,7 @@ private:
   Vector<double> system_rhs;
   Vector<double> solution;
   Vector<double> nwtn_update;
-  double alpha;
+  double alpha{ 0. };
 };
 
 template <int dim>
@@ -140,7 +140,6 @@ Schloegl<dim>::Schloegl()
   : fe(1)
   , mapping(fe.degree)
   , dof_handler(tria)
-  , alpha(0.)
 {
   create_mesh();
 }
@@ -350,7 +349,6 @@ Schloegl<dim>::output_results(unsigned int cycle)
   data_out.add_data_vector(dof_handler, solution, "solution");
   data_out.add_data_vector(dof_handler, nwtn_update, "nwtn_update");
   data_out.build_patches(fe.get_degree());
-
   {
     std::ofstream out("solution." + Utilities::int_to_string(cycle) + ".vtu");
     data_out.write_vtu(out);

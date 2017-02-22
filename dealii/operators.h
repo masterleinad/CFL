@@ -49,12 +49,12 @@ public:
   /**
    * Number typedef.
    */
-  typedef Number value_type;
+  using value_type = Number;
 
   /**
    * size_type needed for preconditioner classes.
    */
-  typedef typename LinearAlgebra::distributed::Vector<Number>::size_type size_type;
+  using size_type = typename LinearAlgebra::distributed::Vector<Number>::size_type;
 
   /**
    * Default constructor.
@@ -75,18 +75,18 @@ public:
   /**
    * Initialize operator on fine scale.
    */
-  void initialize(const MatrixFree<dim, Number>& data);
+  void initialize(const MatrixFree<dim, Number>& data_);
 
   /**
    * Initialize operator on a level @p level for a single FiniteElement.
    */
-  void initialize(const MatrixFree<dim, Number>& data, const MGConstrainedDoFs& mg_constrained_dofs,
-                  const unsigned int level);
+  void initialize(const MatrixFree<dim, Number>& data_,
+                  const MGConstrainedDoFs& mg_constrained_dofs, unsigned int level);
 
   /**
    * Initialize operator on a level @p level for multiple FiniteElements.
    */
-  void initialize(const MatrixFree<dim, Number>& data,
+  void initialize(const MatrixFree<dim, Number>& data_,
                   const std::vector<MGConstrainedDoFs>& mg_constrained_dofs,
                   const unsigned int level);
 
@@ -296,7 +296,7 @@ private:
    * A flag which determines whether or not this operator has interface
    * matrices in GMG context.
    */
-  bool have_interface_matrices;
+  bool have_interface_matrices{ false };
 
   /**
    * Function which implements vmult_add (@p transpose = false) and
@@ -321,7 +321,7 @@ private:
    * indices with the correct local indices.
    */
   void adjust_ghost_range_if_necessary(
-    const LinearAlgebra::distributed::BlockVector<Number>& vec) const;
+    const LinearAlgebra::distributed::BlockVector<Number>& src) const;
 
   /**
    * Adjust the ghost range of the vectors to the storage requirements of
@@ -330,7 +330,7 @@ private:
    * order to ensure that the cell loops will be able to access the ghost
    * indices with the correct local indices.
    */
-  void adjust_ghost_range_if_necessary(const LinearAlgebra::distributed::Vector<Number>& vec) const;
+  void adjust_ghost_range_if_necessary(const LinearAlgebra::distributed::Vector<Number>& src) const;
 };
 
 /**
@@ -375,7 +375,7 @@ public:
   /**
    * Number typedef.
    */
-  typedef typename OperatorType::value_type value_type;
+  using value_type = typename OperatorType::value_type;
 
   /**
    * Default constructor.
@@ -438,7 +438,7 @@ public:
    * Constructor. Initializes the shape information from the ShapeInfo field
    * in the class FEEval.
    */
-  CellwiseInverseMassMatrix(const FEEvaluationBase<dim, n_components, Number>& fe_eval);
+  explicit CellwiseInverseMassMatrix(const FEEvaluationBase<dim, n_components, Number>& fe_eval);
 
   /**
    * Applies the inverse mass matrix operation on an input array. It is
@@ -448,7 +448,7 @@ public:
    * passed as first argument. Passing more than one component in the
    * coefficient is allowed.
    */
-  void apply(const AlignedVector<VectorizedArray<Number>>& inverse_coefficient,
+  void apply(const AlignedVector<VectorizedArray<Number>>& inverse_coefficients,
              const unsigned int n_actual_components, const VectorizedArray<Number>* in_array,
              VectorizedArray<Number>* out_array) const;
 
@@ -513,7 +513,7 @@ private:
   /**
    * For this operator, there is just a cell contribution.
    */
-  void local_apply_cell(const MatrixFree<dim, Number>& data,
+  void local_apply_cell(const MatrixFree<dim, Number>& data_,
                         LinearAlgebra::distributed::Vector<Number>& dst,
                         const LinearAlgebra::distributed::Vector<Number>& src,
                         const std::pair<unsigned int, unsigned int>& cell_range) const;
@@ -599,7 +599,7 @@ public:
    * will delete the table.
    */
   void set_coefficient(
-    const std_cxx11::shared_ptr<Table<2, VectorizedArray<Number>>>& scalar_coefficient);
+    const std_cxx11::shared_ptr<Table<2, VectorizedArray<Number>>>& scalar_coefficient_);
 
   virtual void clear();
 
@@ -623,7 +623,7 @@ private:
   /**
    * Applies the Laplace operator on a cell.
    */
-  void local_apply_cell(const MatrixFree<dim, Number>& data,
+  void local_apply_cell(const MatrixFree<dim, Number>& data_,
                         LinearAlgebra::distributed::Vector<Number>& dst,
                         const LinearAlgebra::distributed::Vector<Number>& src,
                         const std::pair<unsigned int, unsigned int>& cell_range) const;
@@ -631,8 +631,9 @@ private:
   /**
    * Apply diagonal part of the Laplace operator on a cell.
    */
-  void local_diagonal_cell(const MatrixFree<dim, Number>& data,
-                           LinearAlgebra::distributed::Vector<Number>& dst, const unsigned int&,
+  void local_diagonal_cell(const MatrixFree<dim, Number>& data_,
+                           LinearAlgebra::distributed::Vector<Number>& dst,
+                           const unsigned int& /*unused*/,
                            const std::pair<unsigned int, unsigned int>& cell_range) const;
 
   /**
@@ -656,21 +657,27 @@ inline CellwiseInverseMassMatrix<dim, fe_degree, n_components, Number>::Cellwise
 {
   FullMatrix<double> shapes_1d(fe_degree + 1, fe_degree + 1);
   for (unsigned int i = 0, c = 0; i < shapes_1d.m(); ++i)
+  {
     for (unsigned int j = 0; j < shapes_1d.n(); ++j, ++c)
       shapes_1d(i, j) = fe_eval.get_shape_info().shape_values_number[c];
+  }
   shapes_1d.gauss_jordan();
   const unsigned int stride = (fe_degree + 2) / 2;
   inverse_shape.resize(stride * (fe_degree + 1));
   for (unsigned int i = 0; i < stride; ++i)
+  {
     for (unsigned int q = 0; q < (fe_degree + 2) / 2; ++q)
     {
       inverse_shape[i * stride + q] = 0.5 * (shapes_1d(i, q) + shapes_1d(i, fe_degree - q));
       inverse_shape[(fe_degree - i) * stride + q] =
         0.5 * (shapes_1d(i, q) - shapes_1d(i, fe_degree - q));
     }
+  }
   if (fe_degree % 2 == 0)
+  {
     for (unsigned int q = 0; q < (fe_degree + 2) / 2; ++q)
       inverse_shape[fe_degree / 2 * stride + q] = shapes_1d(fe_degree / 2, q);
+  }
 }
 
 template <int dim, int fe_degree, int n_components, typename Number>
@@ -694,8 +701,10 @@ CellwiseInverseMassMatrix<dim, fe_degree, n_components, Number>::fill_inverse_Jx
     inverse_jxw[q] = 1. / inverse_jxw[q];
   // copy values to rest of vector
   for (unsigned int q = dofs_per_cell; q < previous_size;)
+  {
     for (unsigned int i = 0; i < dofs_per_cell; ++i, ++q)
       inverse_jxw[q] = inverse_jxw[i];
+  }
 }
 
 template <int dim, int fe_degree, int n_components, typename Number>
@@ -741,8 +750,10 @@ CellwiseInverseMassMatrix<dim, fe_degree, n_components, Number>::apply(
       evaluator.template hessians<2, true, false>(temp_data_field, out);
     }
     else if (dim == 2)
+    {
       for (unsigned int q = 0; q < dofs_per_cell; ++q)
         out[q] *= inv_coefficient[q];
+    }
 
     evaluator.template hessians<1, true, false>(out, temp_data_field);
     evaluator.template hessians<0, true, false>(temp_data_field, out);
@@ -753,15 +764,12 @@ CellwiseInverseMassMatrix<dim, fe_degree, n_components, Number>::apply(
 
 //----------------- Base operator -----------------------------
 template <int dim, typename Number>
-Base<dim, Number>::~Base()
-{
-}
+Base<dim, Number>::~Base() = default;
 
 template <int dim, typename Number>
 Base<dim, Number>::Base()
   : Subscriptor()
-  , data(NULL)
-  , have_interface_matrices(false)
+  , data(nullptr)
 {
 }
 
@@ -784,7 +792,7 @@ template <int dim, typename Number>
 void
 Base<dim, Number>::clear()
 {
-  data = NULL;
+  data = nullptr;
   inverse_diagonal_entries.reset();
 }
 
@@ -803,7 +811,7 @@ template <int dim, typename Number>
 void
 Base<dim, Number>::initialize_dof_vector(LinearAlgebra::distributed::Vector<Number>& vec) const
 {
-  Assert(data != NULL, ExcNotInitialized());
+  Assert(data != nullptr, ExcNotInitialized());
   if (!vec.partitioners_are_compatible(*data->get_dof_info(0).vector_partitioner))
     data->initialize_dof_vector(vec);
   Assert(vec.partitioners_are_globally_compatible(*data->get_dof_info(0).vector_partitioner),
@@ -859,9 +867,7 @@ Base<dim, Number>::initialize(const MatrixFree<dim, Number>& data_,
   edge_constrained_indices.resize(data_.n_components());
   edge_constrained_values.resize(data_.n_components());
   if (data_.n_macro_cells() > 0)
-  {
     AssertDimension(static_cast<int>(level), data_.get_cell_iterator(0, 0)->level());
-  }
 
   data =
     SmartPointer<const MatrixFree<dim, Number>, Base<dim, Number>>(&data_, typeid(*this).name());
@@ -869,7 +875,7 @@ Base<dim, Number>::initialize(const MatrixFree<dim, Number>& data_,
   for (unsigned int i = 0; i < data->n_components(); ++i)
   {
     // setup edge_constrained indices
-    const size_t i_size = static_cast<size_t>(i);
+    const auto i_size = static_cast<size_t>(i);
     std::vector<types::global_dof_index> interface_indices;
     mg_constrained_dofs[i_size].get_refinement_edge_indices(level).fill_index_vector(
       interface_indices);
@@ -877,11 +883,10 @@ Base<dim, Number>::initialize(const MatrixFree<dim, Number>& data_,
     edge_constrained_indices[i_size].reserve(interface_indices.size());
     edge_constrained_values[i_size].resize(interface_indices.size());
     const IndexSet& locally_owned = data->get_dof_handler(i).locally_owned_mg_dofs(level);
-    for (size_t j = 0; j < interface_indices.size(); ++j)
+    for (const size_t index : interface_indices)
     {
-      if (locally_owned.is_element(interface_indices[j]))
-        edge_constrained_indices[i_size].push_back(
-          locally_owned.index_within_set(interface_indices[j]));
+      if (locally_owned.is_element(index))
+        edge_constrained_indices[i_size].push_back(locally_owned.index_within_set(index));
     }
     have_interface_matrices |=
       Utilities::MPI::max(static_cast<unsigned int>(edge_constrained_indices[i_size].size()),
@@ -896,8 +901,8 @@ Base<dim, Number>::set_constrained_entries_to_one(
 {
   AssertDimension(edge_constrained_indices.size(), 1);
   const std::vector<unsigned int>& constrained_dofs = data->get_constrained_dofs();
-  for (unsigned int i = 0; i < constrained_dofs.size(); ++i)
-    dst.local_element(constrained_dofs[i]) = 1.;
+  for (unsigned int constrained_dof : constrained_dofs)
+    dst.local_element(constrained_dof) = 1.;
   for (unsigned int i = 0; i < edge_constrained_indices[0].size(); ++i)
     dst.local_element(edge_constrained_indices[0][i]) = 1.;
 }
@@ -910,8 +915,8 @@ Base<dim, Number>::set_constrained_entries_to_one(
   for (unsigned int j = 0; j < dst.n_blocks; ++j)
   {
     const std::vector<unsigned int>& constrained_dofs = data->get_constrained_dofs(j);
-    for (unsigned int i = 0; i < constrained_dofs.size(); ++i)
-      dst.block(j).local_element(constrained_dofs[i]) = 1.;
+    for (unsigned int constrained_dof : constrained_dofs)
+      dst.block(j).local_element(constrained_dof) = 1.;
     for (unsigned int i = 0; i < edge_constrained_indices[j].size(); ++i)
       dst.block(j).local_element(edge_constrained_indices[j][i]) = 1.;
   }
@@ -1000,7 +1005,7 @@ Base<dim, Number>::adjust_ghost_range_if_necessary(
 {
   for (unsigned int i = 0; static_cast<size_t>(i) < src.n_blocks(); ++i)
   {
-    size_t i_size = static_cast<size_t>(i);
+    auto i_size = static_cast<size_t>(i);
     const auto dof_info = data->get_dof_info(i);
     // If both vectors use the same partitioner -> done
     const LinearAlgebra::distributed::Vector<Number>& src_vector = src.block(i_size);
@@ -1016,7 +1021,7 @@ Base<dim, Number>::adjust_ghost_range_if_necessary(
     // copy the vector content to a temporary vector so that it does not get
     // lost
     VectorView<Number> view_src_in(src_vector.local_size(), src_vector.begin());
-    Vector<Number> copy_vec = view_src_in;
+    const Vector<Number>& copy_vec = view_src_in;
     const_cast<LinearAlgebra::distributed::Vector<Number>&>(src_vector)
       .reinit(dof_info.vector_partitioner);
     VectorView<Number> view_src_out(src_vector.local_size(), src_vector.begin());
@@ -1052,8 +1057,8 @@ Base<dim, Number>::mult_add(LinearAlgebra::distributed::Vector<Number>& dst,
     apply_add(dst, src);
 
   const std::vector<unsigned int>& constrained_dofs = data->get_constrained_dofs();
-  for (unsigned int i = 0; i < constrained_dofs.size(); ++i)
-    dst.local_element(constrained_dofs[i]) += src.local_element(constrained_dofs[i]);
+  for (unsigned int constrained_dof : constrained_dofs)
+    dst.local_element(constrained_dof) += src.local_element(constrained_dof);
 
   // reset edge constrained values, multiply by unit matrix and add into
   // destination
@@ -1081,6 +1086,7 @@ Base<dim, Number>::mult_add(LinearAlgebra::distributed::BlockVector<Number>& dst
   // set zero Dirichlet values on the input vector (and remember the src and
   // dst values because we need to reset them at the end)
   for (size_t i = 0; i < dst.n_blocks(); ++i)
+  {
     for (size_t j = 0; j < edge_constrained_indices[i].size(); ++j)
     {
       edge_constrained_values[i][j] =
@@ -1089,6 +1095,7 @@ Base<dim, Number>::mult_add(LinearAlgebra::distributed::BlockVector<Number>& dst
       const_cast<LinearAlgebra::distributed::Vector<Number>&>(src.block(i))
         .local_element(edge_constrained_indices[i][j]) = 0.;
     }
+  }
 
   if (transpose)
     Tapply_add(dst, src);
@@ -1097,16 +1104,19 @@ Base<dim, Number>::mult_add(LinearAlgebra::distributed::BlockVector<Number>& dst
 
   for (unsigned int i = 0; static_cast<size_t>(i) < dst.n_blocks(); ++i)
   {
-    const size_t i_size = static_cast<size_t>(i);
+    const auto i_size = static_cast<size_t>(i);
     const std::vector<unsigned int>& constrained_dofs = data->get_constrained_dofs(i);
-    for (size_t j = 0; j < constrained_dofs.size(); ++j)
-      dst.block(i_size).local_element(constrained_dofs[j]) +=
-        src.block(i_size).local_element(constrained_dofs[j]);
+    for (unsigned int constrained_dof : constrained_dofs)
+    {
+      dst.block(i_size).local_element(constrained_dof) +=
+        src.block(i_size).local_element(constrained_dof);
+    }
   }
 
   // reset edge constrained values, multiply by unit matrix and add into
   // destination
   for (size_t i = 0; i < dst.n_blocks(); ++i)
+  {
     for (size_t j = 0; j < edge_constrained_indices[i].size(); ++j)
     {
       const_cast<LinearAlgebra::distributed::Vector<Number>&>(src.block(i))
@@ -1114,6 +1124,7 @@ Base<dim, Number>::mult_add(LinearAlgebra::distributed::BlockVector<Number>& dst
       dst.block(i).local_element(edge_constrained_indices[i][j]) =
         edge_constrained_values[i][j].second + edge_constrained_values[i][j].first;
     }
+  }
 }
 
 template <int dim, typename Number>
@@ -1178,6 +1189,7 @@ Base<dim, Number>::vmult_interface_down(
   // set zero Dirichlet values on the input vector (and remember the src and
   // dst values because we need to reset them at the end)
   for (size_t i = 0; i < dst.size(); ++i)
+  {
     for (size_t j = 0; j < edge_constrained_indices.size(); ++j)
     {
       edge_constrained_values[i][j] =
@@ -1186,15 +1198,16 @@ Base<dim, Number>::vmult_interface_down(
       const_cast<LinearAlgebra::distributed::Vector<Number>&>(src.block(i))
         .local_element(edge_constrained_indices[i][j]) = 0.;
     }
+  }
 
   apply_add(dst, src);
 
   for (unsigned int i = 0; static_cast<size_t>(i) < dst.size(); ++i)
   {
-    const size_t i_size = static_cast<size_t>(i);
+    const auto i_size = static_cast<size_t>(i);
     for (unsigned int c = 0, j = 0; static_cast<size_t>(j) < edge_constrained_indices.size(); ++j)
     {
-      const size_t j_size = static_cast<size_t>(j);
+      const auto j_size = static_cast<size_t>(j);
       for (; c < edge_constrained_indices[i_size][j_size]; ++c)
         dst.block(i_size).local_element(c) = 0.;
       ++c;
@@ -1239,9 +1252,7 @@ Base<dim, Number>::vmult_interface_up(LinearAlgebra::distributed::Vector<Number>
   apply_add(dst, src_cpy);
 
   for (unsigned int i = 0; i < edge_constrained_indices[0].size(); ++i)
-  {
     dst.local_element(edge_constrained_indices[0][i]) = 0.;
-  }
 }
 
 template <int dim, typename Number>
@@ -1263,13 +1274,13 @@ Base<dim, Number>::vmult_interface_up(
 
   for (unsigned int i = 0; static_cast<size_t>(i) < dst.size(); ++i)
   {
-    const size_t i_size = static_cast<size_t>(i);
+    const auto i_size = static_cast<size_t>(i);
     const LinearAlgebra::distributed::Vector<Number>& src_vector = src_cpy.block(i_size);
     unsigned int c = 0;
 
     for (unsigned int j = 0; static_cast<size_t>(j) < edge_constrained_indices[i_size].size(); ++j)
     {
-      const size_t j_size = static_cast<size_t>(j);
+      const auto j_size = static_cast<size_t>(j);
       for (; c < edge_constrained_indices[i_size][j_size]; ++c)
         src_vector.local_element(c) = 0.;
       ++c;
@@ -1281,10 +1292,10 @@ Base<dim, Number>::vmult_interface_up(
   apply_add(dst, src_cpy);
 
   for (size_t i = 0; i < dst.size(); ++i)
+  {
     for (size_t j = 0; j < edge_constrained_indices[i].size(); ++j)
-    {
       dst.block(i).local_element(edge_constrained_indices[i][j]) = 0.;
-    }
+  }
 }
 
 template <int dim, typename Number>
@@ -1309,8 +1320,8 @@ template <int dim, typename Number>
 std::size_t
 Base<dim, Number>::memory_consumption() const
 {
-  return inverse_diagonal_entries.get() != NULL ? inverse_diagonal_entries->memory_consumption()
-                                                : sizeof(*this);
+  return inverse_diagonal_entries != nullptr ? inverse_diagonal_entries->memory_consumption()
+                                             : sizeof(*this);
 }
 
 template <int dim, typename Number>
@@ -1515,11 +1526,13 @@ LaplaceOperator<dim, fe_degree, n_q_points_1d, n_components, Number>::compute_di
   this->set_constrained_entries_to_one(inverse_diagonal_vector);
 
   for (unsigned int i = 0; i < inverse_diagonal_vector.local_size(); ++i)
+  {
     if (std::abs(inverse_diagonal_vector.local_element(i)) >
         std::sqrt(std::numeric_limits<Number>::epsilon()))
       inverse_diagonal_vector.local_element(i) = 1. / inverse_diagonal_vector.local_element(i);
     else
       inverse_diagonal_vector.local_element(i) = 1.;
+  }
 
   inverse_diagonal_vector.update_ghost_values();
 }
@@ -1540,12 +1553,14 @@ namespace
   non_negative(const VectorizedArray<Number>& n)
   {
     for (unsigned int v = 0; v < VectorizedArray<Number>::n_array_elements; ++v)
+    {
       if (n[v] < 0.)
         return false;
+    }
 
     return true;
   }
-}
+} // namespace
 
 template <int dim, int fe_degree, int n_q_points_1d, int n_components, typename Number>
 void
@@ -1566,9 +1581,7 @@ LaplaceOperator<dim, fe_degree, n_q_points_1d, n_components, Number>::do_operati
   else
   {
     for (unsigned int q = 0; q < phi.n_q_points; ++q)
-    {
       phi.submit_gradient(phi.get_gradient(q), q);
-    }
   }
   phi.integrate(false, true);
 }
@@ -1594,7 +1607,7 @@ template <int dim, int fe_degree, int n_q_points_1d, int n_components, typename 
 void
 LaplaceOperator<dim, fe_degree, n_q_points_1d, n_components, Number>::local_diagonal_cell(
   const MatrixFree<dim, Number>& data_, LinearAlgebra::distributed::Vector<Number>& dst,
-  const unsigned int&, const std::pair<unsigned int, unsigned int>& cell_range) const
+  const unsigned int& /*unused*/, const std::pair<unsigned int, unsigned int>& cell_range) const
 {
   FEEvaluation<dim, fe_degree, n_q_points_1d, n_components, Number> phi(data_);
   for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)

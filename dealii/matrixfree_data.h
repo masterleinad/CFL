@@ -1,24 +1,6 @@
 #ifndef MATRIXFREE_DATA_H
 #define MATRIXFREE_DATA_H
 
-/*#include <deal.II/dofs/dof_handler.h>
-#include <deal.II/fe/fe.h>
-
-
-
-#include <deal.II/grid/tria.h>
-
-#include <dealii/operators.h>
-
-#include <deal.II/matrix_free/operators.h>
-
-
-#include <cfl/forms.h>
-#include <cfl/static_for.h>
-#include <cfl/traits.h>
-
-#include <string>*/
-
 #include <deal.II/fe/mapping_q.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/manifold_lib.h>
@@ -27,6 +9,8 @@
 
 #include <dealii/fe_data.h>
 #include <dealii/matrix_free_integrator.h>
+
+#include <utility>
 
 using namespace dealii;
 using namespace CFL::dealii::MatrixFree;
@@ -49,13 +33,12 @@ class MatrixFreeData
 public:
   // constructor for multiple FiniteElements
   MatrixFreeData(unsigned int grid_index, unsigned int refine,
-                 const std::vector<FiniteElement<dim>*>& fe,
-                 const std::shared_ptr<FEDatas>& fe_datas)
+                 const std::vector<FiniteElement<dim>*>& fe, std::shared_ptr<FEDatas> fe_datas)
     : mapping(FEDatas::max_degree)
-    , fe_datas(fe_datas)
+    , fe_datas(std::move(fe_datas))
     , quadrature(FEDatas::max_degree + 1)
   {
-    AssertThrow(fe.size() > 0, ExcInternalError());
+    AssertThrow(!fe.empty(), ExcInternalError());
     if (grid_index == 0)
       GridGenerator::hyper_cube(tr);
     else if (grid_index == 1)
@@ -70,11 +53,11 @@ public:
 
     for (size_t i = 0; i < fe.size(); ++i)
     {
-      dh_ptr_vector.push_back(std::unique_ptr<DoFHandler<dim>>(new DoFHandler<dim>()));
+      dh_ptr_vector.push_back(std::make_unique<DoFHandler<dim>>());
       dh_ptr_vector[i]->initialize(tr, *(fe[i]));
       dh_const_ptr_vector.push_back(dh_ptr_vector[i].get());
       // dh_vector[i].initialize_local_block_info();
-      constraint_ptr_vector.push_back(std::unique_ptr<ConstraintMatrix>(new ConstraintMatrix()));
+      constraint_ptr_vector.push_back(std::make_unique<ConstraintMatrix>());
       constraint_const_ptr_vector.push_back(constraint_ptr_vector[i].get());
       quadrature_vector.push_back(QGauss<1>(fe[i]->degree + 1));
     }

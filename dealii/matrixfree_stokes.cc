@@ -50,13 +50,14 @@ test(unsigned int refine, unsigned int degree,
 
   std::vector<types::global_dof_index> dofs_per_block(2);
   DoFTools::count_dofs_per_block(dof, dofs_per_block, stokes_sub_blocks);
-
   {
     BlockDynamicSparsityPattern csp(2, 2);
 
     for (unsigned int d = 0; d < 2; ++d)
+    {
       for (unsigned int e = 0; e < 2; ++e)
         csp.block(d, e).reinit(dofs_per_block[d], dofs_per_block[e]);
+    }
 
     csp.collect_sizes();
 
@@ -127,15 +128,19 @@ test(unsigned int refine, unsigned int degree,
 
   // fill system_rhs with random numbers
   for (unsigned int i = 0; i < system_rhs.n_blocks(); ++i)
+  {
     for (unsigned int j = 0; j < system_rhs.block(i).size(); ++j)
       system_rhs.block(i)(j) = in.block(i)(j);
+  }
 
   system_rhs.print(std::cout);
   system_matrix.vmult(solution, system_rhs);
 
   for (unsigned int i = 0; i < system_rhs.n_blocks(); ++i)
+  {
     for (unsigned int j = 0; j < system_rhs.block(i).size(); ++j)
       out.block(i)(j) = solution.block(i)(j);
+  }
 
   solution.print(std::cout);
 }
@@ -167,7 +172,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   //  TestSymmetricGradient<2,dim,0> Dv;
   auto Divu = div(u);
   FELiftDivergence<decltype(p)> Liftp(p);
-  FESymmetricGradient<2, dim, 0> Du("(\\nabla+\\nabla^T)u");
+  FESymmetricGradient<2, dim, 0> Du(R"((\nabla+\nabla^T)u)");
   auto f1 = form(Du + Liftp, Dv);
   auto f2 = form(Divu, q);
   auto f = f1 + f2;
@@ -180,8 +185,10 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   data.resize_vector(x_ref);
 
   for (size_t i = 0; i < b.n_blocks(); ++i)
+  {
     for (types::global_dof_index j = 0; j < b.block(i).size(); ++j)
       b.block(i)[j] = j;
+  }
 
   test<dim>(refine, degree, b, x_ref);
 
@@ -191,15 +198,23 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
     for (size_t j = 0; j < b.n_blocks(); ++j)
       x_new.block(j) = 0.;
     for (size_t k = 0; k < b.n_blocks(); ++k)
+    {
       for (types::global_dof_index j = 0; j < x_new.block(k).size(); ++j)
+      {
         // if (x_new.block(k)[j] != 0.)
         std::cout << i << '\t' << j << '\t' << k << '\t' << b.block(k)[j] << std::endl;
+      }
+    }
     data.vmult(x_new, b, f);
     for (size_t k = 0; k < b.n_blocks(); ++k)
+    {
       for (types::global_dof_index j = 0; j < x_new.block(k).size(); ++j)
+      {
         // if (x_new.block(k)[j] != 0.)
         std::cout << i << '\t' << j << '\t' << k << '\t' << x_new.block(k)[j] << '\t'
                   << x_ref.block(k)[j] << std::endl;
+      }
+    }
     if (i > 0)
     {
       for (size_t k = 0; k < b.n_blocks(); ++k)

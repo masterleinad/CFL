@@ -61,6 +61,7 @@ test(unsigned int refine, unsigned int degree, const LinearAlgebra::distributed:
       fe_values.reinit(cell);
 
       for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
+      {
         for (unsigned int i = 0; i < dofs_per_cell; ++i)
         {
           unsigned int component_i = fe.system_to_component_index(i).first;
@@ -68,10 +69,13 @@ test(unsigned int refine, unsigned int degree, const LinearAlgebra::distributed:
           {
             unsigned int component_j = fe.system_to_component_index(j).first;
             if (component_i == component_j)
+            {
               cell_matrix(i, j) += (fe_values.shape_grad(i, q_point) *
                                     fe_values.shape_grad(j, q_point) * fe_values.JxW(q_point));
+            }
           }
         }
+      }
 
       cell->get_dof_indices(local_dof_indices);
       constraints.distribute_local_to_global(cell_matrix, local_dof_indices, sparse_matrix);
@@ -89,7 +93,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FESystem<dim> fe_u(FE_Q<dim>(degree), dim);
 
   FEData<1, dim, dim, 0, 1> fedata1(fe_u);
-  FEDatas<decltype(fedata1)> fe_datas = fedata1;
+  FEDatas<decltype(fedata1)> fe_datas{ fedata1 };
 
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
@@ -123,14 +127,22 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
     for (size_t j = 0; j < b.n_blocks(); ++j)
       x_new.block(j) = 0.;
     for (size_t k = 0; k < b.n_blocks(); ++k)
+    {
       for (types::global_dof_index j = 0; j < x_new.block(k).size(); ++j)
+      {
         // if (x_new.block(k)[j] != 0.)
         std::cout << i << '\t' << j << '\t' << k << '\t' << b.block(k)[j] << std::endl;
+      }
+    }
     data.vmult(x_new, b, f);
     for (size_t k = 0; k < b.n_blocks(); ++k)
+    {
       for (types::global_dof_index j = 0; j < x_new.block(k).size(); ++j)
+      {
         // if (x_new.block(k)[j] != 0.)
         std::cout << i << '\t' << j << '\t' << k << '\t' << x_new.block(k)[j] << std::endl;
+      }
+    }
     if (i > 0)
     {
       for (size_t k = 0; k < b.n_blocks(); ++k)

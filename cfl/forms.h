@@ -4,6 +4,7 @@
 #include <array>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include <cfl/traits.h>
 
@@ -13,7 +14,7 @@ template <int rank, class Test, class Expr>
 struct form_latex_aux
 {
   std::string
-  operator()(const Test& test, const Expr& expr)
+  operator()(const Test& /*test*/, const Expr& /*expr*/)
   {
     return std::string("Not implemented for rank ") + std::to_string(rank);
   }
@@ -25,7 +26,7 @@ struct form_latex_aux<0, Test, Expr>
   std::string
   operator()(const Test& test, const Expr& expr)
   {
-    return "\\left(" + expr.latex() + "," + test.latex() + "\\right)";
+    return R"(\left()" + expr.latex() + "," + test.latex() + R"(\right))";
   }
 };
 
@@ -39,10 +40,12 @@ struct form_latex_aux<1, Test, Expr>
     for (unsigned int i = 0; i < Test::TensorTraits::dim; ++i)
     {
       if (i > 0)
+      {
         output += " + ";
-      output += "\\left(" + expr.latex(i) + "," + test.latex(i) + "\\right)";
+        output += R"(\left()" + expr.latex(i) + "," + test.latex(i) + R"(\right))";
+      }
+      return output;
     }
-    return output;
   }
 };
 
@@ -54,12 +57,14 @@ struct form_latex_aux<2, Test, Expr>
   {
     std::string output;
     for (unsigned int i = 0; i < Test::TensorTraits::dim; ++i)
+    {
       for (unsigned int j = 0; j < Test::TensorTraits::dim; ++j)
       {
         if (i > 0 || j > 0)
           output += " + ";
-        output += "\\left(" + expr.latex(i, j) + "," + test.latex(i, j) + "\\right)";
+        output += R"(\left()" + expr.latex(i, j) + "," + test.latex(i, j) + R"(\right))";
       }
+    }
     return output;
   }
 };
@@ -68,7 +73,7 @@ template <int rank, class Test, class Expr>
 struct form_evaluate_aux
 {
   double
-  operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
+  operator()(unsigned int /*k*/, unsigned int /*i*/, const Test& /*test*/, const Expr& /*expr*/)
   {
     static_assert(rank < 2, "Not implemented for this rank");
     return 0.;
@@ -93,7 +98,9 @@ struct form_evaluate_aux<1, Test, Expr>
   {
     double sum = 0.;
     for (unsigned int d = 0; d < Test::TensorTraits::dim; ++d)
+    {
       sum += test.evaluate(k, i, d) * expr.evaluate(k, d);
+    }
     return sum;
   }
 };
@@ -115,9 +122,9 @@ public:
   static constexpr bool integrate_value = Test::integrate_value;
   static constexpr bool integrate_gradient = Test::integrate_gradient;
 
-  Form(const Test& test, const Expr& expr)
-    : test(test)
-    , expr(expr)
+  Form(Test test, Expr expr)
+    : test(std::move(test))
+    , expr(std::move(expr))
   {
     std::cout << "constructor1" << std::endl;
     static_assert(Traits::is_test_function_set<Test>::value,
@@ -243,7 +250,7 @@ namespace Traits
   {
     const static bool value = true;
   };
-}
+} // namespace Traits
 
 template <class Test, class Expr>
 typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
@@ -275,7 +282,7 @@ public:
   static constexpr bool integrate_gradient = FormType::integrate_gradient;
   static constexpr unsigned int fe_number = FormType::fe_number;
 
-  Forms(const FormType& form)
+  explicit Forms(const FormType& form)
     : form(form)
   {
     std::cout << "constructor2" << std::endl;
@@ -339,7 +346,7 @@ public:
                   "You need to construct this with a Form object!");
   }
 
-  Forms(const FormType& form, const Types&... old_form)
+  explicit Forms(const FormType& form, const Types&... old_form)
     : Forms<Types...>(old_form...)
     , form(form)
   {
@@ -401,6 +408,6 @@ public:
 private:
   const FormType& form;
 };
-}
+} // namespace CFL
 
 #endif

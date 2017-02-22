@@ -109,7 +109,7 @@ private:
   LinearAlgebra::distributed::Vector<double> solution_update;
   LinearAlgebra::distributed::Vector<double> system_rhs;
 
-  double setup_time;
+  double setup_time{};
   ConditionalOStream pcout;
   ConditionalOStream time_details;
 };
@@ -165,7 +165,6 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
   time_details << "Distribute DoFs & B.C.     (CPU/wall) " << time() << "s/" << time.wall_time()
                << "s" << std::endl;
   time.restart();
-
   {
     typename MatrixFree<dim, double>::AdditionalData additional_data;
     additional_data.tasks_parallel_scheme = MatrixFree<dim, double>::AdditionalData::none;
@@ -351,7 +350,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::output_results(
       std::ostringstream filename;
       filename << "solution-" << cycle << "." << i << ".vtu";
 
-      filenames.push_back(filename.str().c_str());
+      filenames.emplace_back(filename.str());
     }
     std::string master_name = "solution-" + Utilities::to_string(cycle) + ".pvtu";
     std::ofstream master_output(master_name.c_str());
@@ -380,7 +379,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::run()
     pcout << std::endl;
   };
 }
-}
+} // namespace Step37
 
 int
 main(int argc, char* argv[])
@@ -394,9 +393,9 @@ main(int argc, char* argv[])
     FE_Q<dimension> fe_u(degree_finite_element);
 
     FEData<2, 1, dimension, 0, 2, double> fedata_double(fe_u);
-    FEDatas<decltype(fedata_double)> fe_datas_system = fedata_double;
+    FEDatas<decltype(fedata_double)> fe_datas_system{ fedata_double };
     FEData<2, 1, dimension, 0, 2, float> fedata_float(fe_u);
-    FEDatas<decltype(fedata_float)> fe_datas_level = fedata_float;
+    FEDatas<decltype(fedata_float)> fe_datas_level{ fedata_float };
 
     CFL::dealii::MatrixFree::TestFunction<0, dimension, 0> v_system;
     auto Dv_system = grad(v_system);
