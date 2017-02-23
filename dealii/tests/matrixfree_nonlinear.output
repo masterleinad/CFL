@@ -1,0 +1,33 @@
+160
+constructor1
+constructor1
+operator+1
+constructor2
+constructor4
+DEAL::Grid type 0 Cells 1 DoFs 4+4
+2
+Vector 0 has size 4
+Vector 1 has size 4
+Vector 0 has size 4
+Vector 1 has size 4
+Process #0
+Local range: [0, 4), global size: 4
+Vector data:
+0.000e+00 1.000e+00 2.000e+00 3.000e+00 
+Process #0
+Local range: [0, 4), global size: 4
+Vector data:
+0.000e+00 1.000e+00 2.000e+00 3.000e+00 
+Process #0
+Local range: [0, 4), global size: 4
+Vector data:
+-2.500e+00 -1.125e+00 7.500e-01 3.625e+00 
+0	0	-2.5
+1	0	-1.125
+2	0	0.75
+3	0	3.625
+0	1	0
+1	1	0
+2	1	0
+3	1	0
+error: 4.02752e-15

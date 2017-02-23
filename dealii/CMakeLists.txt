@@ -48,3 +48,6 @@ FOREACH(ccfile ${sources})
                           CONFIG "../PVS-Studio.cfg")
   ENDIF()
 ENDFOREACH()
+
+ENABLE_TESTING()
+ADD_SUBDIRECTORY(tests)
