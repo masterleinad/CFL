@@ -202,7 +202,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestFunction : public TestFunctionBase<TestFunction<rank, dim, idx>>
+    class TestFunction final : public TestFunctionBase<TestFunction<rank, dim, idx>>
     {
     public:
       typedef TestFunctionBase<TestFunction<rank, dim, idx>> Base;
@@ -227,7 +227,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestDivergence : public TestFunctionBase<TestDivergence<rank, dim, idx>>
+    class TestDivergence final : public TestFunctionBase<TestDivergence<rank, dim, idx>>
     {
     public:
       typedef TestFunctionBase<TestDivergence<rank, dim, idx>> Base;
@@ -249,7 +249,8 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestSymmetricGradient : public TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>
+    class TestSymmetricGradient final
+      : public TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>
     {
     public:
       typedef TestFunctionBase<TestSymmetricGradient<rank, dim, idx>> Base;
@@ -273,7 +274,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestCurl : public TestFunctionBase<TestCurl<rank, dim, idx>>
+    class TestCurl final : public TestFunctionBase<TestCurl<rank, dim, idx>>
     {
     public:
       typedef TestFunctionBase<TestCurl<rank, dim, idx>> Base;
@@ -298,7 +299,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestGradient : public TestFunctionBase<TestGradient<rank, dim, idx>>
+    class TestGradient final : public TestFunctionBase<TestGradient<rank, dim, idx>>
     {
     public:
       typedef TestFunctionBase<TestGradient<rank, dim, idx>> Base;
@@ -323,7 +324,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class TestHessian : public TestFunctionBase<TestHessian<rank, dim, idx>>
+    class TestHessian final : public TestFunctionBase<TestHessian<rank, dim, idx>>
     {
     public:
       typedef TestFunctionBase<TestHessian<rank, dim, idx>> Base;
@@ -420,7 +421,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEFunction : public FEFunctionBase<FEFunction<rank, dim, idx>>
+    class FEFunction final : public FEFunctionBase<FEFunction<rank, dim, idx>>
     {
     public:
       typedef FEFunctionBase<FEFunction<rank, dim, idx>> Base;
@@ -449,7 +450,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEDivergence : public FEFunctionBase<FEDivergence<rank, dim, idx>>
+    class FEDivergence final : public FEFunctionBase<FEDivergence<rank, dim, idx>>
     {
     public:
       typedef FEFunctionBase<FEDivergence<rank, dim, idx>> Base;
@@ -480,7 +481,7 @@ namespace dealii
     };
 
     template <class FEFunctionType>
-    class FELiftDivergence
+    class FELiftDivergence final
     {
     private:
       const FEFunctionType fefunction;
@@ -532,7 +533,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FESymmetricGradient : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
+    class FESymmetricGradient final : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
     {
     public:
       typedef FEFunctionBase<FESymmetricGradient<rank, dim, idx>> Base;
@@ -561,7 +562,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FECurl : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
+    class FECurl final : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
     {
     public:
       typedef FEFunctionBase<FESymmetricGradient<rank, dim, idx>> Base;
@@ -595,7 +596,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEGradient : public FEFunctionBase<FEGradient<rank, dim, idx>>
+    class FEGradient final : public FEFunctionBase<FEGradient<rank, dim, idx>>
     {
     public:
       typedef FEFunctionBase<FEGradient<rank, dim, idx>> Base;
@@ -629,7 +630,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FELaplacian : public FEFunctionBase<FELaplacian<rank, dim, idx>>
+    class FELaplacian final : public FEFunctionBase<FELaplacian<rank, dim, idx>>
     {
     public:
       typedef FEFunctionBase<FELaplacian<rank, dim, idx>> Base;
@@ -663,7 +664,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEDiagonalHessian : public FEFunctionBase<FEDiagonalHessian<rank, dim, idx>>
+    class FEDiagonalHessian final : public FEFunctionBase<FEDiagonalHessian<rank, dim, idx>>
     {
     public:
       typedef FEFunctionBase<FEDiagonalHessian<rank, dim, idx>> Base;
@@ -692,7 +693,7 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEHessian : public FEFunctionBase<FEHessian<rank, dim, idx>>
+    class FEHessian final : public FEFunctionBase<FEHessian<rank, dim, idx>>
     {
     public:
       typedef FEFunctionBase<FEHessian<rank, dim, idx>> Base;

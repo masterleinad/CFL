@@ -8,7 +8,7 @@
 
 template <int fe_degree, int n_components, int dim, unsigned int fe_no, unsigned int max_fe_degree,
           typename Number = double>
-class FEData
+class FEData final
 {
 public:
   typedef typename dealii::FEEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>
@@ -18,9 +18,8 @@ public:
   static constexpr unsigned int fe_number = fe_no;
   static constexpr unsigned int max_degree = max_fe_degree;
 
-  explicit FEData(const dealii::FiniteElement<dim>& fe)
+  explicit FEData(const dealii::FiniteElement<dim>& fe[[maybe_unused]])
   {
-    (void)fe;
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
     Assert(fe.degree == fe_degree, dealii::ExcIndexRange(fe.degree, fe_degree, fe_degree));
     AssertDimension(fe.n_components(), n_components);
@@ -79,9 +78,8 @@ public:
                   "You need to construct this with a FEData object!");
   }
 
-  FEDatas(const FEDatas<FEData>& fe_datas)
+  FEDatas(const FEDatas<FEData>& fe_datas[[maybe_unused]])
   {
-    (void)fe_datas;
     Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
   }
 
@@ -794,10 +792,9 @@ public:
                   "You need to construct this with a FEData object!");
   }
 
-  FEDatas(const FEDatas<FEData, Types...>& fe_datas)
+  FEDatas(const FEDatas<FEData, Types...>& fe_datas[[maybe_unused]])
     : FEDatas<Types...>()
   {
-    (void)fe_datas;
     Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
   }
 

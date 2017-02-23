@@ -112,7 +112,7 @@ class Forms;
  * A Form is an expression tested by a test function set.
  */
 template <class Test, class Expr, typename number = double>
-class Form
+class Form final
 {
 public:
   const Test test;

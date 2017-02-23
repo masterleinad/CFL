@@ -798,9 +798,8 @@ Base<dim, Number>::clear()
 
 template <int dim, typename Number>
 Number
-Base<dim, Number>::el(const unsigned int row, const unsigned int col) const
+Base<dim, Number>::el(const unsigned int row, [[maybe_unused]] const unsigned int col) const
 {
-  (void)col;
   Assert(row == col, ExcNotImplemented());
   Assert(inverse_diagonal_entries.get() != NULL && inverse_diagonal_entries->m() > 0,
          ExcNotInitialized());

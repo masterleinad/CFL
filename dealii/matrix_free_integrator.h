@@ -154,13 +154,11 @@ public:
   }
 
   // TODO(darndt): this is hacky and just tries to get comparable output w.r.t. step-37
-  void
-  local_diagonal_cell(const MatrixFree<dim, Number>& data_,
-                      LinearAlgebra::distributed::Vector<Number>& dst,
-                      const unsigned int& /*unused*/,
-                      const std::pair<unsigned int, unsigned int>& cell_range) const
+  void local_diagonal_cell([[maybe_unused]] const MatrixFree<dim, Number>& data_,
+                           LinearAlgebra::distributed::Vector<Number>& dst,
+                           const unsigned int& /*unused*/,
+                           const std::pair<unsigned int, unsigned int>& cell_range) const
   {
-    (void)data_;
     Assert(&data_ == &(this->get_matrix_free()), ExcInternalError());
     for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
     {
@@ -272,16 +270,15 @@ private:
   }
 
   template <class VectorType>
-  void
-  local_apply_cell(const MatrixFree<dim, Number>& data_, VectorType& dst, const VectorType& src,
-                   const std::pair<unsigned int, unsigned int>& cell_range) const
+  void local_apply_cell([[maybe_unused]] const MatrixFree<dim, Number>& data_, VectorType& dst,
+                        const VectorType& src,
+                        const std::pair<unsigned int, unsigned int>& cell_range) const
   {
     static_assert(
       std::is_same<VectorType, LinearAlgebra::distributed::Vector<Number>>::value ||
         std::is_same<VectorType, LinearAlgebra::distributed::BlockVector<Number>>::value,
       "This is only implemented for LinearAlgebra::distributed::Vector<Number> "
       "and LinearAlgebra::distributed::BlockVector<Number> objects!");
-    (void)data_;
     Assert(&data_ == &(this->get_matrix_free()), ExcInternalError());
     for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
     {
