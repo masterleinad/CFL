@@ -335,12 +335,14 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::output_results(
   data_out.add_data_vector(solution, "solution");
   data_out.build_patches();
 
-  std::ostringstream filename;
-  filename << "solution-" << cycle << "." << Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)
-           << ".vtu";
+  {
+    std::ostringstream filename;
+    filename << "solution-" << cycle << "." << Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)
+             << ".vtu";
 
-  std::ofstream output(filename.str().c_str());
-  data_out.write_vtu(output);
+    std::ofstream output(filename.str().c_str());
+    data_out.write_vtu(output);
+  }
 
   if (Utilities::MPI::this_mpi_process(MPI_COMM_WORLD) == 0)
   {

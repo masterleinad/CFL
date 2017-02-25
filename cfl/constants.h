@@ -15,9 +15,9 @@ class ConstantScaled
 
 public:
   using TensorTraits = typename T::TensorTraits;
-  constexpr ConstantScaled(const number& factor, const T& t)
-    : factor(factor)
-    , t(t)
+  constexpr ConstantScaled(const number& factor_, const T& t_)
+    : factor(factor_)
+    , t(t_)
   {
   }
 

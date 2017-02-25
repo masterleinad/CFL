@@ -122,9 +122,9 @@ public:
   static constexpr bool integrate_value = Test::integrate_value;
   static constexpr bool integrate_gradient = Test::integrate_gradient;
 
-  Form(Test test, Expr expr)
-    : test(std::move(test))
-    , expr(std::move(expr))
+  Form(Test test_, Expr expr_)
+    : test(std::move(test_))
+    , expr(std::move(expr_))
   {
     std::cout << "constructor1" << std::endl;
     static_assert(Traits::is_test_function_set<Test>::value,
@@ -282,8 +282,8 @@ public:
   static constexpr bool integrate_gradient = FormType::integrate_gradient;
   static constexpr unsigned int fe_number = FormType::fe_number;
 
-  explicit Forms(const FormType& form)
-    : form(form)
+  explicit Forms(const FormType& form_)
+    : form(form_)
   {
     std::cout << "constructor2" << std::endl;
     static_assert(Traits::is_form<FormType>::value,
@@ -337,18 +337,18 @@ public:
   static constexpr bool integrate_gradient = FormType::integrate_gradient;
   static constexpr unsigned int fe_number = FormType::fe_number;
 
-  Forms(const FormType& form, const Forms<Types...>& old_form)
+  Forms(const FormType& form_, const Forms<Types...>& old_form)
     : Forms<Types...>(old_form)
-    , form(form)
+    , form(form_)
   {
     std::cout << "constructor3" << std::endl;
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
 
-  explicit Forms(const FormType& form, const Types&... old_form)
+  explicit Forms(const FormType& form_, const Types&... old_form)
     : Forms<Types...>(old_form...)
-    , form(form)
+    , form(form_)
   {
     std::cout << "constructor4" << std::endl;
     static_assert(Traits::is_form<FormType>::value,

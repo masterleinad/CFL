@@ -774,8 +774,8 @@ namespace dealii
       typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
         TensorTraits;
 
-      explicit SumFEFunctions(const FEFunction& summand)
-        : summand(summand)
+      explicit SumFEFunctions(const FEFunction& summand_)
+        : summand(summand_)
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -850,9 +850,9 @@ namespace dealii
         SumFEFunctions<Types...>::set_evaluation_flags(phi);
       }
 
-      explicit SumFEFunctions(const FEFunction& summand, const Types&... old_sum)
+      explicit SumFEFunctions(const FEFunction& summand_, const Types&... old_sum)
         : SumFEFunctions<Types...>(old_sum...)
-        , summand(summand)
+        , summand(summand_)
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -862,9 +862,9 @@ namespace dealii
                       "You can only add tensors of equal rank!");
       }
 
-      SumFEFunctions(const FEFunction& summand, const SumFEFunctions<Types...>& old_sum)
+      SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
         : SumFEFunctions<Types...>(old_sum)
-        , summand(summand)
+        , summand(summand_)
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -990,8 +990,8 @@ namespace dealii
       typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
         TensorTraits;
 
-      explicit ProductFEFunctions(const FEFunction& factor)
-        : factor(factor)
+      explicit ProductFEFunctions(const FEFunction& factor_)
+        : factor(factor_)
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -1058,9 +1058,9 @@ namespace dealii
         ProductFEFunctions<Types...>::set_evaluation_flags(phi);
       }
 
-      explicit ProductFEFunctions(const FEFunction& factor, const Types&... old_product)
+      explicit ProductFEFunctions(const FEFunction& factor_, const Types&... old_product)
         : ProductFEFunctions<Types...>(old_product...)
-        , factor(factor)
+        , factor(factor_)
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -1070,9 +1070,9 @@ namespace dealii
                       "You can only add tensors of equal rank!");
       }
 
-      ProductFEFunctions(const FEFunction& factor, const ProductFEFunctions<Types...>& old_product)
+      ProductFEFunctions(const FEFunction& factor_, const ProductFEFunctions<Types...>& old_product)
         : ProductFEFunctions<Types...>(old_product)
-        , factor(factor)
+        , factor(factor_)
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");

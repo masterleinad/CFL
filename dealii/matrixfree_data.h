@@ -12,9 +12,6 @@
 
 #include <utility>
 
-using namespace dealii;
-using namespace CFL::dealii::MatrixFree;
-
 template <int dim, class FEDatas>
 class MatrixFreeData
 {
@@ -33,9 +30,9 @@ class MatrixFreeData
 public:
   // constructor for multiple FiniteElements
   MatrixFreeData(unsigned int grid_index, unsigned int refine,
-                 const std::vector<FiniteElement<dim>*>& fe, std::shared_ptr<FEDatas> fe_datas)
+                 const std::vector<FiniteElement<dim>*>& fe, std::shared_ptr<FEDatas> fe_datas_)
     : mapping(FEDatas::max_degree)
-    , fe_datas(std::move(fe_datas))
+    , fe_datas(std::move(fe_datas_))
     , quadrature(FEDatas::max_degree + 1)
   {
     AssertThrow(!fe.empty(), ExcInternalError());
@@ -70,8 +67,8 @@ public:
 
   // constructor for multiple FiniteElements
   MatrixFreeData(unsigned int grid_index, unsigned int refine,
-                 const std::vector<FiniteElement<dim>*>& fe, FEDatas fe_datas)
-    : MatrixFreeData(grid_index, refine, fe, std::make_shared<FEDatas>(fe_datas))
+                 const std::vector<FiniteElement<dim>*>& fe, FEDatas fe_datas_)
+    : MatrixFreeData(grid_index, refine, fe, std::make_shared<FEDatas>(fe_datas_))
   {
   }
 

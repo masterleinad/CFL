@@ -16,7 +16,9 @@
 #include <cfl/cfl.h>
 #include <cfl/dealii_matrixfree.h>
 
+using namespace dealii;
 using namespace CFL;
+using namespace CFL::dealii::MatrixFree;
 
 template <int dim>
 void

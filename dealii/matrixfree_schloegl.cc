@@ -21,6 +21,8 @@
  * 2009-2012, updated to MPI version with parallel vectors in 2016
  */
 
+#include <dealii/mg_transfer_matrix_free.h>
+
 #include <deal.II/base/function.h>
 #include <deal.II/base/logstream.h>
 #include <deal.II/base/quadrature_lib.h>
@@ -408,59 +410,58 @@ double
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
 {
   Timer time;
-  /*
-    //MGTransferMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
-    MGTransferPrebuilt<LinearAlgebra::distributed::BlockVector<float> >
-    mg_transfer(mg_constrained_dofs);
-    mg_transfer.build_matrices(dof_handler);
-    setup_time += time.wall_time();
-    time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
-                 << "s\n";
-    time.restart();
+  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
+  mg_transfer.build_matrices(dof_handler);
+  /*    setup_time += time.wall_time();
+      time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
+                   << "s\n";
+      time.restart();
 
-    typedef PreconditionChebyshev<LevelMatrixType, LinearAlgebra::distributed::BlockVector<float>>
-      SmootherType;
-    mg::SmootherRelaxation<SmootherType, LinearAlgebra::distributed::BlockVector<float>>
-    mg_smoother;
-    MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
-    smoother_data.resize(0, triangulation.n_global_levels() - 1);
-    for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
-    {
-      if (level > 0)
+      typedef PreconditionChebyshev<LevelMatrixType, LinearAlgebra::distributed::BlockVector<float>>
+        SmootherType;
+      mg::SmootherRelaxation<SmootherType, LinearAlgebra::distributed::BlockVector<float>>
+      mg_smoother;
+      MGLevelObject<typename SmootherType::AdditionalData> smoother_data;
+      smoother_data.resize(0, triangulation.n_global_levels() - 1);
+      for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
       {
-        smoother_data[level].smoothing_range = 15.;
-        smoother_data[level].degree = 4;
-        smoother_data[level].eig_cg_n_iterations = 10;
+        if (level > 0)
+        {
+          smoother_data[level].smoothing_range = 15.;
+          smoother_data[level].degree = 4;
+          smoother_data[level].eig_cg_n_iterations = 10;
+        }
+        else
+        {
+          smoother_data[0].smoothing_range = 1e-3;
+          smoother_data[0].degree = numbers::invalid_unsigned_int;
+          smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
+        }
+        mg_matrices[level].compute_diagonal();
+        //smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
       }
-      else
-      {
-        smoother_data[0].smoothing_range = 1e-3;
-        smoother_data[0].degree = numbers::invalid_unsigned_int;
-        smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
-      }
-      mg_matrices[level].compute_diagonal();
-      //smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
-    }
-    mg_smoother.initialize(mg_matrices, smoother_data);
+      mg_smoother.initialize(mg_matrices, smoother_data);
 
-    MGCoarseGridApplySmoother<LinearAlgebra::distributed::BlockVector<float>> mg_coarse;
-    mg_coarse.initialize(mg_smoother);
+      MGCoarseGridApplySmoother<LinearAlgebra::distributed::BlockVector<float>> mg_coarse;
+      mg_coarse.initialize(mg_smoother);
 
-    mg::Matrix<LinearAlgebra::distributed::BlockVector<float>> mg_matrix(mg_matrices);
+      mg::Matrix<LinearAlgebra::distributed::BlockVector<float>> mg_matrix(mg_matrices);
 
-    MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>> mg_interface_matrices;
-    mg_interface_matrices.resize(0, triangulation.n_global_levels() - 1);
-    for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
-      mg_interface_matrices[level].initialize(mg_matrices[level]);
-    mg::Matrix<LinearAlgebra::distributed::BlockVector<float>> mg_interface(mg_interface_matrices);
+      MGLevelObject<MatrixFreeOperators::MGInterfaceOperator<LevelMatrixType>>
+     mg_interface_matrices;
+      mg_interface_matrices.resize(0, triangulation.n_global_levels() - 1);
+      for (unsigned int level = 0; level < triangulation.n_global_levels(); ++level)
+        mg_interface_matrices[level].initialize(mg_matrices[level]);
+      mg::Matrix<LinearAlgebra::distributed::BlockVector<float>>
+     mg_interface(mg_interface_matrices);
 
-    Multigrid<LinearAlgebra::distributed::BlockVector<float>> mg(
-      mg_matrix, mg_coarse, mg_transfer, mg_smoother, mg_smoother);
-    mg.set_edge_matrices(mg_interface, mg_interface);
+      Multigrid<LinearAlgebra::distributed::BlockVector<float>> mg(
+        mg_matrix, mg_coarse, mg_transfer, mg_smoother, mg_smoother);
+      mg.set_edge_matrices(mg_interface, mg_interface);
 
-    PreconditionMG<dim, LinearAlgebra::distributed::BlockVector<float>,
-    MGTransferPrebuilt<LinearAlgebra::distributed::BlockVector<float> > >
-      preconditioner(dof_handler, mg, mg_transfer);*/
+      PreconditionMG<dim, LinearAlgebra::distributed::BlockVector<float>,
+      MGTransferPrebuilt<LinearAlgebra::distributed::BlockVector<float> > >
+        preconditioner(dof_handler, mg, mg_transfer);*/
 
   SolverControl solver_control(dof_handler.n_dofs(), 1e-12 * system_rhs.l2_norm(), false, false);
   SolverCG<LinearAlgebra::distributed::BlockVector<double>> cg(solver_control);

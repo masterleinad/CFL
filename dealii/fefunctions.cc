@@ -16,7 +16,7 @@ main()
   CFL::dealii::MatrixFree::FEDiagonalHessian<2, 2, 0> fe_diagonal_hessian("fe_d_h_s");
   CFL::dealii::MatrixFree::FEHessian<2, 2, 0> fe_hessian("f_h_s");
 
-  static_assert(CFL::Traits::is_cfl_object<decltype(fe_function_scalar)>::value);
+  static_assert(CFL::Traits::is_cfl_object<decltype(fe_function_scalar)>::value, "error!");
 
   std::cout << fe_function_scalar.name() << std::endl;
   std::cout << fe_function_vector.name() << std::endl;

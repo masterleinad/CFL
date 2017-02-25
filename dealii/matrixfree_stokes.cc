@@ -16,7 +16,9 @@
 #include <cfl/cfl.h>
 #include <cfl/dealii_matrixfree.h>
 
+using namespace dealii;
 using namespace CFL;
+using namespace CFL::dealii::MatrixFree;
 
 template <int dim>
 void
@@ -184,7 +186,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   data.resize_vector(x_old);
   data.resize_vector(x_ref);
 
-  for (size_t i = 0; i < b.n_blocks(); ++i)
+  for (unsigned int i = 0; i < b.n_blocks(); ++i)
   {
     for (types::global_dof_index j = 0; j < b.block(i).size(); ++j)
       b.block(i)[j] = j;

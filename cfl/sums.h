@@ -16,7 +16,7 @@ class Sum
 public:
   typedef typename Traits::Tensor<A::TensorTraits::rank, A::TensorTraits::dim> TensorTraits;
 
-  Sum(const A& a, const B& b)
+  Sum(const A& a_, const B& b_)
     : a(a)
     , b(b)
   {
