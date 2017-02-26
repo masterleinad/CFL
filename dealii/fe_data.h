@@ -198,7 +198,7 @@ public:
   get_n_q_points()
   {
     static_assert(fe_number == fe_number_extern, "Component not found!");
-    return FEData::FEEvaluationType::n_q_points;
+    return FEData::FEEvaluationType::static_n_q_points;
   }
 
   template <unsigned int fe_number_extern>
@@ -568,7 +568,10 @@ public:
   get_n_q_points()
   {
     if
-      constexpr(fe_number_extern == fe_number) { return FEData::FEEvaluationType::n_q_points; }
+      constexpr(fe_number_extern == fe_number)
+      {
+        return FEData::FEEvaluationType::static_n_q_points;
+      }
     else
       return FEDatas<Types...>::template get_n_q_points<fe_number_extern>();
   }
