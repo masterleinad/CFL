@@ -334,7 +334,6 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::output_results(
   data_out.attach_dof_handler(dof_handler);
   data_out.add_data_vector(solution, "solution");
   data_out.build_patches();
-
   {
     std::ostringstream filename;
     filename << "solution-" << cycle << "." << Utilities::MPI::this_mpi_process(MPI_COMM_WORLD)
@@ -394,9 +393,9 @@ main(int argc, char* argv[])
 
     FE_Q<dimension> fe_u(degree_finite_element);
 
-    FEData<2, 1, dimension, 0, 2, double> fedata_double(fe_u);
+    FEData<FE_Q, 2, 1, dimension, 0, 2, double> fedata_double(fe_u);
     FEDatas<decltype(fedata_double)> fe_datas_system{ fedata_double };
-    FEData<2, 1, dimension, 0, 2, float> fedata_float(fe_u);
+    FEData<FE_Q, 2, 1, dimension, 0, 2, float> fedata_float(fe_u);
     FEDatas<decltype(fedata_float)> fe_datas_level{ fedata_float };
 
     CFL::dealii::MatrixFree::TestFunction<0, dimension, 0> v_system;

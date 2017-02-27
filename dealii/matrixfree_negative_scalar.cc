@@ -24,7 +24,7 @@ void
 run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 {
   FE_Q<dim> fe_p(degree);
-  FEData</*degree*/ 1, /*components*/ 1, dim, /*fe_no*/ 0, /*max_degree*/ 1> fedata(fe_p);
+  FEData<FE_Q, /*degree*/ 1, /*components*/ 1, dim, /*fe_no*/ 0, /*max_degree*/ 1> fedata(fe_p);
 
   auto data = make_matrix_free_data(grid_index, refine, fe_p, fedata);
   data.initialize();

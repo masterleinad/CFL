@@ -410,8 +410,8 @@ double
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
 {
   Timer time;
-  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
-  mg_transfer.build_matrices(dof_handler);
+  /*  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
+    mg_transfer.build_matrices(dof_handler);*/
   /*    setup_time += time.wall_time();
       time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
                    << "s\n";
@@ -568,15 +568,15 @@ main(int argc, char* argv[])
 
     FE_Q<dimension> fe_u(degree_finite_element);
 
-    FEData<degree_finite_element, 1, dimension, 0, degree_finite_element, double> fedata_e_system(
-      fe_u);
-    FEData<degree_finite_element, 1, dimension, 1, degree_finite_element, double> fedata_u_system(
-      fe_u);
+    FEData<FE_Q, degree_finite_element, 1, dimension, 0, degree_finite_element, double>
+      fedata_e_system(fe_u);
+    FEData<FE_Q, degree_finite_element, 1, dimension, 1, degree_finite_element, double>
+      fedata_u_system(fe_u);
     auto fe_datas_system = (fedata_e_system, fedata_u_system);
-    FEData<degree_finite_element, 1, dimension, 0, degree_finite_element, float> fedata_e_level(
-      fe_u);
-    FEData<degree_finite_element, 1, dimension, 1, degree_finite_element, float> fedata_u_level(
-      fe_u);
+    FEData<FE_Q, degree_finite_element, 1, dimension, 0, degree_finite_element, float>
+      fedata_e_level(fe_u);
+    FEData<FE_Q, degree_finite_element, 1, dimension, 1, degree_finite_element, float>
+      fedata_u_level(fe_u);
     auto fe_datas_level = (fedata_e_level, fedata_u_level);
 
     CFL::dealii::MatrixFree::TestFunction<0, dimension, 0> v;

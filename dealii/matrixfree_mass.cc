@@ -94,7 +94,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 {
   FESystem<dim> fe_u(FE_Q<dim>(degree), dim);
 
-  FEData<1, dim, dim, 0, 1> fedata1(fe_u);
+  FEData<FESystem, 1, dim, dim, 0, 1> fedata1(fe_u);
   FEDatas<decltype(fedata1)> fe_datas{ fedata1 };
 
   std::vector<FiniteElement<dim>*> fes;

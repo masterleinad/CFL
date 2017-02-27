@@ -6,8 +6,8 @@
 #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/matrix_free.h>
 
-template <int fe_degree, int n_components, int dim, unsigned int fe_no, unsigned int max_fe_degree,
-          typename Number = double>
+template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
+          unsigned int fe_no, unsigned int max_fe_degree, typename Number = double>
 class FEData final
 {
 public:
@@ -17,12 +17,22 @@ public:
   typedef CFL::Traits::Tensor<(n_components > 1 ? 1 : 0), dim> TensorTraits;
   static constexpr unsigned int fe_number = fe_no;
   static constexpr unsigned int max_degree = max_fe_degree;
+  const std::shared_ptr<const FiniteElementType<dim, dim>> fe;
+  std::unique_ptr<FEEvaluationType> fe_eval;
 
-  explicit FEData(const dealii::FiniteElement<dim>& fe[[maybe_unused]])
+  FEData() = delete;
+
+  explicit FEData(const FiniteElementType<dim, dim>& fe_)
+    : FEData(std::make_shared<const FiniteElementType<dim, dim>>(fe_))
+  {
+  }
+
+  explicit FEData(const std::shared_ptr<const FiniteElementType<dim, dim>>& fe_)
+    : fe(fe_)
   {
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
-    Assert(fe.degree == fe_degree, dealii::ExcIndexRange(fe.degree, fe_degree, fe_degree));
-    AssertDimension(fe.n_components(), n_components);
+    Assert(fe->degree == fe_degree, dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree));
+    AssertDimension(fe->n_components(), n_components);
   }
 };
 
@@ -30,9 +40,10 @@ namespace CFL
 {
 namespace Traits
 {
-  template <int fe_degree, int n_components, int dim, unsigned int fe_no, unsigned int max_degree,
-            typename Number>
-  struct is_fe_data<FEData<fe_degree, n_components, dim, fe_no, max_degree, Number>>
+  template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
+            unsigned int fe_no, unsigned int max_degree, typename Number>
+  struct is_fe_data<
+    FEData<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
   {
     static const bool value = true;
   };
@@ -119,8 +130,7 @@ public:
     std::cout << "Read DoF values " << fe_number << std::endl;
 #endif
     Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
-    if
-      constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+    if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
         fe_evaluation->read_dof_values(vector.block(fe_number));
     else
       fe_evaluation->read_dof_values(vector);
@@ -161,8 +171,7 @@ public:
       std::cout << "Distribute DoF values " << fe_number << std::endl;
 #endif
       Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
-      if
-        constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+      if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
           fe_evaluation->distribute_local_to_global(vector.block(fe_number));
       else
         fe_evaluation->distribute_local_to_global(vector);
@@ -414,8 +423,7 @@ public:
   static constexpr unsigned int
   rank()
   {
-    if
-      constexpr(fe_number == fe_number_extern) { return TensorTraits::rank; }
+    if constexpr(fe_number == fe_number_extern) { return TensorTraits::rank; }
     else
       return FEDatas<Types...>::template rank<fe_number_extern>();
   }
@@ -451,8 +459,7 @@ public:
   void
   read_dof_values(const VectorType& vector)
   {
-    if
-      constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+    if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "Read DoF values " << fe_number << std::endl;
@@ -475,8 +482,7 @@ public:
   void
   distribute_local_to_global(VectorType& vector)
   {
-    if
-      constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+    if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
       {
         if (integrate_values | integrate_gradients)
         {
@@ -526,8 +532,7 @@ public:
   void
   set_integration_flags(bool integrate_value, bool integrate_gradient)
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
         integrate_values |= integrate_value;
         integrate_gradients |= integrate_gradient;
@@ -549,8 +554,7 @@ public:
   void
   set_evaluation_flags(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
         evaluate_values |= evaluate_value;
         evaluate_gradients |= evaluate_gradient;
@@ -567,11 +571,7 @@ public:
   static constexpr unsigned int
   get_n_q_points()
   {
-    if
-      constexpr(fe_number_extern == fe_number)
-      {
-        return FEData::FEEvaluationType::static_n_q_points;
-      }
+    if constexpr(fe_number_extern == fe_number) return FEData::FEEvaluationType::static_n_q_points;
     else
       return FEDatas<Types...>::template get_n_q_points<fe_number_extern>();
   }
@@ -580,8 +580,7 @@ public:
   auto
   get_gradient(unsigned int q) const
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -596,8 +595,7 @@ public:
   auto
   get_symmetric_gradient(unsigned int q) const
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -612,8 +610,7 @@ public:
   auto
   get_divergence(unsigned int q) const
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get divergence FEDatas " << fe_number << " " << q << std::endl;
@@ -628,8 +625,7 @@ public:
   auto
   get_laplacian(unsigned int q) const
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get laplacian FEDatas " << fe_number << " " << q << std::endl;
@@ -644,8 +640,7 @@ public:
   auto
   get_hessian_diagonal(unsigned int q) const
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get hessian_diagonal FEDatas " << fe_number << " " << q << std::endl;
@@ -660,8 +655,7 @@ public:
   auto
   get_hessian(unsigned int q) const
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get hessian FEDatas " << fe_number << " " << q << std::endl;
@@ -676,8 +670,7 @@ public:
   auto
   get_value(unsigned int q) const
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
@@ -692,8 +685,7 @@ public:
   void
   submit_curl(const ValueType& value, unsigned int q)
   {
-    if
-      constexpr(fe_number == fe_number_extern) { fe_evaluation->submit_curl(value, q); }
+    if constexpr(fe_number == fe_number_extern) { fe_evaluation->submit_curl(value, q); }
     else
       FEDatas<Types...>::template submit_curl<fe_number_extern, ValueType>(value, q);
   }
@@ -702,8 +694,7 @@ public:
   void
   submit_divergence(const ValueType& value, unsigned int q)
   {
-    if
-      constexpr(fe_number == fe_number_extern) { fe_evaluation->submit_divergence(value, q); }
+    if constexpr(fe_number == fe_number_extern) { fe_evaluation->submit_divergence(value, q); }
     else
       FEDatas<Types...>::template submit_divergence<fe_number_extern, ValueType>(value, q);
   }
@@ -712,8 +703,7 @@ public:
   void
   submit_symmetric_gradient(const ValueType& value, unsigned int q)
   {
-    if
-      constexpr(fe_number == fe_number_extern) fe_evaluation->submit_symmetric_gradient(value, q);
+    if constexpr(fe_number == fe_number_extern) fe_evaluation->submit_symmetric_gradient(value, q);
     else
       FEDatas<Types...>::template submit_symmetric_gradient<fe_number_extern, ValueType>(value, q);
   }
@@ -722,8 +712,7 @@ public:
   void
   submit_gradient(const ValueType& value, unsigned int q)
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -741,8 +730,7 @@ public:
   void
   submit_value(const ValueType& value, unsigned int q)
   {
-    if
-      constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
@@ -759,8 +747,7 @@ public:
   unsigned int
   dofs_per_cell()
   {
-    if
-      constexpr(fe_number == fe_number_extern) { return fe_evaluation->dofs_per_cell; }
+    if constexpr(fe_number == fe_number_extern) { return fe_evaluation->dofs_per_cell; }
     else
       return FEDatas<Types...>::template dofs_per_cell<fe_number_extern>();
   }
@@ -769,8 +756,7 @@ public:
   unsigned int
   tensor_dofs_per_cell()
   {
-    if
-      constexpr(fe_number ==
+    if constexpr(fe_number ==
                 fe_number_extern) return FEData::FEEvaluationType::tensor_dofs_per_cell;
     else
       return FEDatas<Types...>::template tensor_dofs_per_cell<fe_number_extern>();
@@ -780,8 +766,7 @@ public:
   auto
   begin_dof_values()
   {
-    if
-      constexpr(fe_number == fe_number_extern) { return fe_evaluation->begin_dof_values(); }
+    if constexpr(fe_number == fe_number_extern) { return fe_evaluation->begin_dof_values(); }
     else
       return FEDatas<Types...>::template begin_dof_values<fe_number_extern>();
   }

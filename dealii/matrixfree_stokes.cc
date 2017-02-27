@@ -154,8 +154,8 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FESystem<dim> fe_u(FE_Q<dim>(degree + 1), dim);
   FE_Q<dim> fe_p(degree);
 
-  FEData<2, dim, dim, 0, 2> fedata1(fe_u);
-  FEData<1, 1, dim, 1, 2> fedata2(fe_p);
+  FEData<FESystem, 2, dim, dim, 0, 2> fedata1(fe_u);
+  FEData<FE_Q, 1, 1, dim, 1, 2> fedata2(fe_p);
   auto fe_datas = (fedata1, fedata2);
 
   std::vector<FiniteElement<dim>*> fes;

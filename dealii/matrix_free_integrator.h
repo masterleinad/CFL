@@ -112,8 +112,7 @@ public:
   void
   compute_diagonal() override
   {
-    if
-      constexpr(FEDatas::n == 1)
+    if constexpr(FEDatas::n == 1)
       {
         Assert((::dealii::MatrixFreeOperators::Base<dim, Number>::data != nullptr),
                ExcNotInitialized());
