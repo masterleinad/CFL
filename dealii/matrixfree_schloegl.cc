@@ -156,7 +156,6 @@ private:
   Triangulation<dim> triangulation;
 #endif
 
-  FE_Q<dim> fe;
   DoFHandler<dim> dof_handler;
 
   std::vector<ConstraintMatrix> constraints;
@@ -188,16 +187,12 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::LaplacePr
   , mf_cfl_data_level(mf_cfl_data_level_)
   , form_system(form_system_)
   , form_rhs(form_rhs_)
-  ,
 #ifdef DEAL_II_WITH_P4EST
-  triangulation(MPI_COMM_WORLD, Triangulation<dim>::limit_level_difference_at_vertices,
-                parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy)
-  ,
+  , triangulation(MPI_COMM_WORLD, Triangulation<dim>::limit_level_difference_at_vertices,
+                  parallel::distributed::Triangulation<dim>::construct_multigrid_hierarchy)
 #else
-  triangulation(Triangulation<dim>::limit_level_difference_at_vertices)
-  ,
+  , triangulation(Triangulation<dim>::limit_level_difference_at_vertices)
 #endif
-  fe(degree_finite_element)
   , dof_handler(triangulation)
   , constraints(2)
   , system_matrix()
@@ -222,8 +217,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   rhs_operator.clear();
   mg_matrices.clear_elements();
 
-  dof_handler.distribute_dofs(fe);
-  dof_handler.distribute_mg_dofs(fe);
+  dof_handler.distribute_dofs(*(mf_cfl_data_system.template get_fe_data<0>().fe));
+  dof_handler.distribute_mg_dofs(*(mf_cfl_data_level.template get_fe_data<1>().fe));
 
   pcout << "Number of degrees of freedom: " << dof_handler.n_dofs() << std::endl;
 
@@ -261,7 +256,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
     constraints_pointers.push_back(&(constraints[0]));
     constraints_pointers.push_back(&(constraints[1]));
 
-    std::vector<QGauss<1>> quadrature_pointers(2, QGauss<1>(fe.degree + 1));
+    std::vector<QGauss<1>> quadrature_pointers(2, QGauss<1>(FEDatasSystem::max_degree + 1));
 
     system_mf_storage.reinit(
       dh_pointers, constraints_pointers, quadrature_pointers, additional_data);
@@ -324,7 +319,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
     constraints_pointers.push_back(&(level_constraints[0]));
     constraints_pointers.push_back(&(level_constraints[1]));
 
-    std::vector<QGauss<1>> quadrature_pointers(2, QGauss<1>(fe.degree + 1));
+    std::vector<QGauss<1>> quadrature_pointers(2, QGauss<1>(FEDatasLevel::max_degree + 1));
 
     mg_mf_storage[level].reinit(
       dh_pointers, constraints_pointers, quadrature_pointers, additional_data);
@@ -346,12 +341,12 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::assemble_
 {
   Timer time;
 
-  QGauss<dim> quadrature(fe.get_degree() + 1);
-  FEValues<dim> fev(fe,
+  QGauss<dim> quadrature(FEDatasLevel::max_degree + 1);
+  FEValues<dim> fev(dof_handler.get_fe(),
                     quadrature,
                     update_values | update_gradients | update_JxW_values |
                       update_quadrature_points);
-  const unsigned int dpc = fe.dofs_per_cell;
+  const unsigned int dpc = dof_handler.get_fe().dofs_per_cell;
   const unsigned int nqp = quadrature.size();
   Vector<double> local_rhs(dpc);
   std::vector<types::global_dof_index> global_dof_idx(dpc);
@@ -567,16 +562,17 @@ main(int argc, char* argv[])
     Utilities::MPI::MPI_InitFinalize mpi_init(argc, argv, 1);
 
     FE_Q<dimension> fe_u(degree_finite_element);
+    const auto fe_shared = std::make_shared<FE_Q<dimension>>(fe_u);
 
     FEData<FE_Q, degree_finite_element, 1, dimension, 0, degree_finite_element, double>
-      fedata_e_system(fe_u);
+      fedata_e_system(fe_shared);
     FEData<FE_Q, degree_finite_element, 1, dimension, 1, degree_finite_element, double>
-      fedata_u_system(fe_u);
+      fedata_u_system(fe_shared);
     auto fe_datas_system = (fedata_e_system, fedata_u_system);
     FEData<FE_Q, degree_finite_element, 1, dimension, 0, degree_finite_element, float>
-      fedata_e_level(fe_u);
+      fedata_e_level(fe_shared);
     FEData<FE_Q, degree_finite_element, 1, dimension, 1, degree_finite_element, float>
-      fedata_u_level(fe_u);
+      fedata_u_level(fe_shared);
     auto fe_datas_level = (fedata_e_level, fedata_u_level);
 
     CFL::dealii::MatrixFree::TestFunction<0, dimension, 0> v;

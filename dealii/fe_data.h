@@ -6,6 +6,9 @@
 #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/matrix_free.h>
 
+template <typename... Types>
+class FEDatas;
+
 template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_fe_degree, typename Number = double>
 class FEData final
@@ -18,9 +21,6 @@ public:
   static constexpr unsigned int fe_number = fe_no;
   static constexpr unsigned int max_degree = max_fe_degree;
   const std::shared_ptr<const FiniteElementType<dim, dim>> fe;
-  std::unique_ptr<FEEvaluationType> fe_eval;
-
-  FEData() = delete;
 
   explicit FEData(const FiniteElementType<dim, dim>& fe_)
     : FEData(std::make_shared<const FiniteElementType<dim, dim>>(fe_))
@@ -33,6 +33,14 @@ public:
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
     Assert(fe->degree == fe_degree, dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree));
     AssertDimension(fe->n_components(), n_components);
+  }
+
+  template <class FEDataOther>
+  typename std::enable_if_t<CFL::Traits::is_fe_data<FEDataOther>::value,
+                            FEDatas<FEDataOther, FEData>>
+  operator,(const FEData& new_fe_data) const
+  {
+    return FEDatas<FEDataOther, FEData>(new_fe_data, *this);
   }
 };
 
@@ -50,22 +58,6 @@ namespace Traits
 } // namespace Traits
 } // namespace CFL
 
-template <typename... Types>
-class FEDatas
-{
-public:
-  FEDatas() = delete;
-
-  template <class FEData>
-  FEDatas<FEData, Types...>
-  operator,(const FEData& /*unused*/)
-  {
-    static_assert(CFL::Traits::is_fe_data<FEData>::value,
-                  "You need to construct this with a FEData object!");
-    return FEDatas<FEData, Types...>();
-  }
-};
-
 template <class FEData>
 class FEDatas<FEData>
 {
@@ -77,21 +69,12 @@ public:
   static constexpr unsigned int max_degree = FEData::max_degree;
   static constexpr unsigned int n = 1;
 
-  FEDatas()
+  explicit FEDatas(const FEData fe_data_)
+    : fe_data(std::move(fe_data_))
   {
+    //    std::cout << "Constructor1" << std::endl;
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "You need to construct this with a FEData object!");
-  }
-
-  explicit FEDatas(const FEData& /*unused*/)
-  {
-    static_assert(CFL::Traits::is_fe_data<FEData>::value,
-                  "You need to construct this with a FEData object!");
-  }
-
-  FEDatas(const FEDatas<FEData>& fe_datas[[maybe_unused]])
-  {
-    Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
   }
 
   template <unsigned int fe_number_extern>
@@ -104,11 +87,12 @@ public:
 
   template <class NewFEData>
   FEDatas<NewFEData, FEData>
-  operator,(const NewFEData& /*unused*/)
+  operator,(const NewFEData& new_fe_data) const
   {
+    //    std::cout << "Constructor2" << std::endl;
     static_assert(CFL::Traits::is_fe_data<NewFEData>::value, "Only FEData objects can be added!");
 
-    return FEDatas<NewFEData, FEData>();
+    return FEDatas<NewFEData, FEData>(new_fe_data, fe_data);
   }
 
   template <typename Cell>
@@ -187,7 +171,7 @@ public:
 #endif
     static_assert(std::is_same<NumberType, OtherNumber>::value,
                   "Number type of MatrixFree and FEDatas has to match!");
-    fe_evaluation = std::make_unique<typename FEData::FEEvaluationType>(mf, fe_number);
+    fe_evaluation = (std::make_unique<typename FEData::FEEvaluationType>(mf, fe_number));
     initialized = true;
   }
 
@@ -368,15 +352,17 @@ public:
       fe_evaluation->integrate(integrate_values, integrate_gradients);
   }
 
-  const typename FEData::FEEvaluationType&
-  get_fe_evaluation()
+  template <unsigned int fe_number_extern>
+  const auto&
+  get_fe_data() const
   {
-    return fe_evaluation();
+    static_assert(fe_number == fe_number_extern, "Component not found!");
+    return fe_data;
   }
 
   template <unsigned int fe_number_extern>
   unsigned int
-  dofs_per_cell()
+  dofs_per_cell() const
   {
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->dofs_per_cell;
@@ -391,15 +377,18 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto
-  begin_dof_values()
+  const auto
+  begin_dof_values() const
   {
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_evaluation->begin_dof_values();
   }
 
+protected:
+  const FEData fe_data;
+
 private:
-  std::unique_ptr<typename FEData::FEEvaluationType> fe_evaluation = nullptr;
+  std::shared_ptr<typename FEData::FEEvaluationType> fe_evaluation = nullptr;
   bool integrate_values = false;
   bool integrate_gradients = false;
   bool evaluate_values = false;
@@ -744,8 +733,17 @@ public:
   }
 
   template <unsigned int fe_number_extern>
+  const auto&
+  get_fe_data() const
+  {
+    if constexpr(fe_number == fe_number_extern) return fe_data;
+    else
+      return FEDatas<Types...>::template get_fe_data<fe_number_extern>();
+  }
+
+  template <unsigned int fe_number_extern>
   unsigned int
-  dofs_per_cell()
+  dofs_per_cell() const
   {
     if constexpr(fe_number == fe_number_extern) { return fe_evaluation->dofs_per_cell; }
     else
@@ -753,7 +751,7 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  unsigned int
+  static constexpr unsigned int
   tensor_dofs_per_cell()
   {
     if constexpr(fe_number ==
@@ -763,31 +761,55 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  auto
-  begin_dof_values()
+  const auto&
+  begin_dof_values() const
   {
     if constexpr(fe_number == fe_number_extern) { return fe_evaluation->begin_dof_values(); }
     else
       return FEDatas<Types...>::template begin_dof_values<fe_number_extern>();
   }
 
-  FEDatas()
-    : FEDatas<Types...>()
+  template <class FEDataOther>
+  typename std::enable_if_t<CFL::Traits::is_fe_data<FEDataOther>::value,
+                            FEDatas<FEDataOther, FEData, Types...>>
+  operator,(const FEDataOther& new_fe_data) const
   {
+    return FEDatas<FEDataOther, FEData, Types...>(new_fe_data, *this);
+  }
+
+  FEDatas(const FEData& fe_data_, const FEDatas<Types...> fe_datas_)
+    : FEDatas<Types...>(fe_datas_)
+    , fe_data(fe_data_)
+  {
+    //    std::cout << "Constructor4" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "You need to construct this with a FEData object!");
   }
 
-  FEDatas(const FEDatas<FEData, Types...>& fe_datas[[maybe_unused]])
-    : FEDatas<Types...>()
+  FEDatas(const FEData& fe_data_, const Types... fe_datas_)
+    : FEDatas<Types...>(fe_datas_...)
+    , fe_data(fe_data_)
   {
-    Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
+    //    std::cout << "Constructor3" << std::endl;
+    static_assert(FEData::max_degree == FEDatas::max_degree,
+                  "The maximum degree must be the same for all FiniteElements!");
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "You need to construct this with a FEData object!");
   }
 
+  /*  FEDatas(const FEDatas<FEData, Types...>& fe_datas[[maybe_unused]])
+      : FEDatas<Types...>()
+    {
+      Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
+    }*/
+
+protected:
+  const FEData fe_data;
+
 private:
-  std::unique_ptr<typename FEData::FEEvaluationType> fe_evaluation = nullptr;
+  std::shared_ptr<typename FEData::FEEvaluationType> fe_evaluation = nullptr;
   bool integrate_values = false;
   bool integrate_gradients = false;
   bool evaluate_values = false;
@@ -796,12 +818,19 @@ private:
   bool initialized = false;
 };
 
+template <class FEData, typename... Types>
+typename std::enable_if_t<CFL::Traits::is_fe_data<FEData>::value, FEDatas<FEData, Types...>>
+operator,(const FEData& new_fe_data, const FEDatas<Types...>& old_fe_data)
+{
+  return old_fe_data.operator,(new_fe_data);
+}
+
 template <class FEData1, class FEData2>
 std::enable_if_t<CFL::Traits::is_fe_data<FEData1>::value, FEDatas<FEData1, FEData2>>
-operator,(const FEData1& /*unused*/, const FEData2& /*unused*/)
+operator,(const FEData1& fe_data1, const FEData2& fe_data2)
 {
   static_assert(CFL::Traits::is_fe_data<FEData2>::value, "Only FEData objects can be added!");
-  return FEDatas<FEData1, FEData2>();
+  return FEDatas<FEData1, FEData2>(fe_data1, fe_data2);
 }
 
 #endif // FE_DATA_H

@@ -94,8 +94,8 @@ run()
 {
   FE_Q<dim> fe(degree);
 
-  FEData<degree, 1, dim, 0, degree, double> fedata_e(fe);
-  FEData<degree, 1, dim, 1, degree, double> fedata_u(fe);
+  FEData<FE_Q, degree, 1, dim, 0, degree, double> fedata_e(fe);
+  FEData<FE_Q, degree, 1, dim, 1, degree, double> fedata_u(fe);
   auto fe_datas = (fedata_e, fedata_u);
 
   CFL::dealii::MatrixFree::TestFunction<0, dim, 0> v;
