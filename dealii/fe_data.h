@@ -14,10 +14,10 @@ template <template <int, int> class FiniteElementType, int fe_degree, int n_comp
 class FEData final
 {
 public:
-  typedef typename dealii::FEEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>
-    FEEvaluationType;
-  typedef Number NumberType;
-  typedef CFL::Traits::Tensor<(n_components > 1 ? 1 : 0), dim> TensorTraits;
+  using FEEvaluationType =
+    typename dealii::FEEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>;
+  using NumberType = Number;
+  using TensorTraits = CFL::Traits::Tensor<(n_components > 1 ? 1 : 0), dim>;
   static constexpr unsigned int fe_number = fe_no;
   static constexpr unsigned int max_degree = max_fe_degree;
   const std::shared_ptr<const FiniteElementType<dim, dim>> fe;
@@ -27,8 +27,8 @@ public:
   {
   }
 
-  explicit FEData(const std::shared_ptr<const FiniteElementType<dim, dim>>& fe_)
-    : fe(fe_)
+  explicit FEData(const std::shared_ptr<const FiniteElementType<dim, dim>> fe_)
+    : fe(std::move(fe_))
   {
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
     Assert(fe->degree == fe_degree, dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree));
@@ -154,7 +154,7 @@ public:
 #ifdef DEBUG_OUTPUT
       std::cout << "Distribute DoF values " << fe_number << std::endl;
 #endif
-      Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
+      Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
       if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
           fe_evaluation->distribute_local_to_global(vector.block(fe_number));
       else
@@ -182,7 +182,7 @@ public:
     std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
               << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
-    Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
+    Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
     fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
   }
 
@@ -377,7 +377,7 @@ public:
   }
 
   template <unsigned int fe_number_extern>
-  const auto
+  auto
   begin_dof_values() const
   {
     static_assert(fe_number == fe_number_extern, "Component not found!");
@@ -439,7 +439,7 @@ public:
 #ifdef DEBUG_OUTPUT
     std::cout << "Reinit FEDatas " << fe_number << std::endl;
 #endif
-    Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
+    Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
     fe_evaluation->reinit(cell);
     FEDatas<Types...>::reinit(cell);
   }
@@ -453,7 +453,7 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "Read DoF values " << fe_number << std::endl;
 #endif
-        Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
+        Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
         fe_evaluation->read_dof_values(vector.block(fe_number));
         FEDatas<Types...>::read_dof_values(vector);
       }
@@ -777,9 +777,9 @@ public:
     return FEDatas<FEDataOther, FEData, Types...>(new_fe_data, *this);
   }
 
-  FEDatas(const FEData& fe_data_, const FEDatas<Types...> fe_datas_)
-    : FEDatas<Types...>(fe_datas_)
-    , fe_data(fe_data_)
+  FEDatas(const FEData fe_data_, const FEDatas<Types...> fe_datas_)
+    : FEDatas<Types...>(std::move(fe_datas_))
+    , fe_data(std::move(fe_data_))
   {
     //    std::cout << "Constructor4" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
@@ -788,9 +788,9 @@ public:
                   "You need to construct this with a FEData object!");
   }
 
-  FEDatas(const FEData& fe_data_, const Types... fe_datas_)
+  explicit FEDatas(const FEData fe_data_, const Types... fe_datas_)
     : FEDatas<Types...>(fe_datas_...)
-    , fe_data(fe_data_)
+    , fe_data(std::move(fe_data_))
   {
     //    std::cout << "Constructor3" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,

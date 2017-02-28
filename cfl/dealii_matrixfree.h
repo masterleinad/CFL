@@ -195,7 +195,7 @@ namespace dealii
     class TestFunctionBase<T<rank, dim, idx>>
     {
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
+      using TensorTraits = Traits::Tensor<rank, dim>;
 
       static constexpr unsigned int index = idx;
       static constexpr bool scalar_valued = (TensorTraits::rank > 0);
@@ -205,7 +205,7 @@ namespace dealii
     class TestFunction final : public TestFunctionBase<TestFunction<rank, dim, idx>>
     {
     public:
-      typedef TestFunctionBase<TestFunction<rank, dim, idx>> Base;
+      using Base = TestFunctionBase<TestFunction<rank, dim, idx>>;
       static constexpr bool integrate_value = true;
       static constexpr bool integrate_gradient = false;
 
@@ -230,7 +230,7 @@ namespace dealii
     class TestDivergence final : public TestFunctionBase<TestDivergence<rank, dim, idx>>
     {
     public:
-      typedef TestFunctionBase<TestDivergence<rank, dim, idx>> Base;
+      using Base = TestFunctionBase<TestDivergence<rank, dim, idx>>;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
 
@@ -253,7 +253,7 @@ namespace dealii
       : public TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>
     {
     public:
-      typedef TestFunctionBase<TestSymmetricGradient<rank, dim, idx>> Base;
+      using Base = TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
 
@@ -277,7 +277,7 @@ namespace dealii
     class TestCurl final : public TestFunctionBase<TestCurl<rank, dim, idx>>
     {
     public:
-      typedef TestFunctionBase<TestCurl<rank, dim, idx>> Base;
+      using Base = TestFunctionBase<TestCurl<rank, dim, idx>>;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
 
@@ -302,7 +302,7 @@ namespace dealii
     class TestGradient final : public TestFunctionBase<TestGradient<rank, dim, idx>>
     {
     public:
-      typedef TestFunctionBase<TestGradient<rank, dim, idx>> Base;
+      using Base = TestFunctionBase<TestGradient<rank, dim, idx>>;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = true;
 
@@ -327,7 +327,7 @@ namespace dealii
     class TestHessian final : public TestFunctionBase<TestHessian<rank, dim, idx>>
     {
     public:
-      typedef TestFunctionBase<TestHessian<rank, dim, idx>> Base;
+      using Base = TestFunctionBase<TestHessian<rank, dim, idx>>;
       static constexpr bool integrate_value = false;
       static constexpr bool integrate_gradient = false;
 
@@ -382,7 +382,7 @@ namespace dealii
       const std::string data_name;
 
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
+      using TensorTraits = Traits::Tensor<rank, dim>;
       static constexpr unsigned int index = idx;
       double scalar_factor = 1.;
 
@@ -424,7 +424,7 @@ namespace dealii
     class FEFunction final : public FEFunctionBase<FEFunction<rank, dim, idx>>
     {
     public:
-      typedef FEFunctionBase<FEFunction<rank, dim, idx>> Base;
+      using Base = FEFunctionBase<FEFunction<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -453,7 +453,7 @@ namespace dealii
     class FEDivergence final : public FEFunctionBase<FEDivergence<rank, dim, idx>>
     {
     public:
-      typedef FEFunctionBase<FEDivergence<rank, dim, idx>> Base;
+      using Base = FEFunctionBase<FEDivergence<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -487,13 +487,12 @@ namespace dealii
       const FEFunctionType fefunction;
 
     public:
-      typedef Traits::Tensor<FEFunctionType::TensorTraits::rank + 2,
-                             FEFunctionType::TensorTraits::dim>
-        TensorTraits;
+      using TensorTraits =
+        Traits::Tensor<FEFunctionType::TensorTraits::rank + 2, FEFunctionType::TensorTraits::dim>;
       static constexpr unsigned int index = FEFunctionType::idx;
 
-      explicit FELiftDivergence(const FEFunctionType& fe_function)
-        : fefunction(fe_function)
+      explicit FELiftDivergence(const FEFunctionType fe_function)
+        : fefunction(std::move(fe_function))
       {
       }
 
@@ -536,7 +535,7 @@ namespace dealii
     class FESymmetricGradient final : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
     {
     public:
-      typedef FEFunctionBase<FESymmetricGradient<rank, dim, idx>> Base;
+      using Base = FEFunctionBase<FESymmetricGradient<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -565,7 +564,7 @@ namespace dealii
     class FECurl final : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
     {
     public:
-      typedef FEFunctionBase<FESymmetricGradient<rank, dim, idx>> Base;
+      using Base = FEFunctionBase<FESymmetricGradient<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -599,7 +598,7 @@ namespace dealii
     class FEGradient final : public FEFunctionBase<FEGradient<rank, dim, idx>>
     {
     public:
-      typedef FEFunctionBase<FEGradient<rank, dim, idx>> Base;
+      using Base = FEFunctionBase<FEGradient<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -633,7 +632,7 @@ namespace dealii
     class FELaplacian final : public FEFunctionBase<FELaplacian<rank, dim, idx>>
     {
     public:
-      typedef FEFunctionBase<FELaplacian<rank, dim, idx>> Base;
+      using Base = FEFunctionBase<FELaplacian<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -667,7 +666,7 @@ namespace dealii
     class FEDiagonalHessian final : public FEFunctionBase<FEDiagonalHessian<rank, dim, idx>>
     {
     public:
-      typedef FEFunctionBase<FEDiagonalHessian<rank, dim, idx>> Base;
+      using Base = FEFunctionBase<FEDiagonalHessian<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -696,7 +695,7 @@ namespace dealii
     class FEHessian final : public FEFunctionBase<FEHessian<rank, dim, idx>>
     {
     public:
-      typedef FEFunctionBase<FEHessian<rank, dim, idx>> Base;
+      using Base = FEFunctionBase<FEHessian<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -760,22 +759,17 @@ namespace dealii
     }
 
     template <typename... Types>
-    class SumFEFunctions
-    {
-    public:
-      SumFEFunctions() = delete;
-      SumFEFunctions(const SumFEFunctions<Types...>&) = delete;
-    };
+    class SumFEFunctions;
 
     template <class FEFunction>
     class SumFEFunctions<FEFunction>
     {
     public:
-      typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
-        TensorTraits;
+      using TensorTraits =
+        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
 
-      explicit SumFEFunctions(const FEFunction& summand_)
-        : summand(summand_)
+      explicit SumFEFunctions(const FEFunction summand_)
+        : summand(std::move(summand_))
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -829,8 +823,8 @@ namespace dealii
     class SumFEFunctions<FEFunction, Types...> : public SumFEFunctions<Types...>
     {
     public:
-      typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
-        TensorTraits;
+      using TensorTraits =
+        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
 
       template <class FEEvaluation>
       auto
@@ -850,9 +844,9 @@ namespace dealii
         SumFEFunctions<Types...>::set_evaluation_flags(phi);
       }
 
-      explicit SumFEFunctions(const FEFunction& summand_, const Types&... old_sum)
-        : SumFEFunctions<Types...>(old_sum...)
-        , summand(summand_)
+      explicit SumFEFunctions(const FEFunction summand_, const Types... old_sum)
+        : SumFEFunctions<Types...>(std::move(old_sum...))
+        , summand(std::move(summand_))
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -975,23 +969,15 @@ namespace dealii
       return -(old_fe_function - new_fe_function);
     }
 
-    template <typename... Types>
-    class ProductFEFunctions
-    {
-    public:
-      ProductFEFunctions() = delete;
-      ProductFEFunctions(const ProductFEFunctions<Types...>&) = delete;
-    };
-
     template <class FEFunction>
     class ProductFEFunctions<FEFunction>
     {
     public:
-      typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
-        TensorTraits;
+      using TensorTraits =
+        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
 
-      explicit ProductFEFunctions(const FEFunction& factor_)
-        : factor(factor_)
+      explicit ProductFEFunctions(const FEFunction factor_)
+        : factor(std::move(factor_))
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -1037,8 +1023,8 @@ namespace dealii
     class ProductFEFunctions<FEFunction, Types...> : public ProductFEFunctions<Types...>
     {
     public:
-      typedef Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>
-        TensorTraits;
+      using TensorTraits =
+        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
 
       template <class FEEvaluation>
       auto
@@ -1058,9 +1044,9 @@ namespace dealii
         ProductFEFunctions<Types...>::set_evaluation_flags(phi);
       }
 
-      explicit ProductFEFunctions(const FEFunction& factor_, const Types&... old_product)
-        : ProductFEFunctions<Types...>(old_product...)
-        , factor(factor_)
+      explicit ProductFEFunctions(const FEFunction factor_, const Types... old_product)
+        : ProductFEFunctions<Types...>(std::move(old_product...))
+        , factor(std::move(factor_))
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");
@@ -1070,9 +1056,9 @@ namespace dealii
                       "You can only add tensors of equal rank!");
       }
 
-      ProductFEFunctions(const FEFunction& factor_, const ProductFEFunctions<Types...>& old_product)
-        : ProductFEFunctions<Types...>(old_product)
-        , factor(factor_)
+      ProductFEFunctions(const FEFunction factor_, const ProductFEFunctions<Types...> old_product)
+        : ProductFEFunctions<Types...>(std::move(old_product))
+        , factor(std::move(factor_))
       {
         static_assert(Traits::is_fe_function_set<FEFunction>::value,
                       "You need to construct this with a FEFunction object!");

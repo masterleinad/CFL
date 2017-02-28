@@ -59,7 +59,7 @@ public:
   using BaseType = T;
   const T base;
 
-  typedef Traits::Tensor<T::TensorTraits::rank + 1, T::TensorTraits::dim> TensorTraits;
+  using TensorTraits = Traits::Tensor<T::TensorTraits::rank + 1, T::TensorTraits::dim>;
 
   explicit Gradient(const T& t)
     : base(t)

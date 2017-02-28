@@ -160,13 +160,13 @@ private:
 
   std::vector<ConstraintMatrix> constraints;
   MatrixFree<dim, double> system_mf_storage;
-  typedef MatrixFreeIntegrator<dim, double, FormSystem, FEDatasSystem> SystemMatrixType;
+  using SystemMatrixType = MatrixFreeIntegrator<dim, double, FormSystem, FEDatasSystem>;
   SystemMatrixType system_matrix;
-  typedef MatrixFreeIntegrator<dim, double, FormRHS, FEDatasSystem> RHSOperatorType;
+  using RHSOperatorType = MatrixFreeIntegrator<dim, double, FormRHS, FEDatasSystem>;
   RHSOperatorType rhs_operator;
 
   MGLevelObject<MatrixFree<dim, float>> mg_mf_storage;
-  typedef MatrixFreeIntegrator<dim, float, FormSystem, FEDatasLevel> LevelMatrixType;
+  using LevelMatrixType = MatrixFreeIntegrator<dim, float, FormSystem, FEDatasLevel>;
   MGLevelObject<LevelMatrixType> mg_matrices;
   std::vector<MGConstrainedDoFs> mg_constrained_dofs;
 
@@ -553,7 +553,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::run()
 int
 main(int argc, char* argv[])
 {
-  deallog.depth_console(10);
+  dealii::deallog.depth_console(10);
 
   try
   {

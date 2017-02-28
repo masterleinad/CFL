@@ -267,12 +267,7 @@ form(const Expr& e, const Test& t)
 }
 
 template <typename... Types>
-class Forms
-{
-public:
-  Forms() = delete;
-  Forms(const Forms<Types...>&) = delete;
-};
+class Forms;
 
 template <typename FormType>
 class Forms<FormType>

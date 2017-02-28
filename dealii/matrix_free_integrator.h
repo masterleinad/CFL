@@ -7,68 +7,68 @@
 #include <deal.II/lac/la_parallel_block_vector.h>
 #include <dealii/operators.h>
 
-using namespace dealii;
-
 template <int dim, typename Number, class FORM, class FEDatas>
-class MatrixFreeIntegrator : public ::dealii::MatrixFreeOperators::Base<dim, Number>
+class MatrixFreeIntegrator : public dealii::MatrixFreeOperators::Base<dim, Number>
 {
 public:
   // need this to be compatible with the Multigrid interface
   MatrixFreeIntegrator() = default;
 
   void
-  initialize(const MatrixFree<dim, Number>& data_, const std::shared_ptr<FORM>& form_,
+  initialize(const dealii::MatrixFree<dim, Number>& data_, const std::shared_ptr<FORM>& form_,
              std::shared_ptr<FEDatas> fe_datas_)
   {
-    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_);
+    dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_);
     initialize(form_, fe_datas_);
   }
 
   void
-  initialize(const MatrixFree<dim, Number>& data_, const FORM& form_, FEDatas fe_datas_)
+  initialize(const dealii::MatrixFree<dim, Number>& data_, const FORM& form_, FEDatas fe_datas_)
   {
-    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_);
+    dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_);
     initialize(form_, fe_datas_);
   }
 
   void
-  initialize(const MatrixFree<dim, Number>& data_, const MGConstrainedDoFs& mg_constrained_dofs,
+  initialize(const dealii::MatrixFree<dim, Number>& data_,
+             const dealii::MGConstrainedDoFs& mg_constrained_dofs, const unsigned int level,
+             const std::shared_ptr<FORM>& form_, std::shared_ptr<FEDatas> fe_datas_)
+  {
+    dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_, mg_constrained_dofs, level);
+    initialize(form_, fe_datas_);
+  }
+
+  void
+  initialize(const dealii::MatrixFree<dim, Number>& data_,
+             const dealii::MGConstrainedDoFs& mg_constrained_dofs, const unsigned int level,
+             const FORM& form_, FEDatas fe_datas_)
+  {
+    dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_, mg_constrained_dofs, level);
+    initialize(form_, fe_datas_);
+  }
+
+  void
+  initialize(const dealii::MatrixFree<dim, Number>& data,
+             const std::vector<dealii::MGConstrainedDoFs>& mg_constrained_dofs,
              const unsigned int level, const std::shared_ptr<FORM>& form_,
              std::shared_ptr<FEDatas> fe_datas_)
   {
-    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_, mg_constrained_dofs, level);
+    dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data, mg_constrained_dofs, level);
     initialize(form_, fe_datas_);
   }
 
   void
-  initialize(const MatrixFree<dim, Number>& data_, const MGConstrainedDoFs& mg_constrained_dofs,
+  initialize(const dealii::MatrixFree<dim, Number>& data,
+             const std::vector<dealii::MGConstrainedDoFs>& mg_constrained_dofs,
              const unsigned int level, const FORM& form_, FEDatas fe_datas_)
   {
-    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data_, mg_constrained_dofs, level);
-    initialize(form_, fe_datas_);
-  }
-
-  void
-  initialize(const MatrixFree<dim, Number>& data,
-             const std::vector<MGConstrainedDoFs>& mg_constrained_dofs, const unsigned int level,
-             const std::shared_ptr<FORM>& form_, std::shared_ptr<FEDatas> fe_datas_)
-  {
-    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data, mg_constrained_dofs, level);
-    initialize(form_, fe_datas_);
-  }
-
-  void
-  initialize(const MatrixFree<dim, Number>& data,
-             const std::vector<MGConstrainedDoFs>& mg_constrained_dofs, const unsigned int level,
-             const FORM& form_, FEDatas fe_datas_)
-  {
-    ::dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data, mg_constrained_dofs, level);
+    dealii::MatrixFreeOperators::Base<dim, Number>::initialize(data, mg_constrained_dofs, level);
     initialize(form_, fe_datas_);
   }
 
   void
   set_nonlinearities(std::vector<bool> nonlinear_components_,
-                     LinearAlgebra::distributed::BlockVector<Number> dst)
+                     dealii::LinearAlgebra::distributed::BlockVector<Number> dst)
   {
     nonlinear_components = nonlinear_components_;
     safed_vectors.reinit(dst);
@@ -81,18 +81,18 @@ public:
   }
 
   void
-  vmult(LinearAlgebra::distributed::Vector<Number>& dst,
-        const LinearAlgebra::distributed::Vector<Number>& src) const
+  vmult(dealii::LinearAlgebra::distributed::Vector<Number>& dst,
+        const dealii::LinearAlgebra::distributed::Vector<Number>& src) const
   {
-    ::dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, src);
+    dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, src);
   }
 
   void
-  vmult(LinearAlgebra::distributed::BlockVector<Number>& dst,
-        const LinearAlgebra::distributed::BlockVector<Number>& src) const
+  vmult(dealii::LinearAlgebra::distributed::BlockVector<Number>& dst,
+        const dealii::LinearAlgebra::distributed::BlockVector<Number>& src) const
   {
     if (nonlinear_components.empty())
-      ::dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, src);
+      dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, src);
     else
     {
       for (unsigned int i = 0; i < dst.n_blocks(); ++i)
@@ -100,7 +100,7 @@ public:
         if (!nonlinear_components[i])
           safed_vectors.block(i) = src.block(i);
       }
-      ::dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, safed_vectors);
+      dealii::MatrixFreeOperators::Base<dim, Number>::vmult(dst, safed_vectors);
       for (unsigned int i = 0; i < dst.n_blocks(); ++i)
       {
         if (nonlinear_components[i])
@@ -114,15 +114,15 @@ public:
   {
     if constexpr(FEDatas::n == 1)
       {
-        Assert((::dealii::MatrixFreeOperators::Base<dim, Number>::data != nullptr),
-               ExcNotInitialized());
+        Assert((dealii::MatrixFreeOperators::Base<dim, Number>::data != nullptr),
+               dealii::ExcNotInitialized());
         unsigned int dummy = 0;
         this->inverse_diagonal_entries.reset(
-          new DiagonalMatrix<LinearAlgebra::distributed::Vector<Number>>());
-        LinearAlgebra::distributed::Vector<Number>& inverse_diagonal_vector =
+          new dealii::DiagonalMatrix<dealii::LinearAlgebra::distributed::Vector<Number>>());
+        dealii::LinearAlgebra::distributed::Vector<Number>& inverse_diagonal_vector =
           this->inverse_diagonal_entries->get_vector();
         this->initialize_dof_vector(inverse_diagonal_vector);
-        // LinearAlgebra::distributed::Vector<Number> ones;
+        // dealii::LinearAlgebra::distributed::Vector<Number> ones;
         // this->initialize_dof_vector(ones);
         // ones = Number(1.);
         // apply_add(inverse_diagonal_vector, ones);
@@ -149,29 +149,29 @@ public:
         // inverse_diagonal_vector.print(std::cout);
       }
     else
-      AssertThrow(false, ExcNotImplemented());
+      AssertThrow(false, dealii::ExcNotImplemented());
   }
 
   // TODO(darndt): this is hacky and just tries to get comparable output w.r.t. step-37
-  void local_diagonal_cell([[maybe_unused]] const MatrixFree<dim, Number>& data_,
-                           LinearAlgebra::distributed::Vector<Number>& dst,
+  void local_diagonal_cell([[maybe_unused]] const dealii::MatrixFree<dim, Number>& data_,
+                           dealii::LinearAlgebra::distributed::Vector<Number>& dst,
                            const unsigned int& /*unused*/,
                            const std::pair<unsigned int, unsigned int>& cell_range) const
   {
-    Assert(&data_ == &(this->get_matrix_free()), ExcInternalError());
+    Assert(&data_ == &(this->get_matrix_free()), dealii::ExcInternalError());
     for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
     {
       fe_datas->reinit(cell);
       const /*expr*/ unsigned int tensor_dofs_per_cell =
         fe_datas->template tensor_dofs_per_cell<0>();
-      std::vector<VectorizedArray<Number>> local_diagonal_vector(tensor_dofs_per_cell);
+      std::vector<dealii::VectorizedArray<Number>> local_diagonal_vector(tensor_dofs_per_cell);
 
-      AssertThrow(data_.n_components() == 1, ExcNotImplemented());
+      AssertThrow(data_.n_components() == 1, dealii::ExcNotImplemented());
 
       for (unsigned int i = 0; i < fe_datas->template dofs_per_cell<0>(); ++i)
       {
         for (unsigned int j = 0; j < fe_datas->template dofs_per_cell<0>(); ++j)
-          fe_datas->template begin_dof_values<0>()[j] = VectorizedArray<Number>();
+          fe_datas->template begin_dof_values<0>()[j] = dealii::VectorizedArray<Number>();
         fe_datas->template begin_dof_values<0>()[i] = 1.;
         do_operation_on_cell(*fe_datas, cell);
         local_diagonal_vector[i] = fe_datas->template begin_dof_values<0>()[i];
@@ -209,13 +209,13 @@ private:
     use_boundary = false;
     form->set_evaluation_flags(*fe_datas);
     form->set_integration_flags(*fe_datas);
-    Assert(this->data != nullptr, ExcNotInitialized());
+    Assert(this->data != nullptr, dealii::ExcNotInitialized());
     fe_datas->initialize(*(this->data));
   }
 
   void
-  apply_add(LinearAlgebra::distributed::Vector<Number>& dst,
-            const LinearAlgebra::distributed::Vector<Number>& src) const override
+  apply_add(dealii::LinearAlgebra::distributed::Vector<Number>& dst,
+            const dealii::LinearAlgebra::distributed::Vector<Number>& src) const override
   {
     if (use_cell)
     {
@@ -235,8 +235,8 @@ private:
   }
 
   void
-  apply_add(LinearAlgebra::distributed::BlockVector<Number>& dst,
-            const LinearAlgebra::distributed::BlockVector<Number>& src) const override
+  apply_add(dealii::LinearAlgebra::distributed::BlockVector<Number>& dst,
+            const dealii::LinearAlgebra::distributed::BlockVector<Number>& src) const override
   {
     if (use_cell)
     {
@@ -269,16 +269,16 @@ private:
   }
 
   template <class VectorType>
-  void local_apply_cell([[maybe_unused]] const MatrixFree<dim, Number>& data_, VectorType& dst,
-                        const VectorType& src,
+  void local_apply_cell([[maybe_unused]] const dealii::MatrixFree<dim, Number>& data_,
+                        VectorType& dst, const VectorType& src,
                         const std::pair<unsigned int, unsigned int>& cell_range) const
   {
     static_assert(
-      std::is_same<VectorType, LinearAlgebra::distributed::Vector<Number>>::value ||
-        std::is_same<VectorType, LinearAlgebra::distributed::BlockVector<Number>>::value,
-      "This is only implemented for LinearAlgebra::distributed::Vector<Number> "
-      "and LinearAlgebra::distributed::BlockVector<Number> objects!");
-    Assert(&data_ == &(this->get_matrix_free()), ExcInternalError());
+      std::is_same<VectorType, dealii::LinearAlgebra::distributed::Vector<Number>>::value ||
+        std::is_same<VectorType, dealii::LinearAlgebra::distributed::BlockVector<Number>>::value,
+      "This is only implemented for dealii::LinearAlgebra::distributed::Vector<Number> "
+      "and dealii::LinearAlgebra::distributed::BlockVector<Number> objects!");
+    Assert(&data_ == &(this->get_matrix_free()), dealii::ExcInternalError());
     for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
     {
       fe_datas->reinit(cell);

@@ -1,7 +1,7 @@
 #!/bin/bash
 find .. -name '*.cc' -exec \
   clang-tidy -p ./ {} -header-filter=../../* \
-             -checks=* --fix -- -DDEBUG -I/opt/compiler/gcc-6.2.0/include/c++/6.2.0 \
+             -checks=* -- -DDEBUG -I/opt/compiler/gcc-6.2.0/include/c++/6.2.0 \
     -I/opt/compiler/gcc-6.2.0/include/c++/6.2.0/x86_64-pc-linux-gnu/ \
     -L/opt/compiler/gcc-6.2.0/lib -I../.. -I/mnt/data/darndt/deal.II-clang-4/include \
     -I/mnt/data/darndt/deal.II-clang-4/include/deal.II/bundled \

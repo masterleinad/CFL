@@ -14,11 +14,11 @@ class Sum
   const B& b;
 
 public:
-  typedef typename Traits::Tensor<A::TensorTraits::rank, A::TensorTraits::dim> TensorTraits;
+  using TensorTraits = typename Traits::Tensor<A::TensorTraits::rank, A::TensorTraits::dim>;
 
   Sum(const A& a_, const B& b_)
-    : a(a)
-    , b(b)
+    : a(a_)
+    , b(b_)
   {
     static_assert(!::CFL::Traits::is_test_function_set<A>::value, "Test functions cannot be added");
     static_assert(!::CFL::Traits::is_test_function_set<B>::value, "Test functions cannot be added");
