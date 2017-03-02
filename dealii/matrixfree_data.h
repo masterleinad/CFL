@@ -114,7 +114,8 @@ public:
   vmult(dealii::LinearAlgebra::distributed::Vector<Number>& dst,
         const dealii::LinearAlgebra::distributed::Vector<Number>& src, Form& form) const
   {
-    MatrixFreeIntegrator<dim, Number, Form, FEDatas> integrator;
+    MatrixFreeIntegrator<dim, dealii::LinearAlgebra::distributed::Vector<Number>, Form, FEDatas>
+      integrator;
     integrator.initialize(mf, std::make_shared<Form>(form), fe_datas);
     integrator.vmult(dst, src);
   }
@@ -124,7 +125,11 @@ public:
   vmult(dealii::LinearAlgebra::distributed::BlockVector<Number>& dst,
         const dealii::LinearAlgebra::distributed::BlockVector<Number>& src, Form& form) const
   {
-    MatrixFreeIntegrator<dim, Number, Form, FEDatas> integrator;
+    MatrixFreeIntegrator<dim,
+                         dealii::LinearAlgebra::distributed::BlockVector<Number>,
+                         Form,
+                         FEDatas>
+      integrator;
     integrator.initialize(mf, std::make_shared<Form>(form), fe_datas);
     integrator.vmult(dst, src);
   }
@@ -134,7 +139,11 @@ public:
   vmult_add(dealii::LinearAlgebra::distributed::BlockVector<Number>& dst,
             const dealii::LinearAlgebra::distributed::BlockVector<Number>& src, Form& form) const
   {
-    MatrixFreeIntegrator<dim, Number, Form, FEDatas> integrator(form, *fe_datas);
+    MatrixFreeIntegrator<dim,
+                         dealii::LinearAlgebra::distributed::BlockVector<Number>,
+                         Form,
+                         FEDatas>
+      integrator(form, *fe_datas);
     integrator.initialize(mf);
     integrator.vmult_add(dst, src);
   }

@@ -160,13 +160,17 @@ private:
 
   std::vector<ConstraintMatrix> constraints;
   MatrixFree<dim, double> system_mf_storage;
-  using SystemMatrixType = MatrixFreeIntegrator<dim, double, FormSystem, FEDatasSystem>;
+  using SystemMatrixType =
+    MatrixFreeIntegrator<dim, LinearAlgebra::distributed::BlockVector<double>, FormSystem,
+                         FEDatasSystem>;
   SystemMatrixType system_matrix;
-  using RHSOperatorType = MatrixFreeIntegrator<dim, double, FormRHS, FEDatasSystem>;
+  using RHSOperatorType = MatrixFreeIntegrator<dim, LinearAlgebra::distributed::BlockVector<double>,
+                                               FormRHS, FEDatasSystem>;
   RHSOperatorType rhs_operator;
 
   MGLevelObject<MatrixFree<dim, float>> mg_mf_storage;
-  using LevelMatrixType = MatrixFreeIntegrator<dim, float, FormSystem, FEDatasLevel>;
+  using LevelMatrixType = MatrixFreeIntegrator<dim, LinearAlgebra::distributed::BlockVector<float>,
+                                               FormSystem, FEDatasLevel>;
   MGLevelObject<LevelMatrixType> mg_matrices;
   std::vector<MGConstrainedDoFs> mg_constrained_dofs;
 
@@ -405,8 +409,8 @@ double
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
 {
   Timer time;
-  /*  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
-    mg_transfer.build_matrices(dof_handler);*/
+  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
+  mg_transfer.build_matrices(dof_handler);
   /*    setup_time += time.wall_time();
       time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
                    << "s\n";

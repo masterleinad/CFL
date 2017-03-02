@@ -478,7 +478,7 @@ public:
 #ifdef DEBUG_OUTPUT
           std::cout << "Distribute DoF values " << fe_number << std::endl;
 #endif
-          Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
+          Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
           fe_evaluation->distribute_local_to_global(vector.block(fe_number));
         }
         FEDatas<Types...>::distribute_local_to_global(vector);
@@ -500,7 +500,7 @@ public:
     std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
               << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
-    Assert(fe_evaluation.get() != nullptr, dealii::ExcInternalError());
+    Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
     fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
     FEDatas<Types...>::evaluate();
   }

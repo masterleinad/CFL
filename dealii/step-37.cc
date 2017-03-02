@@ -97,11 +97,13 @@ private:
 
   ConstraintMatrix constraints;
   MatrixFree<dim, double> system_mf_storage;
-  typedef MatrixFreeIntegrator<dim, double, Form, FEDatasSystem> SystemMatrixType;
+  typedef MatrixFreeIntegrator<dim, LinearAlgebra::distributed::Vector<double>, Form, FEDatasSystem>
+    SystemMatrixType;
   SystemMatrixType system_matrix;
 
   MGLevelObject<MatrixFree<dim, float>> mg_mf_storage;
-  typedef MatrixFreeIntegrator<dim, float, Form, FEDatasLevel> LevelMatrixType;
+  typedef MatrixFreeIntegrator<dim, LinearAlgebra::distributed::Vector<float>, Form, FEDatasLevel>
+    LevelMatrixType;
   MGLevelObject<LevelMatrixType> mg_matrices;
   MGConstrainedDoFs mg_constrained_dofs;
 
