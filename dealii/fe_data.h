@@ -171,6 +171,8 @@ public:
 #endif
     static_assert(std::is_same<NumberType, OtherNumber>::value,
                   "Number type of MatrixFree and FEDatas has to match!");
+    //    Assert (fe_evaluation == nullptr, dealii::ExcMessage("Already initialized!"));
+    fe_evaluation.reset();
     fe_evaluation = (std::make_unique<typename FEData::FEEvaluationType>(mf, fe_number));
     initialized = true;
   }

@@ -47,6 +47,12 @@ namespace Traits
     static const bool value = true;
   };
 
+  template <typename Number>
+  struct is_block_vector<::dealii::BlockVector<Number>>
+  {
+    static const bool value = true;
+  };
+
   template <int dim, int rank, typename Number>
   struct is_compatible<::dealii::Tensor<rank, dim, Number>,
                        ::dealii::SymmetricTensor<rank, dim, Number>>

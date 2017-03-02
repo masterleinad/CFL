@@ -114,8 +114,11 @@ run()
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe);
   fes.push_back(&fe);
-  MatrixFreeData<dim, decltype(fe_datas)> data(grid_index, refine, fes, fe_datas);
-  data.initialize();
+  MatrixFreeData<dim,
+                 decltype(fe_datas),
+                 decltype(f),
+                 LinearAlgebra::distributed::BlockVector<double>>
+    data(grid_index, refine, fes, fe_datas, f);
 
   LinearAlgebra::distributed::BlockVector<double> in(2);
   LinearAlgebra::distributed::BlockVector<double> out(2);
@@ -135,7 +138,7 @@ run()
 
   test<dim>(refine, degree, in, ref);
   {
-    data.vmult(out, in, f);
+    data.vmult(out, in);
     for (size_t k = 0; k < in.n_blocks(); ++k)
     {
       for (types::global_dof_index j = 0; j < in.block(k).size(); ++j)

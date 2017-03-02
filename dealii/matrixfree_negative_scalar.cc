@@ -26,9 +26,10 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 {
   FE_Q<dim> fe_p(degree);
   FEData<FE_Q, /*degree*/ 1, /*components*/ 1, dim, /*fe_no*/ 0, /*max_degree*/ 1> fedata(fe_p);
+  FEDatas<decltype(fedata)> fe_datas = FEDatas<decltype(fedata)>(fedata);
 
-  auto data = make_matrix_free_data(grid_index, refine, fe_p, fedata);
-  data.initialize();
+  std::vector<FiniteElement<dim>*> fes;
+  fes.push_back(&fe_p);
 
   TestFunction<0, dim, 0> q;
   FEFunction<0, dim, 0> p("p");
@@ -37,19 +38,26 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   auto f2 = form(-p, q);
   auto f3 = -f2;
 
+  MatrixFreeData<dim, decltype(fe_datas), decltype(f1), LinearAlgebra::distributed::Vector<double>>
+    data1(grid_index, refine, fes, fe_datas, f1);
+  MatrixFreeData<dim, decltype(fe_datas), decltype(f2), LinearAlgebra::distributed::Vector<double>>
+    data2(grid_index, refine, fes, fe_datas, f2);
+  MatrixFreeData<dim, decltype(fe_datas), decltype(f3), LinearAlgebra::distributed::Vector<double>>
+    data3(grid_index, refine, fes, fe_datas, f3);
+
   LinearAlgebra::distributed::Vector<double> in;
   LinearAlgebra::distributed::Vector<double> out1, out2, out3;
-  data.resize_vector(in);
-  data.resize_vector(out1);
-  data.resize_vector(out2);
-  data.resize_vector(out3);
+  data1.resize_vector(in);
+  data1.resize_vector(out1);
+  data2.resize_vector(out2);
+  data3.resize_vector(out3);
 
   for (types::global_dof_index j = 0; j < in.size(); ++j)
     in[j] = j;
   {
-    data.vmult(out1, in, f1);
-    data.vmult(out2, in, f2);
-    data.vmult(out3, in, f3);
+    data1.vmult(out1, in);
+    data2.vmult(out2, in);
+    data3.vmult(out3, in);
     for (types::global_dof_index j = 0; j < in.size(); ++j)
       std::cout << j << '\t' << out1[j] << '\t' << out2[j] << '\t' << out3[j] << std::endl;
 

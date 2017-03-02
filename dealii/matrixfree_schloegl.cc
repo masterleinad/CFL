@@ -409,8 +409,8 @@ double
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
 {
   Timer time;
-  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
-  mg_transfer.build_matrices(dof_handler);
+  /*  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
+    mg_transfer.build_matrices(dof_handler);*/
   /*    setup_time += time.wall_time();
       time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
                    << "s\n";

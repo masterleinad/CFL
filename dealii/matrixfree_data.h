@@ -12,7 +12,7 @@
 
 #include <utility>
 
-template <int dim, class FEDatas>
+template <int dim, class FEDatas, class Forms, typename VectorType>
 class MatrixFreeData
 {
   const dealii::MappingQ<dim, dim> mapping;
@@ -25,15 +25,18 @@ class MatrixFreeData
   std::vector<dealii::Quadrature<1>> quadrature_vector;
   dealii::MatrixFree<dim, double> mf;
   std::shared_ptr<FEDatas> fe_datas;
+  std::shared_ptr<Forms> forms;
   const dealii::Quadrature<1> quadrature;
+  MatrixFreeIntegrator<dim, VectorType, Forms, FEDatas> integrator;
 
 public:
   // constructor for multiple FiniteElements
   MatrixFreeData(unsigned int grid_index, unsigned int refine,
                  const std::vector<dealii::FiniteElement<dim>*>& fe,
-                 std::shared_ptr<FEDatas> fe_datas_)
+                 std::shared_ptr<FEDatas> fe_datas_, std::shared_ptr<Forms> forms_)
     : mapping(FEDatas::max_degree)
     , fe_datas(std::move(fe_datas_))
+    , forms(std::move(forms_))
     , quadrature(FEDatas::max_degree + 1)
   {
     AssertThrow(!fe.empty(), dealii::ExcInternalError());
@@ -64,107 +67,61 @@ public:
     for (size_t i = 0; i < fe.size() - 1; ++i)
       dealii::deallog << dh_ptr_vector[i]->n_dofs() << "+";
     dealii::deallog << dh_ptr_vector[fe.size() - 1]->n_dofs() << std::endl;
+
+    mf.reinit(mapping, dh_const_ptr_vector, constraint_const_ptr_vector, quadrature_vector);
+
+    integrator.initialize(mf, forms, fe_datas);
   }
 
   // constructor for multiple FiniteElements
   MatrixFreeData(unsigned int grid_index, unsigned int refine,
-                 const std::vector<dealii::FiniteElement<dim>*>& fe, FEDatas fe_datas_)
-    : MatrixFreeData(grid_index, refine, fe, std::make_shared<FEDatas>(fe_datas_))
+                 const std::vector<dealii::FiniteElement<dim>*>& fe, FEDatas fe_datas_,
+                 Forms forms_)
+    : MatrixFreeData(grid_index, refine, fe, std::make_shared<FEDatas>(fe_datas_),
+                     std::make_shared<Forms>(forms_))
   {
   }
 
   void
-  initialize()
+  resize_vector(VectorType& v) const
   {
-    mf.reinit(mapping, dh_const_ptr_vector, constraint_const_ptr_vector, quadrature_vector);
-    fe_datas->initialize(mf);
-  }
-
-  void
-  resize_vector(dealii::Vector<double>& v) const
-  {
-    AssertDimension(v.size(), dh_ptr_vector.size());
-    for (size_t i = 0; i < v.size(); ++i)
-      v.reinit(dh_ptr_vector[i].n_dofs());
-  }
-
-  template <typename Number>
-  void
-  resize_vector(dealii::LinearAlgebra::distributed::BlockVector<Number>& v) const
-  {
-    AssertDimension(v.n_blocks(), dh_ptr_vector.size());
-    for (unsigned int i = 0; static_cast<size_t>(i) < v.n_blocks(); ++i)
+    if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+      {
+        AssertDimension(v.n_blocks(), dh_ptr_vector.size());
+        for (unsigned int i = 0; static_cast<size_t>(i) < v.n_blocks(); ++i)
+        {
+          mf.initialize_dof_vector(v.block(i), i);
+          if constexpr(
+              std::is_same<
+                dealii::LinearAlgebra::distributed::BlockVector<typename VectorType::value_type>,
+                VectorType>::value) mf.initialize_dof_vector(v.block(i), i);
+          else
+            v.block(i).reinit(dh_ptr_vector[i].n_dofs());
+          std::cout << "Vector " << i << " has size " << v.block(i).size() << std::endl;
+        }
+      }
+    else
     {
-      mf.initialize_dof_vector(v.block(i), i);
-      std::cout << "Vector " << i << " has size " << v.block(i).size() << std::endl;
+      AssertDimension(dh_ptr_vector.size(), 1);
+      if constexpr(
+          std::is_same<dealii::LinearAlgebra::distributed::Vector<typename VectorType::value_type>,
+                       VectorType>::value) mf.initialize_dof_vector(v, 0);
+      else
+        v.reinit(dh_ptr_vector[0].n_dofs());
+      std::cout << "Vector has size " << v.size() << std::endl;
     }
   }
 
-  template <typename Number>
   void
-  resize_vector(dealii::LinearAlgebra::distributed::Vector<Number>& v) const
+  vmult(VectorType& dst, const VectorType& src) const
   {
-    AssertDimension(dh_ptr_vector.size(), 1);
-    mf.initialize_dof_vector(v);
-    std::cout << "Vector has size " << v.size() << std::endl;
-  }
-
-  template <typename Number, class Form>
-  void
-  vmult(dealii::LinearAlgebra::distributed::Vector<Number>& dst,
-        const dealii::LinearAlgebra::distributed::Vector<Number>& src, Form& form) const
-  {
-    MatrixFreeIntegrator<dim, dealii::LinearAlgebra::distributed::Vector<Number>, Form, FEDatas>
-      integrator;
-    integrator.initialize(mf, std::make_shared<Form>(form), fe_datas);
     integrator.vmult(dst, src);
   }
 
-  template <typename Number, class Form>
   void
-  vmult(dealii::LinearAlgebra::distributed::BlockVector<Number>& dst,
-        const dealii::LinearAlgebra::distributed::BlockVector<Number>& src, Form& form) const
+  vmult_add(VectorType& dst, const VectorType& src) const
   {
-    MatrixFreeIntegrator<dim,
-                         dealii::LinearAlgebra::distributed::BlockVector<Number>,
-                         Form,
-                         FEDatas>
-      integrator;
-    integrator.initialize(mf, std::make_shared<Form>(form), fe_datas);
-    integrator.vmult(dst, src);
-  }
-
-  template <typename Number, class Form>
-  void
-  vmult_add(dealii::LinearAlgebra::distributed::BlockVector<Number>& dst,
-            const dealii::LinearAlgebra::distributed::BlockVector<Number>& src, Form& form) const
-  {
-    MatrixFreeIntegrator<dim,
-                         dealii::LinearAlgebra::distributed::BlockVector<Number>,
-                         Form,
-                         FEDatas>
-      integrator(form, *fe_datas);
-    integrator.initialize(mf);
     integrator.vmult_add(dst, src);
   }
 };
-
-template <int dim, class FEDatas>
-MatrixFreeData<dim, FEDatas>
-make_matrix_free_data(unsigned int grid_index, unsigned int refine,
-                      std::vector<dealii::FiniteElement<dim>*> fe, FEDatas fe_datas)
-{
-  return MatrixFreeData<dim, FEDatas>(grid_index, refine, fe, fe_datas);
-}
-
-template <int dim, class FEData>
-auto
-make_matrix_free_data(unsigned int grid_index, unsigned int refine, dealii::FiniteElement<dim>& fe,
-                      FEData& fe_data)
-{
-  std::vector<dealii::FiniteElement<dim>*> fes;
-  fes.push_back(&fe);
-  return MatrixFreeData<dim, FEDatas<FEData>>(
-    grid_index, refine, fes, std::make_shared<FEDatas<FEData>>(fe_data));
-}
 #endif // MATRIXFREE_DATA_H

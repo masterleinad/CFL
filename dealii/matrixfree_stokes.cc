@@ -161,9 +161,6 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
   fes.push_back(&fe_p);
-  // MatrixFreeData<dim, decltype(fe_datas) > data(grid_index, refine, fes, fe_datas);
-  auto data = make_matrix_free_data(grid_index, refine, fes, fe_datas);
-  data.initialize();
 
   TestFunction<1, dim, 0> v;
   TestFunction<0, dim, 1> q;
@@ -178,6 +175,12 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   auto f1 = form(Du + Liftp, Dv);
   auto f2 = form(Divu, q);
   auto f = f1 + f2;
+
+  MatrixFreeData<dim,
+                 decltype(fe_datas),
+                 decltype(f),
+                 LinearAlgebra::distributed::BlockVector<double>>
+    data(grid_index, refine, fes, fe_datas, f);
 
   LinearAlgebra::distributed::BlockVector<double> x_new(2), x_old(2), x_ref(2);
   LinearAlgebra::distributed::BlockVector<double> b(2);
@@ -207,7 +210,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
         std::cout << i << '\t' << j << '\t' << k << '\t' << b.block(k)[j] << std::endl;
       }
     }
-    data.vmult(x_new, b, f);
+    data.vmult(x_new, b);
     for (size_t k = 0; k < b.n_blocks(); ++k)
     {
       for (types::global_dof_index j = 0; j < x_new.block(k).size(); ++j)
