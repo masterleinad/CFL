@@ -1,6 +1,6 @@
 160
-DEAL::Grid type 0 Cells 1 DoFs 8
 constructor1
+DEAL::Grid type 0 Cells 1 DoFs 8
 Vector 0 has size 8
 Vector 0 has size 8
 Vector 0 has size 8

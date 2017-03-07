@@ -92,19 +92,23 @@ template <int dim>
 void
 run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 {
-  FESystem<dim> fe_u(FE_Q<dim>(degree), dim);
+  FESystem<dim> fe_u{ FE_Q<dim>(degree), dim };
 
-  FEData<FESystem, 1, dim, dim, 0, 1> fedata1(fe_u);
+  FEData<FESystem, 1, dim, dim, 0, 1> fedata1{ fe_u };
   FEDatas<decltype(fedata1)> fe_datas{ fedata1 };
-
-  std::vector<FiniteElement<dim>*> fes;
-  fes.push_back(&fe_u);
-  MatrixFreeData<dim, decltype(fe_datas)> data(grid_index, refine, fes, fe_datas);
-  data.initialize();
 
   TestFunction<1, dim, 0> v;
   FEFunction<1, dim, 0> u("u");
   auto f = form(u, v);
+
+  std::vector<FiniteElement<dim>*> fes;
+  fes.push_back(&fe_u);
+
+  MatrixFreeData<dim,
+                 decltype(fe_datas),
+                 decltype(f),
+                 LinearAlgebra::distributed::BlockVector<double>>
+    data{ grid_index, refine, fes, fe_datas, f };
 
   LinearAlgebra::distributed::BlockVector<double> x_new(1), x_old(1), x_ref(1);
   LinearAlgebra::distributed::BlockVector<double> b(1);
@@ -134,7 +138,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
         std::cout << i << '\t' << j << '\t' << k << '\t' << b.block(k)[j] << std::endl;
       }
     }
-    data.vmult(x_new, b, f);
+    data.vmult(x_new, b);
     for (size_t k = 0; k < b.n_blocks(); ++k)
     {
       for (types::global_dof_index j = 0; j < x_new.block(k).size(); ++j)

@@ -23,7 +23,7 @@ class MatrixFreeData
   std::vector<std::unique_ptr<dealii::ConstraintMatrix>> constraint_ptr_vector;
   std::vector<const dealii::ConstraintMatrix*> constraint_const_ptr_vector;
   std::vector<dealii::Quadrature<1>> quadrature_vector;
-  dealii::MatrixFree<dim, double> mf;
+  std::shared_ptr<dealii::MatrixFree<dim, double>> mf;
   std::shared_ptr<FEDatas> fe_datas;
   std::shared_ptr<Forms> forms;
   const dealii::Quadrature<1> quadrature;
@@ -68,7 +68,8 @@ public:
       dealii::deallog << dh_ptr_vector[i]->n_dofs() << "+";
     dealii::deallog << dh_ptr_vector[fe.size() - 1]->n_dofs() << std::endl;
 
-    mf.reinit(mapping, dh_const_ptr_vector, constraint_const_ptr_vector, quadrature_vector);
+    mf = std::make_shared<dealii::MatrixFree<dim, double>>();
+    mf->reinit(mapping, dh_const_ptr_vector, constraint_const_ptr_vector, quadrature_vector);
 
     integrator.initialize(mf, forms, fe_datas);
   }
@@ -90,11 +91,11 @@ public:
         AssertDimension(v.n_blocks(), dh_ptr_vector.size());
         for (unsigned int i = 0; static_cast<size_t>(i) < v.n_blocks(); ++i)
         {
-          mf.initialize_dof_vector(v.block(i), i);
+          mf->initialize_dof_vector(v.block(i), i);
           if constexpr(
               std::is_same<
                 dealii::LinearAlgebra::distributed::BlockVector<typename VectorType::value_type>,
-                VectorType>::value) mf.initialize_dof_vector(v.block(i), i);
+                VectorType>::value) mf->initialize_dof_vector(v.block(i), i);
           else
             v.block(i).reinit(dh_ptr_vector[i].n_dofs());
           std::cout << "Vector " << i << " has size " << v.block(i).size() << std::endl;
@@ -105,7 +106,7 @@ public:
       AssertDimension(dh_ptr_vector.size(), 1);
       if constexpr(
           std::is_same<dealii::LinearAlgebra::distributed::Vector<typename VectorType::value_type>,
-                       VectorType>::value) mf.initialize_dof_vector(v, 0);
+                       VectorType>::value) mf->initialize_dof_vector(v, 0);
       else
         v.reinit(dh_ptr_vector[0].n_dofs());
       std::cout << "Vector has size " << v.size() << std::endl;

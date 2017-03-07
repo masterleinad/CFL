@@ -266,11 +266,11 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
       dh_pointers, constraints_pointers, quadrature_pointers, additional_data);
   }
 
-  system_matrix.initialize(system_mf_storage,
+  system_matrix.initialize(std::make_shared<MatrixFree<dim, double>>(system_mf_storage),
                            std::make_shared<FormSystem>(form_system),
                            std::make_shared<FEDatasSystem>(mf_cfl_data_system));
 
-  rhs_operator.initialize(system_mf_storage,
+  rhs_operator.initialize(std::make_shared<MatrixFree<dim, double>>(system_mf_storage),
                           std::make_shared<FormRHS>(form_rhs),
                           std::make_shared<FEDatasSystem>(mf_cfl_data_system));
 
@@ -328,7 +328,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
     mg_mf_storage[level].reinit(
       dh_pointers, constraints_pointers, quadrature_pointers, additional_data);
 
-    mg_matrices[level].initialize(mg_mf_storage[level],
+    mg_matrices[level].initialize(std::make_shared<MatrixFree<dim, float>>(mg_mf_storage[level]),
                                   mg_constrained_dofs,
                                   level,
                                   std::make_shared<FormSystem>(form_system),

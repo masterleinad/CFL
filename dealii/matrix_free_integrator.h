@@ -7,7 +7,6 @@
 #include <cfl/static_for.h>
 #include <cfl/traits.h>
 #include <deal.II/lac/la_parallel_block_vector.h>
-#include <dealii/operators.h>
 
 template <int dim, typename VectorType, class Enable = void>
 class MatrixFreeIntegratorBaseBase;
@@ -19,21 +18,15 @@ class MatrixFreeIntegratorBaseBase<
 {
 public:
   using Base = dealii::MatrixFreeOperators::Base<dim, VectorType>;
-  using Base::initialize;
-  /*   virtual void compute_diagonal() = 0;
-     virtual void apply_add(VectorType& dst, const VectorType& src) const = 0;*/
 };
 
 template <int dim, typename VectorType>
 class MatrixFreeIntegratorBaseBase<
   dim, VectorType, typename std::enable_if_t<CFL::Traits::is_block_vector<VectorType>::value>>
-  : public dealii::MatrixFreeOperators::BlockBase<dim, VectorType>
+  : public dealii::MatrixFreeOperators::Base<dim, VectorType>
 {
 public:
-  using Base = dealii::MatrixFreeOperators::BlockBase<dim, VectorType>;
-  using Base::initialize;
-  /*  virtual void compute_diagonal() = 0;
-    virtual void apply_add(VectorType& dst, const VectorType& src) const = 0;*/
+  using Base = dealii::MatrixFreeOperators::Base<dim, VectorType>;
 };
 
 template <int dim, typename VectorType, class FORM, class FEDatas>
@@ -42,15 +35,12 @@ class MatrixFreeIntegratorBase : public MatrixFreeIntegratorBaseBase<dim, Vector
 public:
   using Number = typename VectorType::value_type;
   using Base = MatrixFreeIntegratorBaseBase<dim, VectorType>;
-  using Base::initialize;
-
-  // virtual void compute_diagonal() = 0;
 
   void
-  initialize(const dealii::MatrixFree<dim, Number>& data_, const std::shared_ptr<FORM>& form_,
-             std::shared_ptr<FEDatas> fe_datas_)
+  initialize(const std::shared_ptr<const dealii::MatrixFree<dim, Number>>& data_,
+             const std::shared_ptr<FORM>& form_, std::shared_ptr<FEDatas> fe_datas_)
   {
-    Base::Base::initialize(std::make_shared<const dealii::MatrixFree<dim, Number>>(data_));
+    Base::Base::initialize(data_);
     initialize(form_, fe_datas_);
   }
 
@@ -155,12 +145,11 @@ public:
   using Base::initialize;
 
   void
-  initialize(const dealii::MatrixFree<dim, Number>& data_,
+  initialize(const std::shared_ptr<const dealii::MatrixFree<dim, Number>>& data_,
              const dealii::MGConstrainedDoFs& mg_constrained_dofs, const unsigned int level,
              const std::shared_ptr<FORM>& form_, std::shared_ptr<FEDatas> fe_datas_)
   {
-    Base::Base::Base::initialize(
-      std::make_shared<const dealii::MatrixFree<dim, Number>>(data_), mg_constrained_dofs, level);
+    Base::Base::Base::initialize(data_, mg_constrained_dofs, level);
     initialize(form_, fe_datas_);
   }
 
@@ -257,13 +246,12 @@ public:
   using Base::initialize;
 
   void
-  initialize(const dealii::MatrixFree<dim, Number>& data,
+  initialize(const std::shared_ptr<const dealii::MatrixFree<dim, Number>>& data_,
              const std::vector<dealii::MGConstrainedDoFs>& mg_constrained_dofs,
              const unsigned int level, const std::shared_ptr<FORM>& form_,
              std::shared_ptr<FEDatas> fe_datas_)
   {
-    Base::Base::Base::initialize(
-      std::make_shared<const dealii::MatrixFree<dim, Number>>(data), mg_constrained_dofs, level);
+    Base::Base::Base::initialize(data_, mg_constrained_dofs, level);
     initialize(form_, fe_datas_);
   }
 

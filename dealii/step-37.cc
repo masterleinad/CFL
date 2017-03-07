@@ -175,7 +175,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
     system_mf_storage.reinit(dof_handler, constraints, QGauss<1>(fe.degree + 1), additional_data);
   }
 
-  system_matrix.initialize(system_mf_storage,
+  system_matrix.initialize(std::make_shared<MatrixFree<dim, double>>(system_mf_storage),
                            std::make_shared<Form>(form),
                            std::make_shared<FEDatasSystem>(mf_cfl_data_system));
 
@@ -216,7 +216,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
     mg_mf_storage[level].reinit(
       dof_handler, level_constraints, QGauss<1>(fe.degree + 1), additional_data);
 
-    mg_matrices[level].initialize(mg_mf_storage[level],
+    mg_matrices[level].initialize(std::make_shared<MatrixFree<dim, float>>(mg_mf_storage[level]),
                                   mg_constrained_dofs,
                                   level,
                                   std::make_shared<Form>(form),
