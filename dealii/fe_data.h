@@ -28,11 +28,16 @@ public:
   }
 
   explicit FEData(const std::shared_ptr<const FiniteElementType<dim, dim>> fe_)
-    : fe(std::move(fe_))
+      : fe(std::move(fe_))
   {
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
+#ifdef _UT_
+    AssertThrow(fe->degree == fe_degree, dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree));
+    AssertThrow(fe->n_components() == n_components, dealii::ExcDimensionMismatch(fe->n_components(),n_components) );
+#else
     Assert(fe->degree == fe_degree, dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree));
     AssertDimension(fe->n_components(), n_components);
+#endif
   }
 
   template <class FEDataOther>
@@ -783,7 +788,7 @@ public:
     : FEDatas<Types...>(std::move(fe_datas_))
     , fe_data(std::move(fe_data_))
   {
-    //    std::cout << "Constructor4" << std::endl;
+    //std::cout << "Constructor4 " <<std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
@@ -794,7 +799,7 @@ public:
     : FEDatas<Types...>(fe_datas_...)
     , fe_data(std::move(fe_data_))
   {
-    //    std::cout << "Constructor3" << std::endl;
+       // std::cout << "Constructor3 " << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
     static_assert(CFL::Traits::is_fe_data<FEData>::value,

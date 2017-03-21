@@ -394,7 +394,7 @@ namespace dealii
 
       FEFunctionBase() = delete;
 
-      explicit FEFunctionBase(std::string name, double new_factor = 1.)
+      explicit FEFunctionBase(const std::string name, double new_factor = 1.)
         : data_name(std::move(name))
         , scalar_factor(new_factor)
       {
@@ -711,7 +711,7 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
-        return Base::scalar_factor * phi.template get_hessian<index>(q);
+        return Base::scalar_factor * phi.template get_hessian<Base::index>(q);
       }
 
       template <class FEEvaluation>
