@@ -389,6 +389,13 @@ public:
 protected:
   const FEData fe_data;
 
+  template <unsigned int fe_number_extern>
+  void
+  check_uniqueness()
+  {
+    static_assert(fe_number != fe_number_extern, "The fe_numbers have to be unique!");
+  }
+
 private:
   std::shared_ptr<typename FEData::FEEvaluationType> fe_evaluation = nullptr;
   bool integrate_values = false;
@@ -783,6 +790,7 @@ public:
     : FEDatas<Types...>(std::move(fe_datas_))
     , fe_data(std::move(fe_data_))
   {
+    FEDatas<Types...>::template check_uniqueness<fe_number>();
     //    std::cout << "Constructor4" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
@@ -794,6 +802,7 @@ public:
     : FEDatas<Types...>(fe_datas_...)
     , fe_data(std::move(fe_data_))
   {
+    FEDatas<Types...>::template check_uniqueness<fe_number>();
     //    std::cout << "Constructor3" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
@@ -809,6 +818,14 @@ public:
 
 protected:
   const FEData fe_data;
+
+  template <unsigned int fe_number_extern>
+  void
+  check_uniqueness()
+  {
+    static_assert(fe_number != fe_number_extern, "The fe_numbers have to be unique!");
+    FEDatas<Types...>::template check_uniqueness<fe_number_extern>();
+  }
 
 private:
   std::shared_ptr<typename FEData::FEEvaluationType> fe_evaluation = nullptr;
