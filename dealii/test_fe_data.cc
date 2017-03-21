@@ -75,7 +75,6 @@ BOOST_AUTO_TEST_CASE(FEDataCreation) {
 // 1. Object construction
 // 2. behavior of overloaded comma operator in this class
 // 3. basic state check for the object in each case
-Object creation in each case, and basic state check for the object
 BOOST_AUTO_TEST_CASE(FEDataPositive) {
 
 		//Check that all shared pointers point to a common managed object

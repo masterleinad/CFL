@@ -1,4 +1,10 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
+
+IF(NOT DEFINED ENV{CFL_DIR})
+  message(FATAL_ERROR "CMAKE can not proceed as the environment variable CFL_DIR is not defined")
+  RETURN()
+ENDIF()
+
 FIND_PACKAGE(deal.II 8.4 REQUIRED
   HINTS
   ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR})
@@ -7,7 +13,7 @@ PROJECT(cfldealii)
 SET(CFL_VERSION 0.1.0)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/..)
-INCLUDE_DIRECTORIES(${DEAL_II_DIR}/include/deal.II/bundled) #for boost test
+INCLUDE_DIRECTORIES($ENV{CFL_DIR}/third_party/include) #for boost test
 
 FILE(GLOB sources *.cc)
 GET_FILENAME_COMPONENT(prefix ${CMAKE_CURRENT_SOURCE_DIR} NAME)
