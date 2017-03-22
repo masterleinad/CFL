@@ -74,7 +74,12 @@ public:
   static constexpr unsigned int max_degree = FEData::max_degree;
   static constexpr unsigned int n = 1;
 
-  explicit FEDatas(const FEData fe_data_)
+  //Note: This constructor is deliberately not marked as explicit to allow initializations like:
+  // .......
+  // FEData<....> fedata_obj;
+  // FEDatas<decltype(fedata_obj)> fedatas_obj = fedata_obj;
+  // .......
+  FEDatas(const FEData fe_data_)
     : fe_data(std::move(fe_data_))
   {
     //    std::cout << "Constructor1" << std::endl;
