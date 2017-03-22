@@ -21,7 +21,7 @@
  * 2009-2012, updated to MPI version with parallel vectors in 2016
  */
 
-#include <dealii/mg_transfer_matrix_free.h>
+//#include <dealii/mg_transfer_matrix_free.h>
 
 #include <deal.II/base/function.h>
 #include <deal.II/base/logstream.h>
@@ -565,8 +565,7 @@ main(int argc, char* argv[])
 
     Utilities::MPI::MPI_InitFinalize mpi_init(argc, argv, 1);
 
-    FE_Q<dimension> fe_u(degree_finite_element);
-    const auto fe_shared = std::make_shared<FE_Q<dimension>>(fe_u);
+    const auto fe_shared = std::make_shared<FE_Q<dimension>>(degree_finite_element);
 
     FEData<FE_Q, degree_finite_element, 1, dimension, 0, degree_finite_element, double>
       fedata_e_system(fe_shared);
