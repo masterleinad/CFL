@@ -64,11 +64,20 @@ namespace Traits
     static const bool value = true;
   };
 
-  template <class FEData>
-    struct is_fe_data<FEDatas<FEData>>
+
+  template <class FEDataParam>
+  struct is_fe_data<FEDatas<FEDataParam>>
     {
-      static const bool value = true;
+	  static constexpr bool value = CFL::Traits::is_fe_data<FEDataParam>::value;
     };
+
+
+  template <typename FEDataParam, typename... Types>
+  struct is_fe_data<FEDatas<FEDataParam, Types...>> : public is_fe_data<Types...>
+  {
+	  static constexpr bool value = (CFL::Traits::is_fe_data<Types...>::value) && (CFL::Traits::is_fe_data<FEDataParam>::value);
+  };
+
 
 } // namespace Traits
 } // namespace CFL
@@ -799,8 +808,7 @@ public:
   }
 
   template <class FEDataOther>
-  typename std::enable_if_t<CFL::Traits::is_fe_data<FEDataOther>::value,
-                            FEDatas<FEDataOther, FEData, Types...>>
+  FEDatas<FEDataOther, FEData, Types...>
   operator,(const FEDataOther& new_fe_data) const
   {
     return FEDatas<FEDataOther, FEData, Types...>(new_fe_data, *this);
@@ -810,24 +818,24 @@ public:
     : FEDatas<Types...>(std::move(fe_datas_))
     , fe_data(std::move(fe_data_))
   {
+	static_assert(CFL::Traits::is_fe_data<FEData>::value,
+	                    "You need to construct this with a FEData object!");
     FEDatas<Types...>::template check_uniqueness<fe_number>();
     //    std::cout << "Constructor4" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
-    static_assert(CFL::Traits::is_fe_data<FEData>::value,
-                  "You need to construct this with a FEData object!");
   }
 
   explicit FEDatas(const FEData fe_data_, const Types... fe_datas_)
     : FEDatas<Types...>(fe_datas_...)
     , fe_data(std::move(fe_data_))
   {
+	static_assert(CFL::Traits::is_fe_data<FEData>::value,
+	                    "You need to construct this with a FEData object!");
     FEDatas<Types...>::template check_uniqueness<fe_number>();
     //    std::cout << "Constructor3" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
-    static_assert(CFL::Traits::is_fe_data<FEData>::value,
-                  "You need to construct this with a FEData object!");
   }
 
   /*  FEDatas(const FEDatas<FEData, Types...>& fe_datas[[maybe_unused]])
