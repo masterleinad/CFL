@@ -40,13 +40,16 @@ public:
 #endif
   }
 
+  // Supports following  operations:
+  // fedatasx = (fedata,fedatas)
+  // fedatasx = (fedata,fedata)
   template <class FEDataOther>
-  typename std::enable_if_t<CFL::Traits::is_fe_data<FEDataOther>::value,
-                            FEDatas<FEDataOther, FEData>>
-  operator,(const FEData& new_fe_data) const
+  auto operator,(const FEDataOther& new_fe_data) const
   {
+	static_assert(CFL::Traits::is_fe_data<FEDataOther>::value, "Only FEData or FEDatas objects can be added!");
     return FEDatas<FEDataOther, FEData>(new_fe_data, *this);
   }
+
 };
 
 namespace CFL
@@ -60,6 +63,13 @@ namespace Traits
   {
     static const bool value = true;
   };
+
+  template <class FEData>
+    struct is_fe_data<FEDatas<FEData>>
+    {
+      static const bool value = true;
+    };
+
 } // namespace Traits
 } // namespace CFL
 
@@ -846,20 +856,5 @@ private:
   bool evaluate_hessians = false;
   bool initialized = false;
 };
-
-template <class FEData, typename... Types>
-typename std::enable_if_t<CFL::Traits::is_fe_data<FEData>::value, FEDatas<FEData, Types...>>
-operator,(const FEData& new_fe_data, const FEDatas<Types...>& old_fe_data)
-{
-  return old_fe_data.operator,(new_fe_data);
-}
-
-template <class FEData1, class FEData2>
-std::enable_if_t<CFL::Traits::is_fe_data<FEData1>::value, FEDatas<FEData1, FEData2>>
-operator,(const FEData1& fe_data1, const FEData2& fe_data2)
-{
-  static_assert(CFL::Traits::is_fe_data<FEData2>::value, "Only FEData objects can be added!");
-  return FEDatas<FEData1, FEData2>(fe_data1, fe_data2);
-}
 
 #endif // FE_DATA_H

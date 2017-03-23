@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(FEDataPositive) {
         BOOST_TEST(fe_shared.use_count() == 4);
         
         //Check the state of objects added through comma operator
-        //fedata_e_system,fedata_u_system; //ok..but this is strange, maybe it can just be ignored
+        fedata_e_system,fedata_u_system; //This is just to ensure that comma operation is not broken
         auto fedatas_2 = (fedata_e_system,fedata_u_system); //ok, but using () has to be remembered
         BOOST_TEST(fedatas_2.get_fe_data<0>().fe_number == 0);
         BOOST_TEST(fedatas_2.get_fe_data<1>().fe_number == 1);
@@ -163,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE(FEDatasComma,FEDatasFixture) {
         //fedatas = (fedatas,fedata_1_system); TBD, cant be supported see point no. 9
 
         //Check the state of objects added through comma operator        
-        FEDatas<decltype(fedata_0_system)> fedatas2 = fedata_0_system; //fails due to explicit constructor disallowing copy initialization
+        FEDatas<decltype(fedata_0_system)> fedatas2 = fedata_0_system;
 
         auto fedatas3 = (fedatas2,fedata_1_system);
         BOOST_TEST(fedatas3.get_fe_data<0>().fe_number == 0);
@@ -184,14 +184,14 @@ BOOST_FIXTURE_TEST_CASE(FEDatasComma,FEDatasFixture) {
         BOOST_TEST(fedatas6.get_fe_data<1>().fe_number == 1);
         BOOST_TEST(fedatas6.get_fe_data<2>().fe_number == 2);
 
-        //TBD: This fails since we cant combine FEDatas with comma operator. Discuss if needed
-#if 0
-        auto fedatas_t1 = (fedatas,fedata_0_system,fedata_1_system);
-        auto fedatas_t2 = (fedata_2_system,fedata_3_system);
-        auto fedatas6 = (fedatas_t1,fedatas_t2);
-        BOOST_TEST(fedatas6.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas6.get_fe_data<1>().fe_number == 1);
-#endif
+        //TBD: This fails since we cant combine FEDatas with comma operator
+  #if 0
+          auto fedatas_t1 = (fedatas,fedata_0_system,fedata_1_system);
+          auto fedatas_t2 = (fedata_2_system,fedata_3_system);
+          auto fedatas6 = (fedatas_t1,fedatas_t2);
+          BOOST_TEST(fedatas6.get_fe_data<0>().fe_number == 0);
+          BOOST_TEST(fedatas6.get_fe_data<1>().fe_number == 1);
+  #endif
 
 
 #if 0
