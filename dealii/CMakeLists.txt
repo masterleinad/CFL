@@ -1,4 +1,13 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.8)
+
+IF(DEFINED ENV{CFL_DIR})
+  SET (CFL_DIR $ENV{CFL_DIR})
+ELSE()
+  SET (CFL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../)
+ENDIF()
+
+MESSAGE("CFL_DIR is ${CFL_DIR}")
+
 FIND_PACKAGE(deal.II 8.4 REQUIRED
   HINTS
   ${DEAL_II_DIR} ../ ../../ $ENV{DEAL_II_DIR})
@@ -7,6 +16,7 @@ PROJECT(cfldealii)
 SET(CFL_VERSION 0.1.0)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/..)
+INCLUDE_DIRECTORIES(${CFL_DIR}/third_party/include) #for boost test
 
 FILE(GLOB sources *.cc)
 GET_FILENAME_COMPONENT(prefix ${CMAKE_CURRENT_SOURCE_DIR} NAME)
@@ -27,6 +37,7 @@ OPTION(PVS-Analysis "Use static code analyzer PVS-Studio?" OFF)
 OPTION(DEBUG-OUTPUT "Enable verbose debug output?" OFF)
 IF (DEBUG-OUTPUT)
   ADD_DEFINITIONS(-DDEBUG_OUTPUT)
+  ADD_DEFINITIONS(-D_UT_)
 ENDIF()
 
 IF(PVS-Analysis)
@@ -39,6 +50,8 @@ FOREACH(ccfile ${sources})
   ADD_EXECUTABLE(${target} ${ccfile})
   SET_TARGET_PROPERTIES(${target} PROPERTIES OUTPUT_NAME ${file})
   DEAL_II_SETUP_TARGET(${target})
+
+  TARGET_LINK_LIBRARIES(${target} ${CFL_DIR}/third_party/libs/boost/test/libboost_test.so)
   IF(PVS-Analysis)
     pvs_studio_add_target(TARGET analyze_${target} ALL
                           ANALYZE ${target}
