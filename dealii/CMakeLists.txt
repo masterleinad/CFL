@@ -16,7 +16,7 @@ PROJECT(cfldealii)
 SET(CFL_VERSION 0.1.0)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/..)
-INCLUDE_DIRECTORIES(${CFL_DIR}/third_party/include) #for boost test
+INCLUDE_DIRECTORIES($ENV{CFL_DIR}/third_party/include) #for boost test
 
 FILE(GLOB sources *.cc)
 GET_FILENAME_COMPONENT(prefix ${CMAKE_CURRENT_SOURCE_DIR} NAME)
@@ -34,7 +34,7 @@ ENDIF()
 
 OPTION(PVS-Analysis "Use static code analyzer PVS-Studio?" OFF)
 
-OPTION(DEBUG-OUTPUT "Enable verbose debug output?" OFF)
+OPTION(DEBUG-OUTPUT "Enable verbose debug output?" ON)
 IF (DEBUG-OUTPUT)
   ADD_DEFINITIONS(-DDEBUG_OUTPUT)
   ADD_DEFINITIONS(-D_UT_)
