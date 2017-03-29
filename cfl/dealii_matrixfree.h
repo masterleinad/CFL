@@ -204,7 +204,7 @@ namespace dealii
       using TensorTraits = Traits::Tensor<rank, dim>;
 
       static constexpr unsigned int index = idx;
-      static constexpr bool scalar_valued = (TensorTraits::rank > 0);
+      static constexpr bool scalar_valued = (0 == TensorTraits::rank);
     };
 
     template <int rank, int dim, unsigned int idx>

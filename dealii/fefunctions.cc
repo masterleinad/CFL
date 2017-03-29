@@ -158,7 +158,7 @@ struct FEfunctor {
 				FEFunction<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_fe_fun_obj1("test_fe_fun_obj1",obj_comb[i].scalar_factor); //second form of const
         		//Check basic state of object
         		BOOST_TEST(test_fe_fun_obj1.index == obj_comb[i].index);
-        		BOOST_TEST(test_fe_fun_obj1.name() == "test_obj");
+        		BOOST_TEST(test_fe_fun_obj1.name() == "test_fe_fun_obj1");
         		BOOST_TEST(test_fe_fun_obj1.scalar_factor == obj_comb[i].scalar_factor);
 
         		auto test_grad_obj = grad(test_fe_fun_obj1);
