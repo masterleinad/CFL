@@ -39,6 +39,22 @@ struct for_<to, to> {
 /////////////////////////////////////////////////////////////////////////////////////
 
 
+/////
+typedef struct{
+	int rank;
+	int dim;
+	unsigned int index;
+	double scalar_factor;
+}FEData_s;
+
+typedef struct{
+	int rank;
+	int dim;
+	unsigned int index;
+	bool scalar_valued;
+}TestData_s;
+/////
+
 //// Test case TestObjCreation
 // Type: Positive test case
 // Coverage: following classes - TestFunction, TestDivergence, TestSymmetricGradient, TestCurl, TestGradient, TestHessian
@@ -47,56 +63,55 @@ struct for_<to, to> {
 // 2. Object creation in each case, and basic state check for the object
 template<int i>
 struct TestDatafunctor {
-	static constexpr int obj_comb[][4] = {
+	static constexpr TestData_s obj_comb[9] = {
 			// {rank, dim, index, scalar_valued}
 	        {0,1,1,1}, {0,2,1,1}, {0,3,1,1},
 	        {1,1,1,0}, {1,2,1,0}, {1,3,1,0},
-	        {2,1,1,0}, {2,2,1,0}, {2,3,1,0},};
+	        {2,1,1,0}, {2,2,1,0}, {2,3,1,0}};
 	typedef map<string, pair<bool,bool>> comb_map_t; //Testxxx class name, (integrate_value, integrate_gradient)
 	static  comb_map_t i_comb;
 
 	static void run() {
 				//TBD: Change to avoid duplication??
-
-        		TestFunction<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_obj1;
+        		TestFunction<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_obj1;
         		//Check basic state of object
-        		BOOST_TEST(test_obj1.index == obj_comb[i][2]);
-        		BOOST_TEST(test_obj1.scalar_valued == obj_comb[i][3]);
+        		BOOST_TEST(test_obj1.index == obj_comb[i].index);
+        		BOOST_TEST(test_obj1.scalar_valued == obj_comb[i].scalar_valued);
         		BOOST_TEST(test_obj1.integrate_value == i_comb["TestFunction"].first);
         		BOOST_TEST(test_obj1.integrate_gradient == i_comb["TestFunction"].second);
 
-        		TestDivergence<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_obj2;
+        		TestDivergence<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_obj2;
         		//Check basic state of object
-        		BOOST_TEST(test_obj2.index == obj_comb[i][2]);
-        		BOOST_TEST(test_obj2.scalar_valued == obj_comb[i][3]);
+        		BOOST_TEST(test_obj2.index == obj_comb[i].index);
+        		BOOST_TEST(test_obj2.scalar_valued == obj_comb[i].scalar_valued);
         		BOOST_TEST(test_obj2.integrate_value == i_comb["TestDivergence"].first);
         		BOOST_TEST(test_obj2.integrate_gradient == i_comb["TestDivergence"].second);
 
-        		TestSymmetricGradient<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_obj3;
+        		TestSymmetricGradient<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_obj3;
         		//Check basic state of object
-        		BOOST_TEST(test_obj3.index == obj_comb[i][2]);
-        		BOOST_TEST(test_obj3.scalar_valued == obj_comb[i][3]);
+        		BOOST_TEST(test_obj3.index == obj_comb[i].index);
+        		BOOST_TEST(test_obj3.scalar_valued == obj_comb[i].scalar_valued);
         		BOOST_TEST(test_obj3.integrate_value == i_comb["TestSymmetricGradient"].first);
         		BOOST_TEST(test_obj3.integrate_gradient == i_comb["TestSymmetricGradient"].second);
 
-        		TestCurl<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_obj4;
+        		TestCurl<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_obj4;
         		//Check basic state of object
-        		BOOST_TEST(test_obj4.index == obj_comb[i][2]);
-        		BOOST_TEST(test_obj4.scalar_valued == obj_comb[i][3]);
+        		BOOST_TEST(test_obj4.index == obj_comb[i].index);
+        		BOOST_TEST(test_obj4.scalar_valued == obj_comb[i].scalar_valued);
         		BOOST_TEST(test_obj4.integrate_value == i_comb["TestCurl"].first);
         		BOOST_TEST(test_obj4.integrate_gradient == i_comb["TestCurl"].second);
 
-        		TestGradient<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_obj5;
+        		TestGradient<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_obj5;
         		//Check basic state of object
-        		BOOST_TEST(test_obj5.index == obj_comb[i][2]);
-        		BOOST_TEST(test_obj5.scalar_valued == obj_comb[i][3]);
+        		BOOST_TEST(test_obj5.index == obj_comb[i].index);
+        		BOOST_TEST(test_obj5.scalar_valued == obj_comb[i].scalar_valued);
         		BOOST_TEST(test_obj5.integrate_value == i_comb["TestGradient"].first);
         		BOOST_TEST(test_obj5.integrate_gradient == i_comb["TestGradient"].second);
 
-        		TestHessian<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_obj6;
+        		TestHessian<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_obj6;
         		//Check basic state of object
-        		BOOST_TEST(test_obj6.index == obj_comb[i][2]);
-        		BOOST_TEST(test_obj6.scalar_valued == obj_comb[i][3]);
+        		BOOST_TEST(test_obj6.index == obj_comb[i].index);
+        		BOOST_TEST(test_obj6.scalar_valued == obj_comb[i].scalar_valued);
         		BOOST_TEST(test_obj6.integrate_value == i_comb["TestHessian"].first);
         		BOOST_TEST(test_obj6.integrate_gradient == i_comb["TestHessian"].second);
         }
@@ -128,23 +143,23 @@ BOOST_AUTO_TEST_CASE(TestObjCreation) {
 // 2. Object creation in each case, and basic state check for the object
 template<int i>
 struct FEfunctor {
-	static constexpr int obj_comb[][4] = {
+	static constexpr FEData_s obj_comb[9] = {
 			// {rank, dim, index, scalar-factor}
 	        {0,1,1,0.1}, {0,2,1,0.2}, {0,3,1,0.3},
 	        {1,1,1,0.4}, {1,2,1,0.5}, {1,3,1,0.6},
-	        {2,1,1,0.7}, {2,2,1,0.8}, {2,3,1,0.9},};
+	        {2,1,1,0.7}, {2,2,1,0.8}, {2,3,1,0.9}};
 
 	static void run() {
 				//TBD: Change to avoid duplication??
 
 				//Check possible constructions and basic state of objects
-				FEFunction<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_fe_fun_obj1_1(); //default const
-				FEFunction<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_fe_fun_obj1_2("test_fe_fun_obj1_2"); //one form of const
-				FEFunction<obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]> test_fe_fun_obj1("test_fe_fun_obj1",obj_comb[i][3]); //second form of const
+				FEFunction<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_fe_fun_obj1_1(); //default const
+				FEFunction<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_fe_fun_obj1_2("test_fe_fun_obj1_2"); //one form of const
+				FEFunction<obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index> test_fe_fun_obj1("test_fe_fun_obj1",obj_comb[i].scalar_factor); //second form of const
         		//Check basic state of object
-        		BOOST_TEST(test_fe_fun_obj1.index == obj_comb[i][2]);
+        		BOOST_TEST(test_fe_fun_obj1.index == obj_comb[i].index);
         		BOOST_TEST(test_fe_fun_obj1.name() == "test_obj");
-        		BOOST_TEST(test_fe_fun_obj1.scalar_factor == obj_comb[i][3]);
+        		BOOST_TEST(test_fe_fun_obj1.scalar_factor == obj_comb[i].scalar_factor);
 
         		auto test_grad_obj = grad(test_fe_fun_obj1);
         		BOOST_TEST(test_grad_obj.index == test_fe_fun_obj1.index);
@@ -334,21 +349,21 @@ void sumfe_same_types() {
 
 template<int i>
 struct SumFEfunctor {
-	static constexpr int obj_comb[][4] = {
+	static constexpr FEData_s obj_comb[9] = {
 			// {rank, dim, index, scalar-factor}
 	        {0,1,1,0.1}, {0,2,1,0.2}, {0,3,1,0.3},
 	        {1,1,1,0.4}, {1,2,1,0.5}, {1,3,1,0.6},
-	        {2,1,1,0.7}, {2,2,1,0.8}, {2,3,1,0.9},};
+	        {2,1,1,0.7}, {2,2,1,0.8}, {2,3,1,0.9}};
 
 	static void run() {
-		sumfe_same_types<FEFunction,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		sumfe_same_types<FEDivergence,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		sumfe_same_types<FESymmetricGradient,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		//sumfe_same_types<FECurl,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>(); 9. TBD fails..no operator + for it. Analysis pending
-		sumfe_same_types<FEGradient,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		sumfe_same_types<FELaplacian,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		sumfe_same_types<FEDiagonalHessian,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		sumfe_same_types<FEHessian,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
+		sumfe_same_types<FEFunction,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		sumfe_same_types<FEDivergence,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		sumfe_same_types<FESymmetricGradient,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		//sumfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>(); 9. TBD fails..no operator + for it. Analysis pending
+		sumfe_same_types<FEGradient,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		sumfe_same_types<FELaplacian,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		sumfe_same_types<FEDiagonalHessian,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		sumfe_same_types<FEHessian,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
 	}
 };
 BOOST_FIXTURE_TEST_CASE(SumFEObjSameType,FEFixture)
@@ -372,17 +387,18 @@ BOOST_FIXTURE_TEST_CASE(SumFEObjSameType,FEFixture)
 // 1. How are the combinations of different types chosen?
 //		See that grad() returns FEFunction of rank+1, while div returns FEFunction of rank-1
 // 		The state machine would be (< and > should be seen as arrow termination):
-//                 FE
-//                | |
-//               /   \
-//            n |     | n
-//             /       \
-//            <         >
-//      (+1)Grad -------> Div(-1)
-//       |   >
-//       |   |
-//       |___|
-//
+/*
+                 FE
+                | |
+               /   \
+            n |     | n
+             /       \
+            <         >
+      (+1)Grad -------> Div(-1)
+       |   >
+       |   |
+       |___|
+*/
 //		i.e. valid state transitions are
 // 			operation			output tensor rank
 //				F					n
@@ -392,7 +408,8 @@ BOOST_FIXTURE_TEST_CASE(SumFEObjSameType,FEFixture)
 //				FGGD				n+1
 //				FD					n-1
 // where e.g. FGD => div(grad(FEFunction F))
-void sumfe_diff_types(auto type1, auto type2)
+template <typename T>
+void sumfe_diff_types(const T& type1, const T& type2)
 {
 	auto sum1 = type1 + type2;
 	auto sum2 = type2 + type1;
@@ -454,21 +471,21 @@ void prodfe_same_types() {
 
 template<int i>
 struct ProdFEfunctor {
-	static constexpr int obj_comb[][4] = {
+	static constexpr FEData_s obj_comb[] = {
 			// {rank, dim, index, scalar-factor}
 	        {0,1,1,0.1}, {0,2,1,0.2}, {0,3,1,0.3},
 	        {1,1,1,0.4}, {1,2,1,0.5}, {1,3,1,0.6},
-	        {2,1,1,0.7}, {2,2,1,0.8}, {2,3,1,0.9},};
+	        {2,1,1,0.7}, {2,2,1,0.8}, {2,3,1,0.9}};
 
 	static void run() {
-		prodfe_same_types<FEFunction,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		prodfe_same_types<FEDivergence,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		prodfe_same_types<FESymmetricGradient,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		//prodfe_same_types<FECurl,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>(); 12. TBD fails..no operator * for it. Analysis pending
-		prodfe_same_types<FEGradient,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		prodfe_same_types<FELaplacian,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		prodfe_same_types<FEDiagonalHessian,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
-		prodfe_same_types<FEHessian,obj_comb[i][0],obj_comb[i][1],obj_comb[i][2]>();
+		prodfe_same_types<FEFunction,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		prodfe_same_types<FEDivergence,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		prodfe_same_types<FESymmetricGradient,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		//prodfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>(); 12. TBD fails..no operator * for it. Analysis pending
+		prodfe_same_types<FEGradient,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		prodfe_same_types<FELaplacian,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		prodfe_same_types<FEDiagonalHessian,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+		prodfe_same_types<FEHessian,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
 	}
 };
 BOOST_FIXTURE_TEST_CASE(ProdFEObjSameType,FEFixture)
@@ -487,7 +504,8 @@ BOOST_FIXTURE_TEST_CASE(ProdFEObjSameType,FEFixture)
 //		There are no check on values since they are available from dealii library function results which we ignore in out test
 // Remarks:
 // See remark 1 from SumFEObjDiffType
-void prodfe_diff_types(auto type1, auto type2)
+template <typename T>
+void prodfe_diff_types(const T& type1, const T& type2)
 {
 	auto prod1 = type1 * type2;
 	auto prod2 = type2 * type1;
