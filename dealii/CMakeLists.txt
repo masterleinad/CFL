@@ -16,7 +16,7 @@ PROJECT(cfldealii)
 SET(CFL_VERSION 0.1.0)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/..)
-INCLUDE_DIRECTORIES($ENV{CFL_DIR}/third_party/include) #for boost test
+INCLUDE_DIRECTORIES(${CFL_DIR}/third_party/include) #for boost test
 
 FILE(GLOB sources *.cc)
 GET_FILENAME_COMPONENT(prefix ${CMAKE_CURRENT_SOURCE_DIR} NAME)
