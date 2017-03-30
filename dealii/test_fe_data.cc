@@ -3,7 +3,7 @@
 //////////
 #define BOOST_TEST_MODULE TMOD_FEDATA_H
 #define BOOST_TEST_DYN_LINK
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/data/monomorphic.hpp>
 
@@ -33,9 +33,9 @@ struct for_<to, to> {
         }
 };
 /////////////////////////////////////////////////////////////////////////////////////
-
-
-
+//Just to avoid writing a U (unsigned) during comparison and prevent warning
+const unsigned int fe_0 = 0, fe_1 = 1, fe_2 = 2, fe_3 = 3, fe_4 = 4;
+///////////////////
 
 //// Test case FEDataCreation
 // Type: Positive test case
@@ -45,11 +45,11 @@ struct for_<to, to> {
 // 2. Object creation in each case, and basic state check for the object
 template<int i>
 struct FEDatafunctor {
-	static constexpr int degree[] = { 1, 2, 3 };
-	static constexpr int n_comp[] = { 1, 1, 1 }; //todo, change n_comp by using FESystem
-	static constexpr int dim[] = { 1, 2, 3 };
-	static constexpr int fe_no[] = { 0, 1, 2 };
-	static constexpr int max_degree = 4;
+	static constexpr int degree[4] = { 1, 2, 3 };
+	static constexpr int n_comp[4] = { 1, 1, 1 };
+	static constexpr int dim[4] = { 1, 2, 3 };
+	static constexpr unsigned int fe_no[4] = { fe_0,fe_1,fe_2 };
+	static constexpr unsigned int max_degree = 4;
 
         static void run() {
         		FE_Q<dim[i]> fe(degree[i]);
@@ -90,12 +90,12 @@ BOOST_AUTO_TEST_CASE(FEDataPositive) {
         //Check the state of objects added through comma operator
         //fedata_e_system,fedata_u_system; //ok..but this is strange, maybe it can just be ignored
         auto fedatas_2 = (fedata_e_system,fedata_u_system); //ok, but using () has to be remembered
-        BOOST_TEST(fedatas_2.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas_2.get_fe_data<1>().fe_number == 1);
+        BOOST_TEST(fedatas_2.get_fe_data<0>().fe_number == fe_0);
+        BOOST_TEST(fedatas_2.get_fe_data<1>().fe_number == fe_1);
         auto fedatas_3 = (fedata_e_system,fedata_u_system,fedata_x_system); //ok, but using () has to be remembered
-        BOOST_TEST(fedatas_3.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas_3.get_fe_data<1>().fe_number == 1);
-        BOOST_TEST(fedatas_3.get_fe_data<2>().fe_number == 2);
+        BOOST_TEST(fedatas_3.get_fe_data<0>().fe_number == fe_0);
+        BOOST_TEST(fedatas_3.get_fe_data<1>().fe_number == fe_1);
+        BOOST_TEST(fedatas_3.get_fe_data<2>().fe_number == fe_2);
         
 }
 
@@ -157,39 +157,39 @@ BOOST_FIXTURE_TEST_CASE(FEDatasComma,FEDatasFixture) {
         BOOST_TEST(fedatas.fe_number == fedatas.get_fe_data<0>().fe_number);
 
         auto fedatas1((fedata_0_system,fedata_1_system)); //invoking automatic copy construction
-        BOOST_TEST(fedatas1.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas1.get_fe_data<1>().fe_number == 1);
+        BOOST_TEST(fedatas1.get_fe_data<0>().fe_number == fe_0);
+        BOOST_TEST(fedatas1.get_fe_data<1>().fe_number == fe_1);
         
         //fedatas = (fedatas,fedata_1_system); TBD, cant be supported see point no. 9
 
         //Check the state of objects added through comma operator        
         //FEDatas<decltype(fedata_e_system)> fedatas = fedata_e_system; //fails due to explicit constructor disallowing copy initialization        
         auto fedatas2 = (fedatas,fedata_1_system);
-        BOOST_TEST(fedatas2.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas2.get_fe_data<1>().fe_number == 1);
+        BOOST_TEST(fedatas2.get_fe_data<0>().fe_number == fe_0);
+        BOOST_TEST(fedatas2.get_fe_data<1>().fe_number == fe_1);
         
         auto fedatas3 = (fedatas,fedata_1_system,fedata_2_system);
-        BOOST_TEST(fedatas3.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas3.get_fe_data<1>().fe_number == 1);
-        BOOST_TEST(fedatas3.get_fe_data<2>().fe_number == 2);
+        BOOST_TEST(fedatas3.get_fe_data<0>().fe_number == fe_0);
+        BOOST_TEST(fedatas3.get_fe_data<1>().fe_number == fe_1);
+        BOOST_TEST(fedatas3.get_fe_data<2>().fe_number == fe_2);
 
         
         auto fedatas4 = (fedata_1_system,fedatas);
-        BOOST_TEST(fedatas4.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas4.get_fe_data<1>().fe_number == 1);
+        BOOST_TEST(fedatas4.get_fe_data<0>().fe_number == fe_0);
+        BOOST_TEST(fedatas4.get_fe_data<1>().fe_number == fe_1);
         
         auto fedatas5 = (fedatas,fedata_1_system,fedata_2_system);
-        BOOST_TEST(fedatas5.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas5.get_fe_data<1>().fe_number == 1);
-        BOOST_TEST(fedatas5.get_fe_data<2>().fe_number == 2);
+        BOOST_TEST(fedatas5.get_fe_data<0>().fe_number == fe_0);
+        BOOST_TEST(fedatas5.get_fe_data<1>().fe_number == fe_1);
+        BOOST_TEST(fedatas5.get_fe_data<2>().fe_number == fe_2);
 
         //TBD: This fails since we cant combine FEDatas with comma operator. Discuss if needed
 #if 0
         auto fedatas_t1 = (fedatas,fedata_0_system,fedata_1_system);
         auto fedatas_t2 = (fedata_2_system,fedata_3_system);
         auto fedatas6 = (fedatas_t1,fedatas_t2);
-        BOOST_TEST(fedatas6.get_fe_data<0>().fe_number == 0);
-        BOOST_TEST(fedatas6.get_fe_data<1>().fe_number == 1);
+        BOOST_TEST(fedatas6.get_fe_data<0>().fe_number == fe_0);
+        BOOST_TEST(fedatas6.get_fe_data<1>().fe_number == fe_1);
 #endif
 
 
