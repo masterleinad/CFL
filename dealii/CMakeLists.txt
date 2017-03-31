@@ -60,22 +60,5 @@ FOREACH(ccfile ${sources})
   ENDIF()
 ENDFOREACH()
 
-OPTION(UT-TEST "Enable unit testing?" ON)
-IF (UT-TEST)
-  # Find all the UT files
-  FILE(GLOB test_sources RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.cc")
-
-FOREACH(ccfile ${test_sources})
-  GET_FILENAME_COMPONENT(file ${ccfile} NAME_WE)
-  SET(target ${file})
-  ADD_EXECUTABLE(${target} ${ccfile})
-  SET_TARGET_PROPERTIES(${target} PROPERTIES OUTPUT_NAME ${file})
-  DEAL_II_SETUP_TARGET(${target})
-
-  TARGET_LINK_LIBRARIES(${target} ${CFL_DIR}/third_party/libs/boost/test/libboost_test.so)
-ENDFOREACH()
-
-ENDIF()
-
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(tests)

@@ -4,20 +4,19 @@
 #include "test_fe_data.h"
 //////////
 
-
-
 //// Test case FEDataNegative
 // Type: Negative test case
 // Coverage: following classes - FEData
 // Checks for:
-//	1. Runtime exceptions
-BOOST_AUTO_TEST_CASE(FEDataNegative) {
-	//Mismatch in FE degree
-	typedef FEData<FE_Q,3/*unequal degree*/,1,2,1,4> ErrFEData1;
-	FE_Q<2> fe(2);
-	BOOST_CHECK_THROW(ErrFEData1 obj(fe),dealii::ExcIndexRange );
+//  1. Runtime exceptions
+BOOST_AUTO_TEST_CASE(FEDataNegative)
+{
+  // Mismatch in FE degree
+  typedef FEData<FE_Q, 3 /*unequal degree*/, 1, 2, 1, 4> ErrFEData1;
+  FE_Q<2> fe(2);
+  BOOST_CHECK_THROW(ErrFEData1 obj(fe), dealii::ExcIndexRange);
 
-	//Mmismatch in number of components
-	typedef FEData<FE_Q,2,2/*unequal components*/,2,1,4> ErrFEData2;
-	BOOST_CHECK_THROW(ErrFEData2 obj(fe),dealii::ExcDimensionMismatch );
+  // Mmismatch in number of components
+  typedef FEData<FE_Q, 2, 2 /*unequal components*/, 2, 1, 4> ErrFEData2;
+  BOOST_CHECK_THROW(ErrFEData2 obj(fe), dealii::ExcDimensionMismatch);
 }
