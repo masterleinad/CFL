@@ -34,10 +34,9 @@ ENDIF()
 
 OPTION(PVS-Analysis "Use static code analyzer PVS-Studio?" OFF)
 
-OPTION(DEBUG-OUTPUT "Enable verbose debug output?" ON)
+OPTION(DEBUG-OUTPUT "Enable verbose debug output?" OFF)
 IF (DEBUG-OUTPUT)
   ADD_DEFINITIONS(-DDEBUG_OUTPUT)
-  ADD_DEFINITIONS(-D_UT_)
 ENDIF()
 
 IF(PVS-Analysis)
@@ -51,7 +50,6 @@ FOREACH(ccfile ${sources})
   SET_TARGET_PROPERTIES(${target} PROPERTIES OUTPUT_NAME ${file})
   DEAL_II_SETUP_TARGET(${target})
 
-  TARGET_LINK_LIBRARIES(${target} ${CFL_DIR}/third_party/libs/boost/test/libboost_test.so)
   IF(PVS-Analysis)
     pvs_studio_add_target(TARGET analyze_${target} ALL
                           ANALYZE ${target}
@@ -61,6 +59,23 @@ FOREACH(ccfile ${sources})
                           CONFIG "../PVS-Studio.cfg")
   ENDIF()
 ENDFOREACH()
+
+OPTION(UT-TEST "Enable unit testing?" ON)
+IF (UT-TEST)
+  # Find all the UT files
+  FILE(GLOB test_sources RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.cc")
+
+FOREACH(ccfile ${test_sources})
+  GET_FILENAME_COMPONENT(file ${ccfile} NAME_WE)
+  SET(target ${file})
+  ADD_EXECUTABLE(${target} ${ccfile})
+  SET_TARGET_PROPERTIES(${target} PROPERTIES OUTPUT_NAME ${file})
+  DEAL_II_SETUP_TARGET(${target})
+
+  TARGET_LINK_LIBRARIES(${target} ${CFL_DIR}/third_party/libs/boost/test/libboost_test.so)
+ENDFOREACH()
+
+ENDIF()
 
 ENABLE_TESTING()
 ADD_SUBDIRECTORY(tests)
