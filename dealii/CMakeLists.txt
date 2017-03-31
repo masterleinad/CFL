@@ -37,7 +37,6 @@ OPTION(PVS-Analysis "Use static code analyzer PVS-Studio?" OFF)
 OPTION(DEBUG-OUTPUT "Enable verbose debug output?" OFF)
 IF (DEBUG-OUTPUT)
   ADD_DEFINITIONS(-DDEBUG_OUTPUT)
-  ADD_DEFINITIONS(-D_UT_)
 ENDIF()
 
 IF(PVS-Analysis)
@@ -51,7 +50,6 @@ FOREACH(ccfile ${sources})
   SET_TARGET_PROPERTIES(${target} PROPERTIES OUTPUT_NAME ${file})
   DEAL_II_SETUP_TARGET(${target})
 
-  TARGET_LINK_LIBRARIES(${target} ${CFL_DIR}/third_party/libs/boost/test/libboost_test.so)
   IF(PVS-Analysis)
     pvs_studio_add_target(TARGET analyze_${target} ALL
                           ANALYZE ${target}
