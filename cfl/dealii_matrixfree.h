@@ -784,6 +784,7 @@ namespace dealii
                       "You need to construct this with a FEFunction object!");
       }
 
+      //sumfefunc + fefunc
       template <class NewFEFunction>
       SumFEFunctions<NewFEFunction, FEFunction>
       operator+(const NewFEFunction& new_summand) const
@@ -834,13 +835,38 @@ namespace dealii
     public:
       using TensorTraits =
         Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
+      using Base = SumFEFunctions<Types...>;
+
+      explicit SumFEFunctions(const FEFunction summand_, const Types... old_sum)
+        : Base(std::move(old_sum...))
+        , summand(std::move(summand_))
+      {
+        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+                      "You need to construct this with a FEFunction object!");
+        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
+                      "You can only add tensors of equal dimension!");
+        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
+                      "You can only add tensors of equal rank!");
+      }
+
+      SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
+        : Base(old_sum)
+        , summand(summand_)
+      {
+        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+                      "You need to construct this with a FEFunction object!");
+        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
+                      "You can only add tensors of equal dimension!");
+        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
+                      "You can only add tensors of equal rank!");
+      }
 
       template <class FEEvaluation>
       auto
       value(const FEEvaluation& phi, unsigned int q) const
       {
         const auto own_value = summand.value(phi, q);
-        const auto other_value = SumFEFunctions<Types...>::value(phi, q);
+        const auto other_value = Base::value(phi, q);
         assert_is_compatible(own_value, other_value);
         return own_value + other_value;
       }
@@ -850,33 +876,11 @@ namespace dealii
       set_evaluation_flags(FEEvaluation& phi)
       {
         FEFunction::set_evaluation_flags(phi);
-        SumFEFunctions<Types...>::set_evaluation_flags(phi);
+        Base::set_evaluation_flags(phi);
       }
 
-      explicit SumFEFunctions(const FEFunction summand_, const Types... old_sum)
-        : SumFEFunctions<Types...>(std::move(old_sum...))
-        , summand(std::move(summand_))
-      {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
-                      "You need to construct this with a FEFunction object!");
-        static_assert(TensorTraits::dim == SumFEFunctions<Types...>::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == SumFEFunctions<Types...>::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
-      }
 
-      SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
-        : SumFEFunctions<Types...>(old_sum)
-        , summand(summand_)
-      {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
-                      "You need to construct this with a FEFunction object!");
-        static_assert(TensorTraits::dim == SumFEFunctions<Types...>::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == SumFEFunctions<Types...>::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
-      }
-
+      //sumfefunc + fefunc
       template <class NewFEFunction>
       typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
                               SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
@@ -885,17 +889,7 @@ namespace dealii
         return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_summand, *this);
       }
 
-      template <class NewFEFunction, typename... NewTypes>
-      typename std::enable_if<
-        CFL::Traits::is_fe_function_set<NewFEFunction>::value,
-        SumFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
-      operator+(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
-      {
-        return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this) +
-               SumFEFunctions<NewTypes...>(
-                 static_cast<const SumFEFunctions<NewTypes...>&>(new_sum));
-      }
-
+      //sumfefunc + sumfe(fefunc)
       template <class NewFEFunction>
       typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
                               SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
@@ -903,6 +897,18 @@ namespace dealii
       {
         return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this);
       }
+
+      //sumfefunc1 + sumfefunc2
+      template <class NewFEFunction, typename NewFEFunction2, typename... NewTypes>
+      typename std::enable_if<
+             CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+             SumFEFunctions<NewTypes..., NewFEFunction2,NewFEFunction, FEFunction, Types...>>::type
+             operator+(const SumFEFunctions<NewFEFunction, NewFEFunction2,NewTypes...>& new_sum) const
+             {
+             	 return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this) +
+             			 SumFEFunctions<NewFEFunction2,NewTypes...>(
+             					 static_cast<const SumFEFunctions<NewFEFunction2,NewTypes...>&>(new_sum));
+             }
 
       template <class NewFEFunction>
       typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
@@ -939,6 +945,7 @@ namespace dealii
       const FEFunction summand;
     };
 
+    //fefunc1 + fefunc2
     template <class FEFunction1, class FEFunction2>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
                               Traits::is_fe_function_set<FEFunction2>::value,
@@ -953,6 +960,7 @@ namespace dealii
       return SumFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
     }
 
+    //fefunc1 + sumfefunc
     template <class FEFunction, typename... Types>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
                             SumFEFunctions<FEFunction, Types...>>::type

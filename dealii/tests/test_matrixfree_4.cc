@@ -29,14 +29,13 @@ sumfe_same_types()
   auto sum1 = fe_function1 + fe_function2;
   auto sum2 = fe_function2 + fe_function1;
   auto sum3 = fe_function2 + fe_function1 + fe_function3;
-#if 0 // See 15
   auto sum4 = sum1 + fe_function1 + fe_function2;
-  auto sum5 = fe_function1 + fe_function2 + sum1;
-  auto sum6 = sum1 + sum2;
-  auto sum7 = sum1 + sum2 + fe_function1;
-  auto sum8 = fe_function2 + sum1 + sum2;
-  auto sum9 = sum6 + sum8;
-#endif
+  auto sum5 = fe_function1 + sum1 + fe_function2;
+  auto sum6 = fe_function1 + fe_function2 + sum1;
+  auto sum7 = sum1 + sum2;
+  auto sum8 = sum1 + sum2 + fe_function1;
+  auto sum9 = fe_function2 + sum1 + sum2;
+  auto sum10 = sum6 + sum8;
 }
 
 template <int i>
