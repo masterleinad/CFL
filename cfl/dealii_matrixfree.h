@@ -705,7 +705,10 @@ namespace dealii
       // inherit constructors
       using Base::Base;
 
-      explicit FEHessian(const FEGradient<rank - 1, dim, idx>& /*unused*/) {}
+      explicit FEHessian(const FEGradient<rank - 1, dim, idx>& fefunction)
+        : FEHessian(fefunction.name(), fefunction.scalar_factor)
+      {
+      }
 
       template <class FEDatas>
       auto
