@@ -42,7 +42,6 @@ public:
                             FEDatas<FEDataOther, FEData>>
   operator,(const FEDataOther& new_fe_data) const
   {
-        static_assert(CFL::Traits::is_fe_data<FEDataOther>::value, "Saurabh failed");
     return FEDatas<FEDataOther, FEData>(new_fe_data, *this);
   }
 
@@ -50,7 +49,7 @@ public:
   template <class FEData, typename... Types>
   auto operator,(const FEDatas<FEData,Types...>& old_fedatas)
   {
-    static_assert(CFL::Traits::is_fe_data<FEData>::value,"One operand must be of type FEData");
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,"The second operand in this expression must be of type FEDatas");
     return old_fedatas.operator,(*this);
   }
 
@@ -458,12 +457,6 @@ public:
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "You need to construct this with a FEData object!");
   }
-
-  /*  FEDatas(const FEDatas<FEData, Types...>& fe_datas[[maybe_unused]])
-      : Base()
-    {
-      Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
-    }*/
 
   template <unsigned int fe_number_extern>
   static constexpr unsigned int
