@@ -34,7 +34,7 @@ BOOST_FIXTURE_TEST_CASE(FEDatasComma, FEDatasFixture)
   BOOST_TEST(fedatas3.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas3.get_fe_data<1>().fe_number == fe_1);
 
-  auto fedatas4 = (fedatas,fedata_1_system,fedata_2_system)
+  auto fedatas4 = (fedatas,fedata_1_system,fedata_2_system);
   BOOST_TEST(fedatas4.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas4.get_fe_data<1>().fe_number == fe_1);
   BOOST_TEST(fedatas4.get_fe_data<2>().fe_number == fe_2);
