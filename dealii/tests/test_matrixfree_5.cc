@@ -26,17 +26,35 @@ prodfe_same_types()
   FEFunc fe_function2("test_fe2");
   FEFunc fe_function3("test_fe3");
 
+  //multiplication of fefunction and prodfefunction amongst themselves
   auto prod1 = fe_function1 * fe_function2;
   auto prod2 = fe_function2 * fe_function1;
   auto prod3 = fe_function2 * fe_function1 * fe_function3;
   auto prod4 = prod1 * fe_function1 * fe_function2;
-#if 0 // See 15
-  auto prod5 = fe_function1 * fe_function2 * prod1;
-  auto prod6 = prod1 * prod2;
-  auto prod7 = prod1 * prod2 * fe_function1;
-  auto prod8 = fe_function2 * prod1 * prod2;
-  auto prod9 = prod6 * prod8;
-#endif
+  auto prod5 = fe_function1 * prod1 * fe_function2;
+  auto prod6 = fe_function1 * fe_function2 * prod1;
+  auto prod7 = prod1 * prod2;
+  auto prod8 = prod1 * prod2 * fe_function1;
+  auto prod9 = fe_function2 * prod1 * prod2;
+  auto prod10 = prod6 * prod8;
+
+  //multiplciation of fefunction and prodfefunction with scalar
+  auto prod11 = fe_function1 * 2;
+  auto prod12 = 2 * fe_function1;
+  auto prod13 = fe_function2 * 2.0;
+  auto prod14 = 2.0 * fe_function2;
+
+  auto prod15 = prod1 * prod11 * 2;
+  auto prod16 = 2 * prod1 * prod11;
+
+  auto prod17 = prod7 * 2.0;
+  auto prod18 = 2.0 * prod7;
+
+  auto prod19 = 2 * prod2 * prod5 * prod8 * prod10 *  prod15; //something complicated
+
+  auto prod20 = fe_function3 * true; //this is stupid but accepted
+  auto prod21 = false * fe_function3; //this is stupid but accepted
+  auto prod22 = 'c' * fe_function3; //this is stupid but accepted
 }
 
 template <int i>

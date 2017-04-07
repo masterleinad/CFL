@@ -27,15 +27,40 @@ sumfe_same_types()
   FEFunc fe_function3("test_fe3");
 
   auto sum1 = fe_function1 + fe_function2;
+  auto diff1 = fe_function1 - fe_function2;
+
   auto sum2 = fe_function2 + fe_function1;
+  auto diff2 = fe_function2 - fe_function1;
+
   auto sum3 = fe_function2 + fe_function1 + fe_function3;
+  auto diff3 = fe_function2 - fe_function1 - fe_function3;
+
   auto sum4 = sum1 + fe_function1 + fe_function2;
+  auto diff4 = diff1 - fe_function1 - fe_function2;
+
+  auto diff5 = -diff1;
+  //TBD tomorrow
+  auto diff6 = fefunction1 -diff1;
+  auto diff7 = -diff1 - fefunction1;
+  //TBD ends
+
   auto sum5 = fe_function1 + sum1 + fe_function2;
+  //auto diff5 = fe_function1 - diff1 - fe_function2;
+
   auto sum6 = fe_function1 + fe_function2 + sum1;
+//  auto diff6 = fe_function1 - fe_function2 - diff1;
+
   auto sum7 = sum1 + sum2;
+//  auto diff7 = diff1 - diff2;
+
   auto sum8 = sum1 + sum2 + fe_function1;
+//  auto diff8 = diff1 - diff2 - fe_function1;
+
   auto sum9 = fe_function2 + sum1 + sum2;
+//  auto diff9 = fe_function2 - diff1 - diff2;
+
   auto sum10 = sum6 + sum8;
+//  auto diff10 = diff6 - diff8;
 }
 
 template <int i>
@@ -51,6 +76,7 @@ struct SumFEfunctor
   run()
   {
     sumfe_same_types<FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+#if 0
     sumfe_same_types<FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     // sumfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>(); 9. TBD
@@ -59,11 +85,12 @@ struct SumFEfunctor
     sumfe_same_types<FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+#endif
   }
 };
 BOOST_FIXTURE_TEST_CASE(SumFEObjSameType, FEFixture)
 {
-  for_<0, 9>::run<SumFEfunctor>();
+  for_<0, 1>::run<SumFEfunctor>();
 
   // auto sumf = fe_function_scalar1 + fe_function_scalar2; //TBD why does this not hit
   // static_assertion although compilation fails?

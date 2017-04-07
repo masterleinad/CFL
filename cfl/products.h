@@ -51,6 +51,7 @@ multiply(const T& t, const S& s)
   return ScalarMultiplication<S, T>(s, t);
 }
 
+#if 0
 template <class A, class B>
 typename std::enable_if_t<((CFL::Traits::is_cfl_object<A>::value ||
                             CFL::Traits::is_cfl_object<B>::value) &&
@@ -62,6 +63,7 @@ operator*(const A& a, const B& b)
   throw std::runtime_error("Internal error! This line should never be invoked!");
   return a;
 }
+#endif
 
 namespace Traits
 {
