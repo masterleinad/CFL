@@ -113,6 +113,12 @@ namespace Traits
     static constexpr bool value = false;
   };
 
+  template <class T>
+  struct is_fe_data_face
+  {
+    static constexpr bool value = false;
+  };
+
   /**
    * \brief Indicator for test functions used in forms
    *
