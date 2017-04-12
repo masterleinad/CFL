@@ -1,7 +1,11 @@
 #ifndef TEST_MATRIXFREE_H_
 #define TEST_MATRIXFREE_H_
 
-#include <boost/test/data/monomorphic.hpp>
+#include <list>
+
+#include <boost/core/ref.hpp>
+#include <boost/mpl/identity.hpp>
+#include <boost/test/tree/test_unit.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
