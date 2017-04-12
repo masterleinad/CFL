@@ -28,7 +28,11 @@ namespace dealii
     class TestFunctionBase;
 
     template <class Derived>
+    class FEFunctionBaseBase;
+    template <class Derived>
     class FEFunctionBase;
+    template <class Derived>
+    class FEFunctionFaceBase;
 
     template <typename... Types>
     class SumFEFunctions;
@@ -75,14 +79,14 @@ namespace Traits
 
   template <class A, typename... Types>
   struct is_summable<A, dealii::MatrixFree::SumFEFunctions<Types...>,
-                     typename std::enable_if<is_fe_function_set<A>::value>::type>
+                     typename std::enable_if<fe_function_set_type<A>::value!=CFL::ObjectType::none>::type>
   {
     static const bool value = true;
   };
 
   template <class A, typename... Types>
   struct is_summable<dealii::MatrixFree::SumFEFunctions<Types...>, A,
-                     typename std::enable_if<is_fe_function_set<A>::value>::type>
+                     typename std::enable_if<fe_function_set_type<A>::value!=CFL::ObjectType::none>::type>
   {
     static const bool value = true;
   };
@@ -95,29 +99,29 @@ namespace Traits
   };
 
   template <typename A, typename B>
-  struct is_summable<A, B, typename std::enable_if<is_fe_function_set<A>::value &&
-                                                   is_fe_function_set<B>::value>::type>
+  struct is_summable<A, B, typename std::enable_if<fe_function_set_type<A>::value!=CFL::ObjectType::none &&
+                                                   fe_function_set_type<B>::value!=CFL::ObjectType::none>::type>
   {
     static const bool value = true;
   };
 
   template <typename A, typename B>
-  struct is_multiplicable<A, B, typename std::enable_if<is_fe_function_set<A>::value &&
-                                                        is_fe_function_set<B>::value>::type>
-  {
-    static const bool value = true;
-  };
-
-  template <typename A, typename B>
-  struct is_multiplicable<
-    A, B, typename std::enable_if_t<std::is_arithmetic<A>() && is_fe_function_set<B>::value>>
+  struct is_multiplicable<A, B, typename std::enable_if<fe_function_set_type<A>::value!=CFL::ObjectType::none &&
+                                                        fe_function_set_type<B>::value!=CFL::ObjectType::none>::type>
   {
     static const bool value = true;
   };
 
   template <typename A, typename B>
   struct is_multiplicable<
-    A, B, typename std::enable_if_t<is_fe_function_set<A>::value && std::is_arithmetic<B>()>>
+    A, B, typename std::enable_if_t<std::is_arithmetic<A>() && fe_function_set_type<B>::value!=CFL::ObjectType::none>>
+  {
+    static const bool value = true;
+  };
+
+  template <typename A, typename B>
+  struct is_multiplicable<
+    A, B, typename std::enable_if_t<fe_function_set_type<A>::value!=CFL::ObjectType::none && std::is_arithmetic<B>()>>
   {
     static const bool value = true;
   };
@@ -147,33 +151,42 @@ namespace Traits
   };
 
   template <class FEFunctionType>
-  struct is_fe_function_set<dealii::MatrixFree::FELiftDivergence<FEFunctionType>>
+  struct fe_function_set_type<dealii::MatrixFree::FELiftDivergence<FEFunctionType>>
   {
-    static const bool value = true;
+    static const CFL::ObjectType value = ObjectType::cell;
   };
 
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct is_cfl_object<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>,
+    std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionBaseBase<T<rank, dim, idx>>,
                                      T<rank, dim, idx>>::value>>
   {
     static const bool value = true;
   };
 
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
-  struct is_fe_function_set<
+  struct fe_function_set_type<
     T<rank, dim, idx>,
     std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>,
                                      T<rank, dim, idx>>::value>>
   {
-    static const bool value = true;
+    static const CFL::ObjectType value = ObjectType::cell;
   };
 
-  template <typename... Types>
-  struct is_fe_function_set<dealii::MatrixFree::ProductFEFunctions<Types...>>
+  template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
+  struct fe_function_set_type<
+    T<rank, dim, idx>,
+    std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionFaceBase<T<rank, dim, idx>>,
+                                     T<rank, dim, idx>>::value>>
   {
-    static const bool value = true;
+    static const CFL::ObjectType value = ObjectType::face;  
+  };
+
+  template <class FirstType, typename... Types>
+  struct fe_function_set_type<dealii::MatrixFree::ProductFEFunctions<FirstType, Types...>>
+  {
+    static const CFL::ObjectType value = fe_function_set_type<FirstType>::value;
   };
 
   template <typename... Types>
@@ -203,15 +216,33 @@ namespace dealii
       using TensorTraits = Traits::Tensor<rank, dim>;
 
       static constexpr unsigned int index = idx;
-      static constexpr bool scalar_valued = (0 == TensorTraits::rank);
+      static constexpr bool scalar_valued = (TensorTraits::rank == 0);
     };
 
-
-    template <int rank, int dim, unsigned int idx>
-    class TestFunctionInteriorFace final : public TestFunctionBase<TestFunctionInteriorFace<rank, dim, idx>>
+    // CRTP
+    template <class T>
+    class TestFunctionFaceBase
     {
     public:
-      using Base = TestFunctionBase<TestFunctionInteriorFace<rank, dim, idx>>;
+      // This class should never be constructed
+      TestFunctionFaceBase() = delete;
+    };
+
+    template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
+    class TestFunctionFaceBase<T<rank, dim, idx>>
+    {
+    public:
+      using TensorTraits = Traits::Tensor<rank, dim>;
+
+      static constexpr unsigned int index = idx;
+      static constexpr bool scalar_valued = (TensorTraits::rank == 0);
+    };
+
+    template <int rank, int dim, unsigned int idx>
+    class TestFunctionInteriorFace final : public TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>
+    {
+    public:
+      using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
       static constexpr bool integrate_value = true;
       static constexpr bool integrate_gradient = false;
 
@@ -234,10 +265,10 @@ namespace dealii
 
 
     template <int rank, int dim, unsigned int idx>
-    class TestFunctionExteriorFace final : public TestFunctionBase<TestFunctionExteriorFace<rank, dim, idx>>
+    class TestFunctionExteriorFace final : public TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>
     {
     public:
-      using Base = TestFunctionBase<TestFunctionInteriorFace<rank, dim, idx>>;
+      using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
       static constexpr bool integrate_value = true;
       static constexpr bool integrate_gradient = false;
 
@@ -425,15 +456,15 @@ namespace dealii
 
     // CRTP
     template <class Derived>
-    class FEFunctionBase
+    class FEFunctionBaseBase
     {
     public:
       // This class should never be constructed
-      FEFunctionBase() = delete;
+      FEFunctionBaseBase() = delete;
     };
 
     template <template <int, int, unsigned int> class Derived, int rank, int dim, unsigned int idx>
-    class FEFunctionBase<Derived<rank, dim, idx>>
+    class FEFunctionBaseBase<Derived<rank, dim, idx>>
     {
     protected:
       const std::string data_name;
@@ -443,15 +474,15 @@ namespace dealii
       static constexpr unsigned int index = idx;
       double scalar_factor = 1.;
 
-      FEFunctionBase() = delete;
+      FEFunctionBaseBase() = delete;
 
-      explicit FEFunctionBase(const std::string name, double new_factor = 1.)
+      explicit FEFunctionBaseBase(const std::string name, double new_factor = 1.)
         : data_name(std::move(name))
         , scalar_factor(new_factor)
       {
       }
 
-      explicit FEFunctionBase(double new_factor = 1.)
+      explicit FEFunctionBaseBase(double new_factor = 1.)
         : scalar_factor(new_factor)
       {
       }
@@ -477,11 +508,21 @@ namespace dealii
       }
     };
 
+    template <class Derived> class FEFunctionBase : public FEFunctionBaseBase<Derived>
+    {
+      using FEFunctionBaseBase<Derived>::FEFunctionBaseBase;
+    };
+
+    template <class Derived> class FEFunctionFaceBase : public FEFunctionBaseBase<Derived>
+    {
+      using FEFunctionBaseBase<Derived>::FEFunctionBaseBase;
+    };
+
     template <int rank, int dim, unsigned int idx>
-    class FEFunctionInteriorFace final : public FEFunctionBase<FEFunctionInteriorFace<rank, dim, idx>>
+    class FEFunctionInteriorFace final : public FEFunctionFaceBase<FEFunctionInteriorFace<rank, dim, idx>>
     {
     public:
-      using Base = FEFunctionBase<FEFunctionInteriorFace<rank, dim, idx>>;
+      using Base = FEFunctionFaceBase<FEFunctionInteriorFace<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -509,10 +550,10 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FEFunctionExteriorFace final : public FEFunctionBase<FEFunctionExteriorFace<rank, dim, idx>>
+    class FEFunctionExteriorFace final : public FEFunctionFaceBase<FEFunctionExteriorFace<rank, dim, idx>>
     {
     public:
-      using Base = FEFunctionBase<FEFunctionExteriorFace<rank, dim, idx>>;
+      using Base = FEFunctionFaceBase<FEFunctionExteriorFace<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -874,7 +915,7 @@ namespace dealii
 
     template <typename Number, class A>
     typename std::enable_if_t<
-      CFL::Traits::is_fe_function_set<A>::value && std::is_arithmetic<Number>::value, A>
+      CFL::Traits::fe_function_set_type<A>::value!=CFL::ObjectType::none && std::is_arithmetic<Number>::value, A>
     operator*(const Number scalar_factor, const A& a)
     {
       return a * scalar_factor;
@@ -893,7 +934,7 @@ namespace dealii
       explicit SumFEFunctions(const FEFunction summand_)
         : summand(std::move(summand_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                       "You need to construct this with a FEFunction object!");
       }
 
@@ -901,7 +942,7 @@ namespace dealii
       SumFEFunctions<NewFEFunction, FEFunction>
       operator+(const NewFEFunction& new_summand) const
       {
-        static_assert(Traits::is_fe_function_set<NewFEFunction>::value,
+        static_assert(Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none,
                       "Only FEFunction objects can be added!");
         static_assert(TensorTraits::dim == NewFEFunction::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -970,7 +1011,7 @@ namespace dealii
         : SumFEFunctions<Types...>(std::move(old_sum...))
         , summand(std::move(summand_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                       "You need to construct this with a FEFunction object!");
         static_assert(TensorTraits::dim == SumFEFunctions<Types...>::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -982,7 +1023,7 @@ namespace dealii
         : SumFEFunctions<Types...>(old_sum)
         , summand(summand_)
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                       "You need to construct this with a FEFunction object!");
         static_assert(TensorTraits::dim == SumFEFunctions<Types...>::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -991,7 +1032,8 @@ namespace dealii
       }
 
       template <class NewFEFunction>
-      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
                               SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
       operator+(const NewFEFunction& new_summand) const
       {
@@ -999,9 +1041,9 @@ namespace dealii
       }
 
       template <class NewFEFunction, typename... NewTypes>
-      typename std::enable_if<
-        CFL::Traits::is_fe_function_set<NewFEFunction>::value,
-        SumFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
+                              SumFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
       operator+(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
       {
         return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this) +
@@ -1010,7 +1052,8 @@ namespace dealii
       }
 
       template <class NewFEFunction>
-      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
                               SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
       operator+(const SumFEFunctions<NewFEFunction>& new_sum) const
       {
@@ -1018,7 +1061,8 @@ namespace dealii
       }
 
       template <class NewFEFunction>
-      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
                               SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
       operator-(const NewFEFunction& new_summand) const
       {
@@ -1026,16 +1070,17 @@ namespace dealii
       }
 
       template <class NewFEFunction, typename... NewTypes>
-      typename std::enable_if<
-        CFL::Traits::is_fe_function_set<NewFEFunction>::value,
-        SumFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
+                              SumFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
       operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
       {
         return operator+(-new_sum);
       }
 
       template <class NewFEFunction>
-      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
                               SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
       operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
       {
@@ -1053,8 +1098,8 @@ namespace dealii
     };
 
     template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
-                              Traits::is_fe_function_set<FEFunction2>::value,
+    typename std::enable_if<CFL::Traits::fe_function_set_type<FEFunction1>::value != CFL::ObjectType::none &&
+                            CFL::Traits::fe_function_set_type<FEFunction1>::value == CFL::Traits::fe_function_set_type<FEFunction2>::value,
                             SumFEFunctions<FEFunction2, FEFunction1>>::type
     operator+(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
     {
@@ -1067,7 +1112,7 @@ namespace dealii
     }
 
     template <class FEFunction, typename... Types>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
+    typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                             SumFEFunctions<FEFunction, Types...>>::type
     operator+(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
@@ -1075,8 +1120,8 @@ namespace dealii
     }
 
     template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
-                              Traits::is_fe_function_set<FEFunction2>::value,
+    typename std::enable_if<CFL::Traits::fe_function_set_type<FEFunction1>::value != CFL::ObjectType::none &&
+                            CFL::Traits::fe_function_set_type<FEFunction1>::value == CFL::Traits::fe_function_set_type<FEFunction2>::value,
                             SumFEFunctions<FEFunction2, FEFunction1>>::type
     operator-(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
     {
@@ -1084,7 +1129,7 @@ namespace dealii
     }
 
     template <class FEFunction, typename... Types>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
+    typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                             SumFEFunctions<FEFunction, Types...>>::type
     operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
@@ -1101,14 +1146,14 @@ namespace dealii
       explicit ProductFEFunctions(const FEFunction factor_)
         : factor(std::move(factor_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                       "You need to construct this with a FEFunction object!");
       }
 
       template <class NewFEFunction>
       ProductFEFunctions<NewFEFunction, FEFunction> operator*(const NewFEFunction& new_factor) const
       {
-        static_assert(Traits::is_fe_function_set<NewFEFunction>::value,
+        static_assert(Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none,
                       "Only FEFunction objects can be added!");
         static_assert(TensorTraits::dim == NewFEFunction::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -1170,7 +1215,7 @@ namespace dealii
         : ProductFEFunctions<Types...>(std::move(old_product...))
         , factor(std::move(factor_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                       "You need to construct this with a FEFunction object!");
         static_assert(TensorTraits::dim == ProductFEFunctions<Types...>::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -1182,7 +1227,7 @@ namespace dealii
         : ProductFEFunctions<Types...>(std::move(old_product))
         , factor(std::move(factor_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                       "You need to construct this with a FEFunction object!");
         static_assert(TensorTraits::dim == ProductFEFunctions<Types...>::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -1190,8 +1235,9 @@ namespace dealii
                       "You can only add tensors of equal rank!");
       }
 
-      template <class NewFEFunction>
-      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+      template <class NewFEFunction>      
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
                               ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type
       operator*(const NewFEFunction& new_factor) const
       {
@@ -1216,9 +1262,9 @@ namespace dealii
       }
 
       template <class NewFEFunction, typename... NewTypes>
-      typename std::enable_if<
-        CFL::Traits::is_fe_function_set<NewFEFunction>::value,
-        ProductFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
+                              ProductFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
       operator*(const ProductFEFunctions<NewFEFunction, NewTypes...>& new_product) const
       {
         return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_product.get_factor(),
@@ -1228,7 +1274,8 @@ namespace dealii
       }
 
       template <class NewFEFunction>
-      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+      typename std::enable_if<CFL::Traits::fe_function_set_type<NewFEFunction>::value != CFL::ObjectType::none &&
+                              CFL::Traits::fe_function_set_type<NewFEFunction>::value == CFL::Traits::fe_function_set_type<FEFunction>::value,
                               ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type
       operator*(const ProductFEFunctions<NewFEFunction>& new_product) const
       {
@@ -1247,22 +1294,22 @@ namespace dealii
     };
 
     template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
+    typename std::enable_if<CFL::Traits::fe_function_set_type<FEFunction1>::value != CFL::ObjectType::none &&
+                            CFL::Traits::fe_function_set_type<FEFunction1>::value == CFL::Traits::fe_function_set_type<FEFunction2>::value &&
                               !Traits::is_fe_function_product<FEFunction1>::value &&
-                              Traits::is_fe_function_set<FEFunction2>::value &&
                               !Traits::is_fe_function_product<FEFunction2>::value,
                             ProductFEFunctions<FEFunction2, FEFunction1>>::type
     operator*(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
     {
       static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
-                    "You can only add tensors of equal dimension!");
+                    "You can multiply add tensors of equal dimension!");
       static_assert(FEFunction1::TensorTraits::rank == FEFunction2::TensorTraits::rank,
-                    "You can only add tensors of equal rank!");
+                    "You can multiply add tensors of equal rank!");
       return ProductFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
     }
 
     template <class FEFunction, typename... Types>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
+    typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != CFL::ObjectType::none,
                             ProductFEFunctions<FEFunction, Types...>>::type
     operator*(const FEFunction& new_fe_function,
               const ProductFEFunctions<Types...>& old_fe_function)

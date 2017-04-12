@@ -310,15 +310,44 @@ template <class Test, class Expr>
 typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
 form(const Test& t, const Expr& e)
 {
-  return Form<Test, Expr>(t, e);
+  return Form<Test, Expr, FormKind::cell>(t, e);
 }
 
 template <class Test, class Expr>
 typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
 form(const Expr& e, const Test& t)
 {
-  return Form<Test, Expr>(t, e);
+  return Form<Test, Expr, FormKind::cell>(t, e);
 }
+
+template <class Test, class Expr>
+typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+face_form(const Test& t, const Expr& e)
+{
+  return Form<Test, Expr, FormKind::face>(t, e);
+}
+
+template <class Test, class Expr>
+typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+face_form(const Expr& e, const Test& t)
+{
+  return Form<Test, Expr, FormKind::face>(t, e);
+}
+
+template <class Test, class Expr>
+typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+boundary_form(const Test& t, const Expr& e)
+{
+  return Form<Test, Expr, FormKind::boundary>(t, e);
+}
+
+template <class Test, class Expr>
+typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+boundary_form(const Expr& e, const Test& t)
+{
+  return Form<Test, Expr, FormKind::boundary>(t, e);
+}
+
 
 template <typename... Types>
 class Forms;

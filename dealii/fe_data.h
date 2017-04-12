@@ -332,10 +332,11 @@ public:
         fe_data.fe_evaluation.reset(new typename FEData::FEEvaluationType(mf, fe_number));
     else
     {
+      std::cout << "fe_number: " << fe_number << std::endl;
       fe_data.fe_evaluation_interior.reset(new
-                                           typename FEData::FEEvaluationType(mf, fe_number, true));
+                                           typename FEData::FEEvaluationType(mf, true, fe_number));
       fe_data.fe_evaluation_exterior.reset(new
-                                           typename FEData::FEEvaluationType(mf, fe_number, false));
+                                           typename FEData::FEEvaluationType(mf, false, fe_number));
     }
 
     initialized = true;
@@ -685,7 +686,6 @@ public:
 
     initialized = true;
     FEDatas<Types...>::initialize(mf);
-    initialized = true;
   }
 
   template <typename Cell>
@@ -985,8 +985,7 @@ public:
   void
   submit_divergence(const ValueType& value, unsigned int q)
   {
-    if constexpr(fe_number == fe_number_extern)
-      fe_data.fe_evaluation->submit_divergence(value, q);
+    if constexpr(fe_number == fe_number_extern) fe_data.fe_evaluation->submit_divergence(value, q);
     else
       FEDatas<Types...>::template submit_divergence<fe_number_extern, ValueType>(value, q);
   }

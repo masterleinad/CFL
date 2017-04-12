@@ -3,6 +3,12 @@
 
 namespace CFL
 {
+
+enum struct ObjectType
+{
+  none, cell, face
+};
+
 namespace Traits
 {
   template <class VectorType>
@@ -66,9 +72,9 @@ namespace Traits
    * classes have a <tt>false</tt> here.
    */
   template <class T, class Enable = void>
-  struct is_test_function_set
+  struct test_function_set_type
   {
-    static constexpr bool value = false;
+    static constexpr ObjectType value = ObjectType::none;
   };
 
   template <class T, class Enable = void>
@@ -130,9 +136,9 @@ namespace Traits
    * classes have a <tt>false</tt> here.
    */
   template <class T, class Enable = void>
-  struct is_fe_function_set
+  struct fe_function_set_type
   {
-    static constexpr bool value = false;
+    static constexpr ObjectType value = ObjectType::none;
   };
 
   template <class T>

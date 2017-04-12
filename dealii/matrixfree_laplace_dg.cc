@@ -96,7 +96,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 
   FEData<FESystem, 1, dim, dim, 0, 1> fedata1(fe_u);
   FEDataFace<FESystem, 1, dim, dim, 0, 1> fedata_face1(fe_u);
-  auto fe_datas = (fedata_face1, fedata1);
+  auto fe_datas = (fedata1, fedata_face1);
 
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
