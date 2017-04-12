@@ -6,7 +6,9 @@ namespace CFL
 
 enum struct ObjectType
 {
-  none, cell, face
+  none,
+  cell,
+  face
 };
 
 namespace Traits
@@ -139,12 +141,6 @@ namespace Traits
   struct fe_function_set_type
   {
     static constexpr ObjectType value = ObjectType::none;
-  };
-
-  template <class T>
-  struct is_fe_function_product
-  {
-    static constexpr bool value = false;
   };
 
   /**

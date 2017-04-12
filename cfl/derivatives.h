@@ -13,9 +13,9 @@ class Gradient;
 namespace Traits
 {
   template <class T>
-  struct is_test_function_set<Gradient<T>>
+  struct test_function_set_type<Gradient<T>>
   {
-    const static bool value = is_test_function_set<T>::value;
+    const static ObjectType value = test_function_set_type<T>::value;
   };
 
   template <class T>

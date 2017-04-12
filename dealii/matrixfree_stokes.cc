@@ -167,6 +167,15 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FEFunction<1, dim, 0> u("u0");
   FEFunction<0, dim, 1> p("p");
 
+  FEFunction<0, dim, 0> u1("u1");
+  FEFunction<0, dim, 1> u2("u2");
+  FEFunction<0, dim, 2> u3("u3");
+  FEFunction<0, dim, 3> u4("u4");
+
+  SumFEFunctions<decltype(u2), decltype(u1)> sum1 = u1 + u2;
+  SumFEFunctions<decltype(u4), decltype(u3)> sum2 = u3 + u4;
+  SumFEFunctions<decltype(u3), decltype(u4), decltype(u2), decltype(u1)> sum3 = sum1 + sum2;
+
   auto Dv = grad(v);
   //  TestSymmetricGradient<2,dim,0> Dv;
   auto Divu = div(u);

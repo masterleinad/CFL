@@ -107,11 +107,40 @@ struct form_evaluate_aux<1, Test, Expr>
 
 namespace
 {
-enum class FormKind {
+  enum class FormKind
+  {
     cell,
     face,
     boundary
-};
+  };
+}
+
+template <FormKind, ObjectType>
+constexpr bool
+formkind_matches_objecttype()
+{
+  return false;
+}
+
+template <>
+constexpr bool
+formkind_matches_objecttype<FormKind::cell, ObjectType::cell>()
+{
+  return true;
+}
+
+template <>
+constexpr bool
+formkind_matches_objecttype<FormKind::face, ObjectType::face>()
+{
+  return true;
+}
+
+template <>
+constexpr bool
+formkind_matches_objecttype<FormKind::boundary, ObjectType::face>()
+{
+  return true;
 }
 
 template <typename... Types>
@@ -120,7 +149,7 @@ class Forms;
 /**
  * A Form is an expression tested by a test function set.
  */
-template <class Test, class Expr, FormKind kind_of_form = FormKind::cell, typename number = double>
+template <class Test, class Expr, FormKind kind_of_form, typename number = double>
 class Form final
 {
 public:
@@ -138,14 +167,20 @@ public:
     , expr(std::move(expr_))
   {
     std::cout << "constructor1" << std::endl;
-    static_assert(Traits::is_test_function_set<Test>::value,
-                  "First argument must be test function set");
-    static_assert(!Traits::is_test_function_set<Expr>::value,
-                  "Second argument cannot be test function set");
+    static_assert(Traits::test_function_set_type<Test>::value != ObjectType::none,
+                  "The first argument must be a test function!");
+    static_assert(Traits::fe_function_set_type<Expr>::value != ObjectType::none,
+                  "The second argument must be a finite element function!");
+    static_assert(
+      formkind_matches_objecttype<kind_of_form, Traits::test_function_set_type<Test>::value>(),
+      "The type of the test function must be compatible with the type of the form!");
+    static_assert(
+      formkind_matches_objecttype<kind_of_form, Traits::fe_function_set_type<Expr>::value>(),
+      "The type of the expression must be compatible with the type of the form!");
     static_assert(Test::TensorTraits::rank == Expr::TensorTraits::rank,
-                  "Test functions and expression must have same tensor rank");
+                  "Test function and expression must have the same tensor rank!");
     static_assert(Test::TensorTraits::dim == Expr::TensorTraits::dim,
-                  "Test functions and expression must have same dimension");
+                  "Test function and expression must have the same dimension!");
   }
 
   std::string
@@ -204,11 +239,11 @@ public:
   void
   evaluate(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::cell)
+    if constexpr(form_kind == FormKind::cell)
       {
-    // only to be used if there is only one form!
-    const auto value = expr.value(phi, q);
-    Test::submit(phi, q, value);
+        // only to be used if there is only one form!
+        const auto value = expr.value(phi, q);
+        Test::submit(phi, q, value);
       }
   }
 
@@ -216,11 +251,11 @@ public:
   void
   evaluate_face(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::face)
+    if constexpr(form_kind == FormKind::face)
       {
-    // only to be used if there is only one form!
-    const auto value = expr.value(phi, q);
-    Test::submit(phi, q, value);
+        // only to be used if there is only one form!
+        const auto value = expr.value(phi, q);
+        Test::submit(phi, q, value);
       }
   }
 
@@ -228,11 +263,11 @@ public:
   void
   evaluate_boundary(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::boundary)
+    if constexpr(form_kind == FormKind::boundary)
       {
-    // only to be used if there is only one form!
-    const auto value = expr.value(phi, q);
-    Test::submit(phi, q, value);
+        // only to be used if there is only one form!
+        const auto value = expr.value(phi, q);
+        Test::submit(phi, q, value);
       }
   }
 
@@ -250,12 +285,12 @@ public:
     Test::submit(phi, q, value);
   }
 
-  template <class TestNew, class ExprNew>
-  Forms<Form<Test, Expr>, Form<TestNew, ExprNew>>
-  operator+(const Form<TestNew, ExprNew>& new_form) const
+  template <class TestNew, class ExprNew, FormKind kind_new>
+  Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
+  operator+(const Form<TestNew, ExprNew, kind_new>& new_form) const
   {
     std::cout << "operator+1" << std::endl;
-    return Forms<Form<Test, Expr>, Form<TestNew, ExprNew>>(*this, new_form);
+    return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this, new_form);
   }
 
   template <class... Types>
@@ -275,79 +310,84 @@ public:
 
 namespace Traits
 {
-  template <class Test, class Expr>
-  struct is_form<Form<Test, Expr>>
+  template <class Test, class Expr, FormKind kind_of_form>
+  struct is_form<Form<Test, Expr, kind_of_form>>
   {
     const static bool value = true;
   };
 
-  template <class Test, class Expr>
-  struct is_cfl_object<Form<Test, Expr>>
+  template <class Test, class Expr, FormKind kind_of_form>
+  struct is_cfl_object<Form<Test, Expr, kind_of_form>>
   {
     const static bool value = true;
   };
 
-  template <class Test1, class Expr1, class Test2, class Expr2>
-  struct is_summable<Form<Test1, Expr1>, Form<Test2, Expr2>>
+  template <class Test1, class Expr1, FormKind kind1, class Test2, class Expr2, FormKind kind2>
+  struct is_summable<Form<Test1, Expr1, kind1>, Form<Test2, Expr2, kind2>>
   {
     const static bool value = true;
   };
 
-  template <class Test, class Expr, typename... Types>
-  struct is_summable<Form<Test, Expr>, Forms<Types...>>
+  template <class Test, class Expr, FormKind kind_of_form, typename... Types>
+  struct is_summable<Form<Test, Expr, kind_of_form>, Forms<Types...>>
   {
     const static bool value = true;
   };
 
-  template <class Test, class Expr, typename... Types>
-  struct is_summable<Forms<Types...>, Form<Test, Expr>>
+  template <class Test, class Expr, FormKind kind_of_form, typename... Types>
+  struct is_summable<Forms<Types...>, Form<Test, Expr, kind_of_form>>
   {
     const static bool value = true;
   };
 } // namespace Traits
 
 template <class Test, class Expr>
-typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                        Form<Test, Expr, FormKind::cell>>::type
 form(const Test& t, const Expr& e)
 {
   return Form<Test, Expr, FormKind::cell>(t, e);
 }
 
 template <class Test, class Expr>
-typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                        Form<Test, Expr, FormKind::cell>>::type
 form(const Expr& e, const Test& t)
 {
   return Form<Test, Expr, FormKind::cell>(t, e);
 }
 
 template <class Test, class Expr>
-typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                        Form<Test, Expr, FormKind::face>>::type
 face_form(const Test& t, const Expr& e)
 {
   return Form<Test, Expr, FormKind::face>(t, e);
 }
 
 template <class Test, class Expr>
-typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                        Form<Test, Expr, FormKind::face>>::type
 face_form(const Expr& e, const Test& t)
 {
   return Form<Test, Expr, FormKind::face>(t, e);
 }
 
 template <class Test, class Expr>
-typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                        Form<Test, Expr, FormKind::boundary>>::type
 boundary_form(const Test& t, const Expr& e)
 {
   return Form<Test, Expr, FormKind::boundary>(t, e);
 }
 
 template <class Test, class Expr>
-typename std::enable_if<Traits::is_test_function_set<Test>::value, Form<Test, Expr>>::type
+typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                        Form<Test, Expr, FormKind::boundary>>::type
 boundary_form(const Expr& e, const Test& t)
 {
   return Form<Test, Expr, FormKind::boundary>(t, e);
 }
-
 
 template <typename... Types>
 class Forms;
@@ -402,16 +442,16 @@ public:
   void
   evaluate(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::cell)
+    if constexpr(form_kind == FormKind::cell)
       {
 #ifdef DEBUG_OUTPUT
-    std::cout << "expecting value " << fe_number << std::endl;
+        std::cout << "expecting value " << fe_number << std::endl;
 #endif
-    const auto value = form.value(phi, q);
+        const auto value = form.value(phi, q);
 #ifdef DEBUG_OUUTPUT
-    std::cout << "expecting submit " << fe_number << std::endl;
+        std::cout << "expecting submit " << fe_number << std::endl;
 #endif
-    form.submit(phi, q, value);
+        form.submit(phi, q, value);
       }
   }
 
@@ -419,16 +459,16 @@ public:
   void
   evaluate_face(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::face)
+    if constexpr(form_kind == FormKind::face)
       {
 #ifdef DEBUG_OUTPUT
-    std::cout << "expecting value " << fe_number << std::endl;
+        std::cout << "expecting value " << fe_number << std::endl;
 #endif
-    const auto value = form.value(phi, q);
+        const auto value = form.value(phi, q);
 #ifdef DEBUG_OUUTPUT
-    std::cout << "expecting submit " << fe_number << std::endl;
+        std::cout << "expecting submit " << fe_number << std::endl;
 #endif
-    form.submit(phi, q, value);
+        form.submit(phi, q, value);
       }
   }
 
@@ -436,16 +476,16 @@ public:
   void
   evaluate_boundary(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::boundary)
+    if constexpr(form_kind == FormKind::boundary)
       {
 #ifdef DEBUG_OUTPUT
-    std::cout << "expecting value " << fe_number << std::endl;
+        std::cout << "expecting value " << fe_number << std::endl;
 #endif
-    const auto value = form.value(phi, q);
+        const auto value = form.value(phi, q);
 #ifdef DEBUG_OUUTPUT
-    std::cout << "expecting submit " << fe_number << std::endl;
+        std::cout << "expecting submit " << fe_number << std::endl;
 #endif
-    form.submit(phi, q, value);
+        form.submit(phi, q, value);
       }
   }
 
@@ -488,12 +528,12 @@ public:
                   "You need to construct this with a Form object!");
   }
 
-  template <class Test, class Expr>
-  Forms<Form<Test, Expr>, FormType, Types...>
-  operator+(const Form<Test, Expr>& new_form) const
+  template <class Test, class Expr, FormKind kind_of_form>
+  Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>
+  operator+(const Form<Test, Expr, kind_of_form>& new_form) const
   {
     std::cout << "operator+2" << std::endl;
-    return Forms<Form<Test, Expr>, FormType, Types...>(new_form, *this);
+    return Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>(new_form, *this);
   }
 
   template <class FEEvaluation>
@@ -532,21 +572,21 @@ public:
   void
   evaluate(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::cell)
+    if constexpr(form_kind == FormKind::cell)
       {
 #ifdef DEBUG_OUTPUT
-    std::cout << "expecting value " << fe_number << std::endl;
+        std::cout << "expecting value " << fe_number << std::endl;
 #endif
-    const auto value = form.value(phi, q);
+        const auto value = form.value(phi, q);
 #ifdef DEBUG_OUTPUT
-    std::cout << "descending" << std::endl;
-#endif      
-    Forms<Types...>::evaluate(phi, q);    
-#ifdef DEBUG_OUTPUT
-    std::cout << "expecting submit " << fe_number << std::endl;
+        std::cout << "descending" << std::endl;
 #endif
-    form.submit(phi, q, value);
-    }
+        Forms<Types...>::evaluate(phi, q);
+#ifdef DEBUG_OUTPUT
+        std::cout << "expecting submit " << fe_number << std::endl;
+#endif
+        form.submit(phi, q, value);
+      }
     else
       Forms<Types...>::evaluate(phi, q);
   }
@@ -555,22 +595,22 @@ public:
   void
   evaluate_face(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::face)
+    if constexpr(form_kind == FormKind::face)
       {
 #ifdef DEBUG_OUTPUT
-    std::cout << "expecting value " << fe_number << std::endl;
+        std::cout << "expecting value " << fe_number << std::endl;
 #endif
-    const auto value = form.value(phi, q);
+        const auto value = form.value(phi, q);
 #ifdef DEBUG_OUTPUT
-    std::cout << "descending" << std::endl;
+        std::cout << "descending" << std::endl;
 #endif
-    Forms<Types...>::evaluate_face(phi, q);
+        Forms<Types...>::evaluate_face(phi, q);
 #ifdef DEBUG_OUTPUT
-    std::cout << "expecting submit " << fe_number << std::endl;
+        std::cout << "expecting submit " << fe_number << std::endl;
 #endif
-    form.submit(phi, q, value);
-    }
-      else
+        form.submit(phi, q, value);
+      }
+    else
       Forms<Types...>::evaluate_face(phi, q);
   }
 
@@ -578,23 +618,23 @@ public:
   void
   evaluate_boundary(FEEvaluation& phi, unsigned int q) const
   {
-      if constexpr(form_kind==FormKind::boundary)
+    if constexpr(form_kind == FormKind::boundary)
       {
 #ifdef DEBUG_OUTPUT
-    std::cout << "expecting value " << fe_number << std::endl;
+        std::cout << "expecting value " << fe_number << std::endl;
 #endif
-    const auto value = form.value(phi, q);
+        const auto value = form.value(phi, q);
 #ifdef DEBUG_OUTPUT
-    std::cout << "descending" << std::endl;
+        std::cout << "descending" << std::endl;
 #endif
-    Forms<Types...>::evaluate_boundary(phi, q);
+        Forms<Types...>::evaluate_boundary(phi, q);
 #ifdef DEBUG_OUTPUT
-    std::cout << "expecting submit " << fe_number << std::endl;
+        std::cout << "expecting submit " << fe_number << std::endl;
 #endif
-    form.submit(phi, q, value);
-    }
+        form.submit(phi, q, value);
+      }
     else
-    Forms<Types...>::evaluate_boundary(phi, q);
+      Forms<Types...>::evaluate_boundary(phi, q);
   }
 
   template <class FEEvaluation>

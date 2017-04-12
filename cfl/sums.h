@@ -20,8 +20,10 @@ public:
     : a(a_)
     , b(b_)
   {
-    static_assert(!::CFL::Traits::is_test_function_set<A>::value, "Test functions cannot be added");
-    static_assert(!::CFL::Traits::is_test_function_set<B>::value, "Test functions cannot be added");
+    static_assert(Traits::test_function_set_type<A>::value == ObjectType::none,
+                  "Test functions cannot be added");
+    static_assert(Traits::test_function_set_type<B>::value == ObjectType::none,
+                  "Test functions cannot be added");
 
     static_assert(A::TensorTraits::rank == B::TensorTraits::rank,
                   "You can only add tensors of equal rank");

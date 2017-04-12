@@ -47,21 +47,39 @@ namespace dealii
 namespace Traits
 {
   template <int dim>
-  struct is_test_function_set<dealii::MeshWorker::ScalarTestFunction<dim>>
+  struct test_function_set_type<dealii::MeshWorker::ScalarTestFunction<dim>>
   {
-    static const bool value = true;
+    static const ObjectType value = ObjectType::cell;
   };
 
   template <int dim>
-  struct is_test_function_set<dealii::MeshWorker::ScalarTestGradient<dim>>
+  struct test_function_set_type<dealii::MeshWorker::ScalarTestGradient<dim>>
   {
-    static const bool value = true;
+    static const ObjectType value = ObjectType::cell;
   };
 
   template <int dim>
-  struct is_test_function_set<dealii::MeshWorker::ScalarTestHessian<dim>>
+  struct test_function_set_type<dealii::MeshWorker::ScalarTestHessian<dim>>
   {
-    static const bool value = true;
+    static const ObjectType value = ObjectType::cell;
+  };
+
+  template <int rank, int dim>
+  struct fe_function_set_type<dealii::MeshWorker::FEFunction<rank, dim>>
+  {
+    static const ObjectType value = ObjectType::cell;
+  };
+
+  template <int rank, int dim>
+  struct fe_function_set_type<dealii::MeshWorker::FEGradient<rank, dim>>
+  {
+    static const ObjectType value = ObjectType::cell;
+  };
+
+  template <int rank, int dim>
+  struct fe_function_set_type<dealii::MeshWorker::FEHessian<rank, dim>>
+  {
+    static const ObjectType value = ObjectType::cell;
   };
 }
 
@@ -320,9 +338,9 @@ namespace dealii
       return FEHessian<rank, dim>(f);
     }
 
-    template <class TEST, class EXPR>
+    template <class TEST, class EXPR, FormKind kind_of_form>
     void
-    anchor(const Form<TEST, EXPR>& form,
+    anchor(const Form<TEST, EXPR, kind_of_form>& form,
            const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim,
                                                        TEST::TensorTraits::dim>& ii,
            const ::dealii::MeshWorker::LocalIntegrator<TEST::TensorTraits::dim>& li)
@@ -330,9 +348,9 @@ namespace dealii
       form.expr.anchor(ii, li);
     }
 
-    template <class TEST, class EXPR>
+    template <class TEST, class EXPR, FormKind kind_of_form>
     void
-    reinit(const Form<TEST, EXPR>& form,
+    reinit(const Form<TEST, EXPR, kind_of_form>& form,
            const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim,
                                                        TEST::TensorTraits::dim>& ii)
     {
