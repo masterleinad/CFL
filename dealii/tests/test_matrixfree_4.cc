@@ -38,29 +38,39 @@ sumfe_same_types()
   auto sum4 = sum1 + fe_function1 + fe_function2;
   auto diff4 = diff1 - fe_function1 - fe_function2;
 
-  auto diff5 = -diff1;
-  //TBD tomorrow
-  auto diff6 = fefunction1 -diff1;
-  auto diff7 = -diff1 - fefunction1;
-  //TBD ends
-
   auto sum5 = fe_function1 + sum1 + fe_function2;
-  //auto diff5 = fe_function1 - diff1 - fe_function2;
+  auto diff5 = fe_function1 - diff1 - fe_function2;
 
   auto sum6 = fe_function1 + fe_function2 + sum1;
-//  auto diff6 = fe_function1 - fe_function2 - diff1;
+  auto diff6 = fe_function1 - fe_function2 - diff1;
 
   auto sum7 = sum1 + sum2;
-//  auto diff7 = diff1 - diff2;
+  auto diff7 = diff1 - diff2;
 
   auto sum8 = sum1 + sum2 + fe_function1;
-//  auto diff8 = diff1 - diff2 - fe_function1;
+  auto diff8 = diff1 - diff2 - fe_function1;
 
   auto sum9 = fe_function2 + sum1 + sum2;
-//  auto diff9 = fe_function2 - diff1 - diff2;
+  auto diff9 = fe_function2 - diff1 - diff2;
 
   auto sum10 = sum6 + sum8;
-//  auto diff10 = diff6 - diff8;
+  auto diff10 = diff6 - diff8;
+
+  //Check for unary minus combinations
+  auto diff11 = -sum1;
+  auto diff12 = -sum2;
+  auto diff13 = -sum3;
+  auto diff14 = -sum4;
+  auto diff15 = -sum5;
+  auto diff16 = -sum6;
+  auto diff17 = -sum7;
+  auto diff18 = -sum8;
+  auto diff19 = -sum9;
+  auto diff20 = -sum10;
+
+  //something randomly complicated
+  auto randomc = -(diff11 - sum9 + diff12 - sum8 + diff13 - sum7 - diff20 + sum5);
+
 }
 
 template <int i>

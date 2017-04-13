@@ -788,13 +788,12 @@ namespace dealii
                       "You need to construct this with a FEFunction object!");
       }
 
-      //sumfefunc + fefunc
+      //sumfefunc(fefunc) + fefunc
       template <class NewFEFunction>
-      SumFEFunctions<NewFEFunction, FEFunction>
+      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+      	  	  	  	  	  	  SumFEFunctions<NewFEFunction, FEFunction>>::type
       operator+(const NewFEFunction& new_summand) const
       {
-        static_assert(Traits::is_fe_function_set<NewFEFunction>::value,
-                      "Only FEFunction objects can be added!");
         static_assert(TensorTraits::dim == NewFEFunction::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
         static_assert(TensorTraits::rank == NewFEFunction::TensorTraits::rank,
@@ -811,6 +810,7 @@ namespace dealii
         return SumFEFunctions<NewFEFunction, FEFunction>(new_sum.get_summand(), summand);
       }
 
+      //sumfefunc(fefunc) - fefunc
       template <class NewFEFunction>
       SumFEFunctions<NewFEFunction, FEFunction>
       operator-(const NewFEFunction& new_summand) const
@@ -818,9 +818,20 @@ namespace dealii
         return operator+(-new_summand);
       }
 
+#if 0 //check if really needed
+      //sumfe(fefunc) - sumfe(fefunc)
+      template <class NewFEFunction>
+      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+      	  	  	  	  	  	  SumFEFunctions<NewFEFunction, FEFunction>>::type
+      operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
+      {
+    	return operator+(-new_sum);
+      }
+#endif
+
       // -sumfefunc
       SumFEFunctions<FEFunction>
-      operator-()
+      operator-() const
       {
     	  return SumFEFunctions(-summand);
       }
@@ -881,6 +892,7 @@ namespace dealii
                       "You can only add tensors of equal rank!");
       }
 
+
       template <class FEEvaluation>
       auto
       value(const FEEvaluation& phi, unsigned int q) const
@@ -924,11 +936,11 @@ namespace dealii
              CFL::Traits::is_fe_function_set<NewFEFunction>::value,
              SumFEFunctions<NewTypes..., NewFEFunction2,NewFEFunction, FEFunction, Types...>>::type
              operator+(const SumFEFunctions<NewFEFunction, NewFEFunction2,NewTypes...>& new_sum) const
-             {
-             	 return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this) +
-             			 SumFEFunctions<NewFEFunction2,NewTypes...>(
-             					 static_cast<const SumFEFunctions<NewFEFunction2,NewTypes...>&>(new_sum));
-             }
+      {
+         	 return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this) +
+          			SumFEFunctions<NewFEFunction2,NewTypes...>(
+          			static_cast<const SumFEFunctions<NewFEFunction2,NewTypes...>&>(new_sum));
+      }
 
       //sumfefunc - fefunc
       template <class NewFEFunction>
@@ -937,6 +949,15 @@ namespace dealii
       operator-(const NewFEFunction& new_summand) const
       {
         return operator+(-new_summand);
+      }
+
+      //sumfefunc1 - sumfefunc2(fefunc)
+      template <class NewFEFunction>
+      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
+                              SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
+      operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
+      {
+        return operator+(-new_sum);
       }
 
       //sumfefunc1 - sumfefunc2
@@ -949,20 +970,11 @@ namespace dealii
         return operator+(-new_sum);
       }
 
-      //sumfefunc1 - sumfefunc2(fefunc)
-      template <class NewFEFunction>
-      typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
-                              SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
-      operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
-      {
-        return operator+(-new_sum);
-      }
-
       //-sumfefunc
       SumFEFunctions<FEFunction,Types...>
-      operator-()
+      operator-() const
       {
-    	  return (-SumFEFunctions<FEFunction>(*this) + (-SumFEFunctions<Types...>(*this)));
+    	  return (-Base(static_cast<const Base>(*this)) + (-summand));
       }
 
       const FEFunction&
@@ -975,7 +987,7 @@ namespace dealii
       const FEFunction summand;
     };
 
-    //fefunc1 + fefunc2
+    //fefunc1 + fefunc2 == TBD, this should be moved to class
     template <class FEFunction1, class FEFunction2>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
                               Traits::is_fe_function_set<FEFunction2>::value,
@@ -990,7 +1002,7 @@ namespace dealii
       return SumFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
     }
 
-    //fefunc1 + sumfefunc
+    //fefunc1 + sumfefunc == TBD, this should be moved to class
     template <class FEFunction, typename... Types>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
                             SumFEFunctions<FEFunction, Types...>>::type
@@ -999,6 +1011,7 @@ namespace dealii
       return old_fe_function + new_fe_function;
     }
 
+    //fefunc1 - fefunc2 == TBD this should be moved to class
     template <class FEFunction1, class FEFunction2>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
                               Traits::is_fe_function_set<FEFunction2>::value,
@@ -1008,12 +1021,13 @@ namespace dealii
       return old_fe_function + (-new_fe_function);
     }
 
+    //fefunc - sumfefunc == TBD, this should be moved to class
     template <class FEFunction, typename... Types>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
                             SumFEFunctions<FEFunction, Types...>>::type
     operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
-      return -(old_fe_function - new_fe_function);
+    	return -old_fe_function + new_fe_function;
     }
 
     template <class FEFunction>
