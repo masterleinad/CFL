@@ -780,6 +780,7 @@ namespace dealii
     public:
       using TensorTraits =
         Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
+      static constexpr unsigned int n=1;
 
       explicit SumFEFunctions(const FEFunction summand_)
         : summand(std::move(summand_))
@@ -856,6 +857,15 @@ namespace dealii
         return summand;
       }
 
+      //TBD: Discuss with Daniel for keeping this or alternate..after testing
+      unsigned int get_fe_func_index(unsigned int order_no) const
+      {
+    	  //"No FEFunction found at such an index in SumFEFunctions object"
+    	  AssertThrow(order_no == n, ::dealii::StandardExceptions::ExcIndexRange(order_no, 1, n));
+
+    	  return summand.index; //return FE function index number
+      }
+
     private:
       const FEFunction summand;
     };
@@ -867,6 +877,7 @@ namespace dealii
       using TensorTraits =
         Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
       using Base = SumFEFunctions<Types...>;
+      static constexpr unsigned int n=Base::n + 1;
 
       explicit SumFEFunctions(const FEFunction summand_, const Types... old_sum)
         : Base(std::move(old_sum...))
@@ -931,11 +942,9 @@ namespace dealii
       }
 
       //sumfefunc1 + sumfefunc2
-      template <class NewFEFunction, typename NewFEFunction2, typename... NewTypes>
-      typename std::enable_if<
-             CFL::Traits::is_fe_function_set<NewFEFunction>::value,
-             SumFEFunctions<NewTypes..., NewFEFunction2,NewFEFunction, FEFunction, Types...>>::type
-             operator+(const SumFEFunctions<NewFEFunction, NewFEFunction2,NewTypes...>& new_sum) const
+      template <class NewFEFunction, typename NewFEFunction2, typename... NewTypes,
+                typename = typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,void>::type>
+      auto operator+(const SumFEFunctions<NewFEFunction, NewFEFunction2,NewTypes...>& new_sum) const
       {
          	 return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this) +
           			SumFEFunctions<NewFEFunction2,NewTypes...>(
@@ -961,11 +970,10 @@ namespace dealii
       }
 
       //sumfefunc1 - sumfefunc2
-      template <class NewFEFunction, typename... NewTypes>
-      typename std::enable_if<
-        CFL::Traits::is_fe_function_set<NewFEFunction>::value,
-        SumFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
-      operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
+      template <class NewFEFunction, typename... NewTypes,
+                typename = typename std::enable_if<
+                          CFL::Traits::is_fe_function_set<NewFEFunction>::value, void>::type>
+      auto operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
       {
         return operator+(-new_sum);
       }
@@ -981,6 +989,19 @@ namespace dealii
       get_summand() const
       {
         return summand;
+      }
+
+      //TBD: Discuss with Daniel for keeping this or alternate..after testing
+      unsigned int get_fe_func_index(unsigned int order_no) const
+      {
+    	  if (order_no == n)
+    	  {
+    	  	  return summand.index; //return FE function index number
+    	  }
+    	  else
+    	  {
+    		  return Base::get_fe_func_index(order_no);
+    	  }
       }
 
     private:

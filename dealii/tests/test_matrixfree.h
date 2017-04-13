@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <map>
+#include <bitset>
 
 using namespace std;
 using namespace boost;
@@ -65,5 +66,15 @@ struct FEFixture
 };
 
 FEFixture::fe_shared_type FEFixture::fe_shared = std::make_shared<FEFixture::fe_q_type>(2);
+
+template<typename FEOp, typename BitSetType>
+void check_FeOpComplete(const FEOp& feopobj, BitSetType& bs,vector<unsigned int> &&v)
+{
+	bs.reset();
+	for(unsigned int i : v) bs[i-1] = 1; //set the corresponding bits
+	//cout<<"initial bits "<<bs<<endl;
+	for(unsigned int i=1;i<=feopobj.n;i++)
+	    	bs[feopobj.get_fe_func_index(i)-1] = 0; //reset as and when found the FEFunc
+};
 
 #endif /* TEST_MATRIXFREE_H_ */
