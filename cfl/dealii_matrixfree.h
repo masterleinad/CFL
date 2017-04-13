@@ -81,33 +81,10 @@ namespace Traits
     static const bool value = true;
   };
 
-  template <class A, typename... Types>
-  struct is_summable<
-    A, dealii::MatrixFree::SumFEFunctions<Types...>,
-    typename std::enable_if<fe_function_set_type<A>::value != ObjectType::none>::type>
-  {
-    static const bool value = true;
-  };
-
-  template <class A, typename... Types>
-  struct is_summable<
-    dealii::MatrixFree::SumFEFunctions<Types...>, A,
-    typename std::enable_if<fe_function_set_type<A>::value != ObjectType::none>::type>
-  {
-    static const bool value = true;
-  };
-
-  template <typename... TypesA, typename... TypesB>
-  struct is_summable<dealii::MatrixFree::SumFEFunctions<TypesA...>,
-                     dealii::MatrixFree::SumFEFunctions<TypesB...>>
-  {
-    static const bool value = true;
-  };
-
   template <typename A, typename B>
   struct is_summable<
     A, B, typename std::enable_if<fe_function_set_type<A>::value != ObjectType::none &&
-                                  fe_function_set_type<B>::value != ObjectType::none>::type>
+                                  fe_function_set_type<A>::value == fe_function_set_type<B>::value>::type>
   {
     static const bool value = true;
   };
@@ -115,7 +92,7 @@ namespace Traits
   template <typename A, typename B>
   struct is_multiplicable<
     A, B, typename std::enable_if<fe_function_set_type<A>::value != ObjectType::none &&
-                                  fe_function_set_type<B>::value != ObjectType::none>::type>
+                                  fe_function_set_type<A>::value == fe_function_set_type<B>::value>::type>
   {
     static const bool value = true;
   };
