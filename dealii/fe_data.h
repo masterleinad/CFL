@@ -768,13 +768,33 @@ public:
   void
   evaluate()
   {
+     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+     {
 #ifdef DEBUG_OUTPUT
     std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
               << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
     Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
     fe_data.fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
+     }
     FEDatas<Types...>::evaluate();
+  }
+
+  void
+  evaluate_face()
+  {
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
+                  << evaluate_gradients << " " << evaluate_hessians << std::endl;
+#endif
+        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+
+        fe_data.fe_evaluation_interior->evaluate(evaluate_values, evaluate_gradients);
+        fe_data.fe_evaluation_exterior->evaluate(evaluate_values, evaluate_gradients);
+      }
+    FEDatas<Types...>::evaluate_face();
   }
 
   void

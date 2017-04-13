@@ -112,7 +112,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   auto f1 = form(Du, Dv);
   auto f2 = face_form(u_plus - u_minus, v_plus);
   auto f3 = face_form(u_minus - u_plus, v_minus);
-  auto f = f1 + f2 + f3;
+  auto f = f1/* + f2 + f3*/;
 
   MatrixFreeData<dim,
                  decltype(fe_datas),
