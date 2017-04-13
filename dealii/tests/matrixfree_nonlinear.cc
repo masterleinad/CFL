@@ -146,7 +146,6 @@ run()
     }
 
     ref -= out.block(0);
-    std::cout << "error: " << ref.l2_norm() << std::endl;
     Assert(ref.l2_norm() < 1.e-20 || ref.l2_norm() < 1.e-6 * out.block(0).l2_norm(),
            ExcInternalError());
   }
@@ -156,8 +155,6 @@ int
 main(int /*argc*/, char** /*argv*/)
 {
   deallog.depth_console(10);
-  //::dealii::MultithreadInfo::set_thread_limit( (argc > 1) ? atoi(argv[1]) : 1);
-  std::cout << ::dealii::MultithreadInfo::n_threads() << std::endl;
   try
   {
     constexpr int dim = 2;

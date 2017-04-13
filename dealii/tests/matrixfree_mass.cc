@@ -153,8 +153,6 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
       {
         x_old.block(k) -= x_new.block(k);
         x_ref.block(k) -= x_new.block(k);
-        std::cout << i << " error: " << x_old.block(k).l2_norm() << std::endl;
-        std::cout << i << " error_ref: " << x_ref.block(k).l2_norm() << std::endl;
         Assert(x_old.block(k).l2_norm() < 1.e-20 ||
                  x_old.block(k).l2_norm() < 1.e-6 * x_new.block(k).l2_norm(),
                ExcInternalError());
@@ -171,8 +169,6 @@ int
 main(int /*argc*/, char** /*argv*/)
 {
   deallog.depth_console(10);
-  //::dealii::MultithreadInfo::set_thread_limit( (argc > 1) ? atoi(argv[1]) : 1);
-  std::cout << ::dealii::MultithreadInfo::n_threads() << std::endl;
   try
   {
     const unsigned int refine = 0;

@@ -100,8 +100,6 @@ int
 main(int /*argc*/, char** /*argv*/)
 {
   deallog.depth_console(10);
-  //::dealii::MultithreadInfo::set_thread_limit( (argc > 1) ? atoi(argv[1]) : 1);
-  std::cout << ::dealii::MultithreadInfo::n_threads() << std::endl;
   try
   {
     const unsigned int refine = 0;

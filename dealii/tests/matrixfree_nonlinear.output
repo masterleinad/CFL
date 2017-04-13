@@ -1,4 +1,3 @@
-160
 constructor1
 constructor1
 operator+1
@@ -30,4 +29,3 @@ Vector data:
 1	1	0
 2	1	0
 3	1	0
-error: 4.02752e-15
