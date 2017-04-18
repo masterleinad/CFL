@@ -997,6 +997,15 @@ namespace dealii
         return summand;
       }
 
+      SumFEFunctions<FEFunction>
+      operator-() const
+      {
+        //create a copy
+        const SumFEFunctions<FEFunction> copy_this (*this);
+        copy_this.multiply_by_scalar(-1.);
+        return copy_this;
+      }
+
     private:
       const FEFunction summand;
     };
@@ -1095,6 +1104,14 @@ namespace dealii
       operator-(const NewFEFunction& new_summand) const
       {
         return operator+(-new_summand);
+      }
+
+      SumFEFunctions<FEFunction, Types...>
+      operator-() const
+      {
+        //create a copy
+        const SumFEFunctions<FEFunction, Types...> copy_this (*this);
+        return -copy_this;
       }
 
       template <class NewFEFunction, typename... NewTypes>
@@ -1219,6 +1236,15 @@ namespace dealii
         return factor;
       }
 
+     ProductFEFunctions<FEFunction>
+     operator-() const
+     {
+       //create a copy
+       const ProductFEFunctions<FEFunction> copy_this (*this);
+       copy_this.multiply_by_scalar(-1.);
+       return copy_this;
+     }
+
     private:
       const FEFunction factor;
     };
@@ -1281,6 +1307,15 @@ namespace dealii
       operator*(const NewFEFunction& new_factor) const
       {
         return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_factor, *this);
+      }
+
+      ProductFEFunctions<FEFunction, Types...>
+      operator-() const
+      {
+        //create a copy
+        const ProductFEFunctions<FEFunction, Types...> copy_this (*this);
+        copy_this.multiply_by_scalar(-1.);
+        return copy_this;
       }
 
       template <typename Number>

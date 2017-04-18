@@ -202,15 +202,17 @@ public:
   set_integration_flags(FEEvaluation& phi)
   {
     // only to be used if there is only one form!
-    phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::cell)
+      phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
   }
 
   template <class FEEvaluation>
   static void
   set_integration_flags_face(FEEvaluation& phi)
-  {
+  {    
     // only to be used if there is only one form!
-    phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
+      phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
   }
 
   template <class FEEvaluation>
@@ -218,7 +220,8 @@ public:
   set_evaluation_flags(FEEvaluation& phi) const
   {
     // only to be used if there is only one form!
-    expr.set_evaluation_flags(phi);
+    if constexpr(form_kind == FormKind::cell)
+      expr.set_evaluation_flags(phi);
   }
 
   template <class FEEvaluation>
@@ -226,7 +229,8 @@ public:
   set_evaluation_flags_face(FEEvaluation& phi) const
   {
     // only to be used if there is only one form!
-    expr.set_evaluation_flags_face(phi);
+    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
+      expr.set_evaluation_flags_face(phi);
   }
 
   number
@@ -237,7 +241,8 @@ public:
 
   template <class FEEvaluation>
   void
-  evaluate(FEEvaluation& phi, unsigned int q) const
+  evaluate([[maybe_unused]] FEEvaluation& phi,
+           [[maybe_unused]] unsigned int q) const
   {
     if constexpr(form_kind == FormKind::cell)
       {
@@ -249,7 +254,8 @@ public:
 
   template <class FEEvaluation>
   void
-  evaluate_face(FEEvaluation& phi, unsigned int q) const
+  evaluate_face([[maybe_unused]] FEEvaluation& phi,
+                [[maybe_unused]] unsigned int q) const
   {
     if constexpr(form_kind == FormKind::face)
       {
@@ -261,7 +267,8 @@ public:
 
   template <class FEEvaluation>
   void
-  evaluate_boundary(FEEvaluation& phi, unsigned int q) const
+  evaluate_boundary([[maybe_unused]] FEEvaluation& phi,
+                    [[maybe_unused]] unsigned int q) const
   {
     if constexpr(form_kind == FormKind::boundary)
       {
@@ -291,6 +298,14 @@ public:
   {
     std::cout << "operator+1" << std::endl;
     return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this, new_form);
+  }
+
+  template <class TestNew, class ExprNew, FormKind kind_new>
+  Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
+  operator-(const Form<TestNew, ExprNew, kind_new>& new_form) const
+  {
+    std::cout << "operator+1" << std::endl;
+    return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this, -new_form);
   }
 
   template <class... Types>
@@ -414,20 +429,23 @@ public:
   static void
   set_integration_flags(FEEvaluation& phi)
   {
-    phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::cell)
+      phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
   }
 
   template <class FEEvaluation>
   static void
   set_integration_flags_face(FEEvaluation& phi)
   {
-    phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
+      phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
   }
 
   template <class FEEvaluation>
   void
   set_evaluation_flags(FEEvaluation& phi) const
   {
+    if constexpr(form_kind == FormKind::cell)
     form.expr.set_evaluation_flags(phi);
   }
 
@@ -435,12 +453,14 @@ public:
   void
   set_evaluation_flags_face(FEEvaluation& phi) const
   {
+    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
     form.expr.set_evaluation_flags_face(phi);
   }
 
   template <class FEEvaluation>
   void
-  evaluate(FEEvaluation& phi, unsigned int q) const
+  evaluate([[maybe_unused]] FEEvaluation& phi,
+           [[maybe_unused]] unsigned int q) const
   {
     if constexpr(form_kind == FormKind::cell)
       {
@@ -457,7 +477,8 @@ public:
 
   template <class FEEvaluation>
   void
-  evaluate_face(FEEvaluation& phi, unsigned int q) const
+  evaluate_face([[maybe_unused]] FEEvaluation& phi,
+                [[maybe_unused]] unsigned int q) const
   {
     if constexpr(form_kind == FormKind::face)
       {
@@ -474,7 +495,8 @@ public:
 
   template <class FEEvaluation>
   void
-  evaluate_boundary(FEEvaluation& phi, unsigned int q) const
+  evaluate_boundary([[maybe_unused]] FEEvaluation& phi,
+                    [[maybe_unused]] unsigned int q) const
   {
     if constexpr(form_kind == FormKind::boundary)
       {
@@ -540,7 +562,8 @@ public:
   static void
   set_integration_flags(FEEvaluation& phi)
   {
-    phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::cell)
+      phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
     Forms<Types...>::set_integration_flags(phi);
   }
 
@@ -548,7 +571,8 @@ public:
   static void
   set_integration_flags_face(FEEvaluation& phi)
   {
-    phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
+      phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
     Forms<Types...>::set_integration_flags_face(phi);
   }
 
@@ -556,7 +580,8 @@ public:
   void
   set_evaluation_flags(FEEvaluation& phi) const
   {
-    form.expr.set_evaluation_flags(phi);
+    if constexpr(form_kind == FormKind::cell)
+      form.expr.set_evaluation_flags(phi);
     Forms<Types...>::set_evaluation_flags(phi);
   }
 
@@ -564,7 +589,8 @@ public:
   void
   set_evaluation_flags_face(FEEvaluation& phi) const
   {
-    form.expr.set_evaluation_flags(phi);
+    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
+      form.expr.set_evaluation_flags(phi);
     Forms<Types...>::set_evaluation_flags_face(phi);
   }
 

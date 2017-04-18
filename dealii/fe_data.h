@@ -256,6 +256,21 @@ public:
 
   template <unsigned int fe_number_extern>
   void
+  set_integration_flags_face(bool integrate_value, bool integrate_gradient)
+  {
+    static_assert(fe_number == fe_number_extern, "Component not found!");
+    integrate_values |= integrate_value;
+    integrate_gradients |= integrate_gradient;
+#ifdef DEBUG_OUTPUT
+    std::cout << "integrate value end: " << fe_number << " " << integrate_values << " "
+              << integrate_value << std::endl;
+    std::cout << "integrate gradients end: " << fe_number << " " << integrate_gradients << " "
+              << integrate_gradient << std::endl;
+#endif
+  }
+
+  template <unsigned int fe_number_extern>
+  void
   set_evaluation_flags(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
   {
     static_assert(CFL::Traits::is_fe_data<FEData>::value, "Component not found!");
