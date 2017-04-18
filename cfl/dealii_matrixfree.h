@@ -1006,8 +1006,25 @@ namespace dealii
         return copy_this;
       }
 
+      template <typename Number>
+      typename std::enable_if<std::is_arithmetic<Number>::value,
+                              SumFEFunctions<FEFunction>>::type
+      operator*(const Number scalar_factor) const
+      {
+        SumFEFunctions<FEFunction> tmp = *this;
+        tmp.multiply_by_scalar(scalar_factor);
+        return tmp;
+      }
+
+      template <typename Number>
+      std::enable_if_t<std::is_arithmetic<Number>::value>
+      multiply_by_scalar(const Number scalar)
+      {
+        summand.scalar_factor *= scalar;
+      }
+
     private:
-      const FEFunction summand;
+      FEFunction summand;
     };
 
     template <class FEFunction, typename... Types>
@@ -1110,8 +1127,27 @@ namespace dealii
       operator-() const
       {
         //create a copy
-        const SumFEFunctions<FEFunction, Types...> copy_this (*this);
-        return -copy_this;
+        SumFEFunctions<FEFunction, Types...> copy_this (*this);
+        copy_this.multiply_by_scalar(-1.);
+        return copy_this;
+      }
+
+      template <typename Number>
+      typename std::enable_if<std::is_arithmetic<Number>::value,
+                              SumFEFunctions<FEFunction, Types...>>::type
+      operator*(const Number scalar_factor) const
+      {
+        SumFEFunctions<FEFunction, Types...> tmp = *this;
+        tmp.multiply_by_scalar(scalar_factor);
+        return tmp;
+      }
+
+      template <typename Number>
+      std::enable_if_t<std::is_arithmetic<Number>::value>
+      multiply_by_scalar(const Number scalar)
+      {
+        summand.scalar_factor *= scalar;
+        SumFEFunctions<Types...>::multiply_by_scalar(scalar);
       }
 
       template <class NewFEFunction, typename... NewTypes>
@@ -1143,7 +1179,7 @@ namespace dealii
       }
 
     private:
-      const FEFunction summand;
+      FEFunction summand;
     };
 
     template <class FEFunction1, class FEFunction2>
@@ -1245,8 +1281,15 @@ namespace dealii
        return copy_this;
      }
 
+     template <typename Number>
+     std::enable_if_t<std::is_arithmetic<Number>::value>
+     multiply_by_scalar(const Number scalar)
+     {
+       factor.scalar_factor *= scalar;
+     }
+
     private:
-      const FEFunction factor;
+      FEFunction factor;
     };
 
     template <class FEFunction, typename... Types>
