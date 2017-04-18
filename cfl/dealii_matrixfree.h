@@ -1009,6 +1009,7 @@ namespace dealii
     };
 
     //fefunc1 + fefunc2 == TBD, this should be moved to class
+    //No not move, we would need cast down in base class, which leads to creation of temporaries and slows down
     template <class FEFunction1, class FEFunction2>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
                               Traits::is_fe_function_set<FEFunction2>::value,
@@ -1023,7 +1024,9 @@ namespace dealii
       return SumFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
     }
 
+
     //fefunc1 + sumfefunc == TBD, this should be moved to class
+    //For same reason as above, dont move to class
     template <class FEFunction, typename... Types>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
                             SumFEFunctions<FEFunction, Types...>>::type
@@ -1033,6 +1036,7 @@ namespace dealii
     }
 
     //fefunc1 - fefunc2 == TBD this should be moved to class
+    //For same reason as above, dont move to class
     template <class FEFunction1, class FEFunction2>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
                               Traits::is_fe_function_set<FEFunction2>::value,
@@ -1043,6 +1047,7 @@ namespace dealii
     }
 
     //fefunc - sumfefunc == TBD, this should be moved to class
+    //For same reason as above, dont move to class
     template <class FEFunction, typename... Types>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
                             SumFEFunctions<FEFunction, Types...>>::type

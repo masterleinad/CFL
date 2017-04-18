@@ -14,16 +14,15 @@
 //    - result of SumFEFunction is of correct type
 //    There are no check on values since they are available from dealii library function results
 //    which we ignore in out test
-template <template <int, int, unsigned int> typename FEFuncType, int rank, int dim,
-          unsigned int idx>
+template <template <int, int, unsigned int> typename FEFuncType, int rank, int dim, unsigned int idx>
 void
 sumfe_same_types()
 {
-  constexpr int idx1 = idx;
-  constexpr int idx2 = idx+2;
-  constexpr int idx3 = idx+4;
-  constexpr int idx4 = idx+6;
-  constexpr int idx5 = idx+8;
+  constexpr unsigned int idx1 = idx;
+  constexpr unsigned int idx2 = idx+2;
+  constexpr unsigned int idx3 = idx+4;
+  constexpr unsigned int idx4 = idx+6;
+  constexpr unsigned int idx5 = idx+8;
 
   constexpr int max_idx = idx5;
 
