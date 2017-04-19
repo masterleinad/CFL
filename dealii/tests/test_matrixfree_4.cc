@@ -40,11 +40,11 @@ sumfe_same_types()
   check_FeOpComplete(sum1,bs,vector<unsigned int> {idx1,idx2});
   BOOST_TEST(bs.none());
   BOOST_TEST(sum1.n == 2);
+
   auto diff1 = fe_function1 - fe_function2;
   check_FeOpComplete(diff1,bs,vector<unsigned int> {idx1,idx2});
   BOOST_TEST(bs.none());
   BOOST_TEST(diff1.n == 2);
-
 
   auto sum2 = fe_function2 + fe_function1;
   check_FeOpComplete(sum2,bs,vector<unsigned int> {idx1,idx2});
@@ -54,8 +54,6 @@ sumfe_same_types()
   check_FeOpComplete(diff2,bs,vector<unsigned int> {idx1,idx2});
   BOOST_TEST(bs.none());
   BOOST_TEST(diff2.n == 2);
-
-
 
   auto sum3 = fe_function2 + fe_function1 + fe_function3;
   check_FeOpComplete(sum3,bs,vector<unsigned int> {idx1,idx2,idx3});
@@ -74,7 +72,6 @@ sumfe_same_types()
   check_FeOpComplete(diff4,bs,vector<unsigned int> {idx1,idx2,idx4,idx5});
   BOOST_TEST(bs.none());
   BOOST_TEST(diff4.n == 4);
-
 
   //TBD: Discuss or note it down in doc..the order is not preserved
   //if fefunc + sum is performed
@@ -95,7 +92,6 @@ sumfe_same_types()
   check_FeOpComplete(diff6,bs,vector<unsigned int> {idx1,idx2,idx4,idx5});
   BOOST_TEST(bs.none());
   BOOST_TEST(diff6.n == 4);
-
 
   auto sum7 = sum1 + sum2;
   check_FeOpComplete(sum7,bs,vector<unsigned int> {idx1,idx2});
@@ -143,6 +139,7 @@ sumfe_same_types()
   check_FeOpComplete(diff12,bs,vector<unsigned int> {idx1,idx2});
   BOOST_TEST(bs.none());
   BOOST_TEST(diff12.n == 2);
+
 
   auto diff13 = -sum3;
   check_FeOpComplete(diff13,bs,vector<unsigned int> {idx1,idx2,idx3});
@@ -205,6 +202,7 @@ struct SumFEfunctor
   run()
   {
     sumfe_same_types<FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+#if 0
     sumfe_same_types<FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     // sumfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>(); 9. TBD
@@ -213,11 +211,12 @@ struct SumFEfunctor
     sumfe_same_types<FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+#endif
   }
 };
 BOOST_FIXTURE_TEST_CASE(SumFEObjSameType, FEFixture)
 {
-  for_<0, 9>::run<SumFEfunctor>();
+  for_<0, 1>::run<SumFEfunctor>();
 
   // auto sumf = fe_function_scalar1 + fe_function_scalar2; //TBD why does this not hit
   // static_assertion although compilation fails?

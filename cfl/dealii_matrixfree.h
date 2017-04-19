@@ -183,6 +183,26 @@ namespace Traits
   {
     static const bool value = true;
   };
+
+  template <typename... Types>
+  struct is_fe_expr<dealii::MatrixFree::SumFEFunctions<Types...>>
+  {
+	  static const bool value = true;
+  };
+
+  template <typename... Types>
+  struct is_fe_expr<dealii::MatrixFree::ProductFEFunctions<Types...>>
+  {
+	  static const bool value = true;
+  };
+
+
+  template <typename A>
+  struct is_fe_expr<A,typename std::enable_if<is_fe_function_set<A>::value>::type>
+  {
+	  static const bool value = true;
+  };
+
 } // namespace Traits
 
 namespace dealii
@@ -427,6 +447,7 @@ namespace dealii
         const Derived<rank, dim, idx> newfunction(-scalar_factor);
         return newfunction;
       }
+
     };
 
     template <int rank, int dim, unsigned int idx>
@@ -774,21 +795,23 @@ namespace dealii
     template <typename... Types>
     class SumFEFunctions;
 
-    template <class FEFunction>
-    class SumFEFunctions<FEFunction>
+    template <class FEExpr>
+    class SumFEFunctions<FEExpr>
     {
     public:
       using TensorTraits =
-        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
+        Traits::Tensor<FEExpr::TensorTraits::rank, FEExpr::TensorTraits::dim>;
       static constexpr unsigned int n=1;
 
-      explicit SumFEFunctions(const FEFunction summand_)
+      explicit SumFEFunctions(const FEExpr summand_)
         : summand(std::move(summand_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::is_fe_expr<FEExpr>::value,
                       "You need to construct this with a FEFunction object!");
+
       }
 
+#if 0
       //sumfefunc(fefunc) + fefunc
       template <class NewFEFunction>
       typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
@@ -831,10 +854,21 @@ namespace dealii
 #endif
 
       // -sumfefunc
-      SumFEFunctions<FEFunction>
+      SumFEFunctions<FEExpr>
       operator-() const
       {
     	  return SumFEFunctions(-summand);
+      }
+#endif
+
+      // -sumfefunc
+      //This looks odd but this is correct because there need not be an
+      //independent object of type SumFEFunctions<FEFunction>
+      //as this is equivalent to type FEFunction
+      FEExpr
+      operator-() const
+      {
+    	  return (-summand);
       }
 
       template <class FEEvaluation>
@@ -848,10 +882,10 @@ namespace dealii
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        FEFunction::set_evaluation_flags(phi);
+    	  FEExpr::set_evaluation_flags(phi);
       }
 
-      const FEFunction&
+      const FEExpr&
       get_summand() const
       {
         return summand;
@@ -861,29 +895,30 @@ namespace dealii
       unsigned int get_fe_func_index(unsigned int order_no) const
       {
     	  //"No FEFunction found at such an index in SumFEFunctions object"
-    	  AssertThrow(order_no == n, ::dealii::StandardExceptions::ExcIndexRange(order_no, 1, n));
+    	  //AssertThrow(order_no == n, ::dealii::StandardExceptions::ExcIndexRange(order_no, 1, n));
 
-    	  return summand.index; //return FE function index number
+    	  return 0; //TBD
+    	  //return summand.index; //return FE function index number
       }
 
     private:
-      const FEFunction summand;
+      const FEExpr summand;
     };
 
-    template <class FEFunction, typename... Types>
-    class SumFEFunctions<FEFunction, Types...> : public SumFEFunctions<Types...>
+    template <class FEExpr, typename... Types>
+    class SumFEFunctions<FEExpr, Types...> : public SumFEFunctions<Types...>
     {
     public:
       using TensorTraits =
-        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
+        Traits::Tensor<FEExpr::TensorTraits::rank, FEExpr::TensorTraits::dim>;
       using Base = SumFEFunctions<Types...>;
       static constexpr unsigned int n=Base::n + 1;
 
-      explicit SumFEFunctions(const FEFunction summand_, const Types... old_sum)
+      explicit SumFEFunctions(const FEExpr summand_, const Types... old_sum)
         : Base(std::move(old_sum...))
         , summand(std::move(summand_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::is_fe_expr<FEExpr>::value,
                       "You need to construct this with a FEFunction object!");
         static_assert(TensorTraits::dim == Base::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -891,11 +926,11 @@ namespace dealii
                       "You can only add tensors of equal rank!");
       }
 
-      SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
+      SumFEFunctions(const FEExpr& summand_, const SumFEFunctions<Types...>& old_sum)
         : Base(old_sum)
         , summand(summand_)
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::is_fe_expr<FEExpr>::value,
                       "You need to construct this with a FEFunction object!");
         static_assert(TensorTraits::dim == Base::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -918,11 +953,11 @@ namespace dealii
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        FEFunction::set_evaluation_flags(phi);
+    	FEExpr::set_evaluation_flags(phi);
         Base::set_evaluation_flags(phi);
       }
 
-
+#if 0
       //sumfefunc + fefunc
       template <class NewFEFunction>
       typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
@@ -978,25 +1013,26 @@ namespace dealii
         return operator+(-new_sum);
       }
 
+#endif
       //-sumfefunc
-      SumFEFunctions<FEFunction,Types...>
+      SumFEFunctions<FEExpr,Types...>
       operator-() const
       {
     	  return (-Base(static_cast<const Base>(*this)) + (-summand));
       }
 
-      const FEFunction&
+      const FEExpr&
       get_summand() const
       {
         return summand;
       }
-
       //TBD: Discuss with Daniel for keeping this or alternate..after testing
       unsigned int get_fe_func_index(unsigned int order_no) const
       {
     	  if (order_no == n)
     	  {
-    	  	  return summand.index; //return FE function index number
+    	  	  //return summand.index; //return FE function index number
+    		  return 0; //TBD
     	  }
     	  else
     	  {
@@ -1005,27 +1041,30 @@ namespace dealii
       }
 
     private:
-      const FEFunction summand;
+      const FEExpr summand;
     };
 
-    //fefunc1 + fefunc2 == TBD, this should be moved to class
+    //fefunc1 + fefunc2
+    //fefunc + sumfefunc and reverse
+    //sumfefunc + sumfefunc
     //No not move, we would need cast down in base class, which leads to creation of temporaries and slows down
-    template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
-                              Traits::is_fe_function_set<FEFunction2>::value,
-                            SumFEFunctions<FEFunction2, FEFunction1>>::type
-    operator+(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+    //Saurabh - compiles ok
+    template <class FEExpr1, class FEExpr2>
+    typename std::enable_if<Traits::is_fe_expr<FEExpr1>::value &&
+                              Traits::is_fe_expr<FEExpr2>::value,
+                            SumFEFunctions<FEExpr2, FEExpr1>>::type
+    operator+(const FEExpr1& old_fe_function, const FEExpr2& new_fe_function)
     {
 
-      static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
+      static_assert(FEExpr1::TensorTraits::dim == FEExpr2::TensorTraits::dim,
                     "You can only add tensors of equal dimension!");
-      static_assert(FEFunction1::TensorTraits::rank == FEFunction2::TensorTraits::rank,
+      static_assert(FEExpr1::TensorTraits::rank == FEExpr2::TensorTraits::rank,
                     "You can only add tensors of equal rank!");
-      return SumFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
+      return SumFEFunctions<FEExpr2, FEExpr1>(new_fe_function, old_fe_function);
     }
 
-
-    //fefunc1 + sumfefunc == TBD, this should be moved to class
+#if 0
+    //saurabh - should not be needed anymore
     //For same reason as above, dont move to class
     template <class FEFunction, typename... Types>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
@@ -1034,27 +1073,30 @@ namespace dealii
     {
       return old_fe_function + new_fe_function;
     }
+#endif
 
     //fefunc1 - fefunc2 == TBD this should be moved to class
     //For same reason as above, dont move to class
-    template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
-                              Traits::is_fe_function_set<FEFunction2>::value,
-                            SumFEFunctions<FEFunction2, FEFunction1>>::type
-    operator-(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+    template <class FEExpr1, class FEExpr2>
+    typename std::enable_if<Traits::is_fe_expr<FEExpr1>::value &&
+                              Traits::is_fe_expr<FEExpr2>::value,
+                            SumFEFunctions<FEExpr2, FEExpr1>>::type
+    operator-(const FEExpr1& old_fe_function, const FEExpr2& new_fe_function)
     {
       return old_fe_function + (-new_fe_function);
     }
 
+#if 0
     //fefunc - sumfefunc == TBD, this should be moved to class
     //For same reason as above, dont move to class
-    template <class FEFunction, typename... Types>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
-                            SumFEFunctions<FEFunction, Types...>>::type
-    operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
+    template <class FEExpr, typename... Types>
+    typename std::enable_if<Traits::is_fe_expr<FEExpr>::value,
+                            SumFEFunctions<FEExpr, Types...>>::type
+    operator-(const FEExpr& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
     	return -old_fe_function + new_fe_function;
     }
+#endif
 
     template <class FEFunction>
     class ProductFEFunctions<FEFunction>
