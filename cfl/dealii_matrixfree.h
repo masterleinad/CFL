@@ -782,7 +782,7 @@ namespace dealii
     {
       return FELaplacian<rank - 1, dim, idx>(f);
     }
-
+#if 0
     //number * fefunc
     template <typename Number, class A>
     typename std::enable_if_t<
@@ -791,6 +791,7 @@ namespace dealii
     {
       return a * scalar_factor;
     }
+#endif
 
     template <typename... Types>
     class SumFEFunctions;
@@ -1098,20 +1099,22 @@ namespace dealii
     }
 #endif
 
-    template <class FEFunction>
-    class ProductFEFunctions<FEFunction>
+    template <class FEExpr>
+    class ProductFEFunctions<FEExpr>
     {
     public:
+      double scalar_factor = 1.;
       using TensorTraits =
-        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
+        Traits::Tensor<FEExpr::TensorTraits::rank, FEExpr::TensorTraits::dim>;
 
-      explicit ProductFEFunctions(const FEFunction factor_)
+      explicit ProductFEFunctions(const FEExpr factor_)
         : factor(std::move(factor_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::is_fe_expr<FEExpr>::value,
                       "You need to construct this with a FEFunction object!");
       }
 
+#if 0
       //prodfefunc * fefunc
       template <class NewFEFunction>
       ProductFEFunctions<NewFEFunction, FEFunction> operator*(const NewFEFunction& new_factor) const
@@ -1124,38 +1127,40 @@ namespace dealii
                       "You can only add tensors of equal rank!");
         return ProductFEFunctions<NewFEFunction, FEFunction>(new_factor, factor);
       }
+#endif
 
       template <class FEEvaluation>
       auto
       value(FEEvaluation& phi, unsigned int q) const
       {
-        return factor.value(phi, q);
+        return factor.value(phi, q) * scalar_factor;
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        FEFunction::set_evaluation_flags(phi);
+    	  FEExpr::set_evaluation_flags(phi);
       }
 
-      const FEFunction&
+      const FEExpr&
       get_factor() const
       {
         return factor;
       }
 
     private:
-      const FEFunction factor;
+      const FEExpr factor;
     };
 
-    template <class FEFunction, typename... Types>
-    class ProductFEFunctions<FEFunction, Types...> : public ProductFEFunctions<Types...>
+    template <class FEExpr, typename... Types>
+    class ProductFEFunctions<FEExpr, Types...> : public ProductFEFunctions<Types...>
     {
     public:
       using TensorTraits =
-        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
+        Traits::Tensor<FEExpr::TensorTraits::rank, FEExpr::TensorTraits::dim>;
       using Base = ProductFEFunctions<Types...>;
+      double scalar_factor = Base::scalar_factor;
 
       template <class FEEvaluation>
       auto
@@ -1164,22 +1169,22 @@ namespace dealii
         const auto own_value = factor.value(phi, q);
         const auto other_value = Base::value(phi, q);
         assert_is_compatible(own_value, other_value);
-        return own_value * other_value;
+        return own_value * other_value * scalar_factor;
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
       {
-        FEFunction::set_evaluation_flags(phi);
+    	FEExpr::set_evaluation_flags(phi);
         Base::set_evaluation_flags(phi);
       }
 
-      explicit ProductFEFunctions(const FEFunction factor_, const Types... old_product)
+      explicit ProductFEFunctions(const FEExpr factor_, const Types... old_product)
         : Base(std::move(old_product...))
         , factor(std::move(factor_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::is_fe_expr<FEExpr>::value,
                       "You need to construct this with a FEFunction object!");
         static_assert(TensorTraits::dim == Base::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -1187,11 +1192,11 @@ namespace dealii
                       "You can only add tensors of equal rank!");
       }
 
-      ProductFEFunctions(const FEFunction factor_, const ProductFEFunctions<Types...> old_product)
+      ProductFEFunctions(const FEExpr factor_, const ProductFEFunctions<Types...> old_product)
         : Base(std::move(old_product))
         , factor(std::move(factor_))
       {
-        static_assert(Traits::is_fe_function_set<FEFunction>::value,
+        static_assert(Traits::is_fe_expr<FEExpr>::value,
                       "You need to construct this with a FEFunction object!");
         static_assert(TensorTraits::dim == Base::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
@@ -1199,6 +1204,7 @@ namespace dealii
                       "You can only add tensors of equal rank!");
       }
 
+#if 0
       //prodfefunc * fefunc
       template <class NewFEFunction>
       typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
@@ -1208,23 +1214,28 @@ namespace dealii
         return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_factor, *this);
       }
 
+#endif
+
       template <typename Number>
       typename std::enable_if<std::is_arithmetic<Number>::value,
-                              ProductFEFunctions<FEFunction, Types...>>::type
-      operator*(const Number scalar_factor) const
+                              ProductFEFunctions<FEExpr, Types...>>::type
+      operator*(const Number new_scalar_factor) const
       {
-        ProductFEFunctions<FEFunction, Types...> tmp = *this;
-        tmp.multiply_by_scalar(scalar_factor);
+        ProductFEFunctions<FEExpr, Types...> tmp = *this;
+        //tmp.multiply_by_scalar(scalar_factor);
+        tmp.scalar_factor = new_scalar_factor;
         return tmp;
       }
-
+#if 0
       template <typename Number>
       std::enable_if_t<std::is_arithmetic<Number>::value>
       multiply_by_scalar(const Number scalar)
       {
         factor.scalar_factor *= scalar;
       }
+#endif
 
+#if 0
       //prodfefunc * prodfe(fefunc)
       template <class NewFEFunction>
       typename std::enable_if<CFL::Traits::is_fe_function_set<NewFEFunction>::value,
@@ -1247,31 +1258,33 @@ namespace dealii
                ProductFEFunctions<NewFEFunction2,NewTypes...>(
                  static_cast<const ProductFEFunctions<NewFEFunction2,NewTypes...>&>(new_product));
       }
+#endif
 
-      const FEFunction&
+      const FEExpr&
       get_factor() const
       {
         return factor;
       }
 
     private:
-      FEFunction factor;
+      FEExpr factor;
     };
 
     //fefunc1 * fefunc2
-    template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::is_fe_function_set<FEFunction1>::value &&
-                            Traits::is_fe_function_set<FEFunction2>::value,
-                            ProductFEFunctions<FEFunction2, FEFunction1>>::type
-    operator*(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+    template <class FEExpr1, class FEExpr2>
+    typename std::enable_if<Traits::is_fe_expr<FEExpr1>::value &&
+                            Traits::is_fe_expr<FEExpr2>::value,
+                            ProductFEFunctions<FEExpr2, FEExpr1>>::type
+    operator*(const FEExpr1& old_fe_function, const FEExpr2& new_fe_function)
     {
-      static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
+      static_assert(FEExpr1::TensorTraits::dim == FEExpr2::TensorTraits::dim,
                     "You can only add tensors of equal dimension!");
-      static_assert(FEFunction1::TensorTraits::rank == FEFunction2::TensorTraits::rank,
+      static_assert(FEExpr1::TensorTraits::rank == FEExpr2::TensorTraits::rank,
                     "You can only add tensors of equal rank!");
-      return ProductFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
+      return ProductFEFunctions<FEExpr2, FEExpr1>(new_fe_function, old_fe_function);
     }
 
+#if 0
     //fefunc1 * prodfefunc
     template <class FEFunction, typename... Types>
     typename std::enable_if<Traits::is_fe_function_set<FEFunction>::value,
@@ -1281,11 +1294,11 @@ namespace dealii
     {
       return old_fe_function * new_fe_function;
     }
-
+#endif
     //number * prodfefunc
     template <typename Number, class A>
     typename std::enable_if_t<
-      CFL::Traits::is_fe_function_product<A>::value && std::is_arithmetic<Number>::value, A>
+      CFL::Traits::is_fe_expr<A>::value && std::is_arithmetic<Number>::value, A>
     operator*(const Number scalar_factor, const A& a)
     {
       return a * scalar_factor;

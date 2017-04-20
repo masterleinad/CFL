@@ -29,6 +29,9 @@ prodfe_same_types()
   //multiplication of fefunction and prodfefunction amongst themselves
   auto prod1 = fe_function1 * fe_function2;
   auto prod2 = fe_function2 * fe_function1;
+  //TBD: Sum of product
+  auto sum1 = prod1+prod2;
+
   auto prod3 = fe_function2 * fe_function1 * fe_function3;
   auto prod4 = prod1 * fe_function1 * fe_function2;
   auto prod5 = fe_function1 * prod1 * fe_function2;
@@ -55,6 +58,7 @@ prodfe_same_types()
   auto prod20 = fe_function3 * true; //this is stupid but accepted
   auto prod21 = false * fe_function3; //this is stupid but accepted
   auto prod22 = 'c' * fe_function3; //this is stupid but accepted
+
 }
 
 template <int i>

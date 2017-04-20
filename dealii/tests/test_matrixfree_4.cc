@@ -46,6 +46,9 @@ sumfe_same_types()
   BOOST_TEST(bs.none());
   BOOST_TEST(diff1.n == 2);
 
+  //TBD: product of sum
+  auto prod1 = sum1*diff1;
+
   auto sum2 = fe_function2 + fe_function1;
   check_FeOpComplete(sum2,bs,vector<unsigned int> {idx1,idx2});
   BOOST_TEST(bs.none());
