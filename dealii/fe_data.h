@@ -36,13 +36,23 @@ public:
                 dealii::ExcDimensionMismatch(fe->n_components(), n_components));
   }
 
+  //for (feData,feData)
   template <class FEDataOther>
   typename std::enable_if_t<CFL::Traits::is_fe_data<FEDataOther>::value,
                             FEDatas<FEDataOther, FEData>>
-  operator,(const FEData& new_fe_data) const
+  operator,(const FEDataOther& new_fe_data) const
   {
     return FEDatas<FEDataOther, FEData>(new_fe_data, *this);
   }
+
+  //for (feData,feDatas)
+  template <class FEData, typename... Types>
+  auto operator,(const FEDatas<FEData,Types...>& old_fedatas)
+  {
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,"The second operand in this expression must be of type FEDatas");
+    return old_fedatas.operator,(*this);
+  }
+
 };
 
 namespace CFL
@@ -70,7 +80,12 @@ public:
   static constexpr unsigned int max_degree = FEData::max_degree;
   static constexpr unsigned int n = 1;
 
-  explicit FEDatas(const FEData fe_data_)
+  //Note: This constructor is deliberately not marked as explicit to allow initializations like:
+  // .......
+  // FEData<....> fedata_obj;
+  // FEDatas<decltype(fedata_obj)> fedatas_obj = fedata_obj;
+  // .......
+  FEDatas(const FEData fe_data_)
     : fe_data(std::move(fe_data_))
   {
     //    std::cout << "Constructor1" << std::endl;
@@ -414,9 +429,34 @@ public:
   using FEEvaluationType = typename FEData::FEEvaluationType;
   using TensorTraits = typename FEData::TensorTraits;
   using NumberType = typename FEData::NumberType;
+  using Base = FEDatas<Types...>;
   static constexpr unsigned int fe_number = FEData::fe_number;
-  static constexpr unsigned int max_degree = FEDatas<Types...>::max_degree;
-  static constexpr unsigned int n = FEDatas<Types...>::n + 1;
+  static constexpr unsigned int max_degree = Base::max_degree;
+  static constexpr unsigned int n = Base::n + 1;
+
+  FEDatas(const FEData fe_data_, const FEDatas<Types...> fe_datas_)
+    : Base(std::move(fe_datas_))
+    , fe_data(std::move(fe_data_))
+  {
+    Base::template check_uniqueness<fe_number>();
+    //    std::cout << "Constructor4" << std::endl;
+    static_assert(FEData::max_degree == FEDatas::max_degree,
+                  "The maximum degree must be the same for all FiniteElements!");
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "You need to construct this with a FEData object!");
+  }
+
+  explicit FEDatas(const FEData fe_data_, const Types... fe_datas_)
+    : Base(fe_datas_...)
+    , fe_data(std::move(fe_data_))
+  {
+    Base::template check_uniqueness<fe_number>();
+    //    std::cout << "Constructor3" << std::endl;
+    static_assert(FEData::max_degree == FEDatas::max_degree,
+                  "The maximum degree must be the same for all FiniteElements!");
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "You need to construct this with a FEData object!");
+  }
 
   template <unsigned int fe_number_extern>
   static constexpr unsigned int
@@ -424,7 +464,7 @@ public:
   {
     if constexpr(fe_number == fe_number_extern) { return TensorTraits::rank; }
     else
-      return FEDatas<Types...>::template rank<fe_number_extern>();
+      return Base::template rank<fe_number_extern>();
   }
 
   template <int dim, typename OtherNumber>
@@ -438,7 +478,7 @@ public:
     static_assert(std::is_same<NumberType, OtherNumber>::value,
                   "Number type of MatrixFree and FEDatas do not match!");
     fe_evaluation.reset(new typename FEData::FEEvaluationType(mf, fe_number));
-    FEDatas<Types...>::initialize(mf);
+    Base::initialize(mf);
     initialized = true;
   }
 
@@ -451,7 +491,7 @@ public:
 #endif
     Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
     fe_evaluation->reinit(cell);
-    FEDatas<Types...>::reinit(cell);
+    Base::reinit(cell);
   }
 
   template <typename VectorType>
@@ -465,7 +505,7 @@ public:
 #endif
         Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
         fe_evaluation->read_dof_values(vector.block(fe_number));
-        FEDatas<Types...>::read_dof_values(vector);
+        Base::read_dof_values(vector);
       }
     else
     {
@@ -491,7 +531,7 @@ public:
           Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
           fe_evaluation->distribute_local_to_global(vector.block(fe_number));
         }
-        FEDatas<Types...>::distribute_local_to_global(vector);
+        Base::distribute_local_to_global(vector);
       }
     else
     {
@@ -512,7 +552,7 @@ public:
 #endif
     Assert(fe_evaluation != nullptr, dealii::ExcInternalError());
     fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
-    FEDatas<Types...>::evaluate();
+    Base::evaluate();
   }
 
   void
@@ -524,7 +564,7 @@ public:
 #endif
     if (integrate_values | integrate_gradients)
       fe_evaluation->integrate(integrate_values, integrate_gradients);
-    FEDatas<Types...>::integrate();
+    Base::integrate();
   }
 
   template <unsigned int fe_number_extern>
@@ -544,7 +584,7 @@ public:
       }
     else
     {
-      FEDatas<Types...>::template set_integration_flags<fe_number_extern>(integrate_value,
+      Base::template set_integration_flags<fe_number_extern>(integrate_value,
                                                                           integrate_gradient);
     }
   }
@@ -561,7 +601,7 @@ public:
       }
     else
     {
-      FEDatas<Types...>::template set_evaluation_flags<fe_number_extern>(
+      Base::template set_evaluation_flags<fe_number_extern>(
         evaluate_value, evaluate_gradient, evaluate_hessian);
     }
   }
@@ -572,7 +612,7 @@ public:
   {
     if constexpr(fe_number_extern == fe_number) return FEData::FEEvaluationType::static_n_q_points;
     else
-      return FEDatas<Types...>::template get_n_q_points<fe_number_extern>();
+      return Base::template get_n_q_points<fe_number_extern>();
   }
 
   template <unsigned int fe_number_extern>
@@ -587,7 +627,7 @@ public:
         return fe_evaluation->get_gradient(q);
       }
     else
-      return FEDatas<Types...>::template get_gradient<fe_number_extern>(q);
+      return Base::template get_gradient<fe_number_extern>(q);
   }
 
   template <unsigned int fe_number_extern>
@@ -602,7 +642,7 @@ public:
         return fe_evaluation->get_symmetric_gradient(q);
       }
     else
-      return FEDatas<Types...>::template get_symmetric_gradient<fe_number_extern>(q);
+      return Base::template get_symmetric_gradient<fe_number_extern>(q);
   }
 
   template <unsigned int fe_number_extern>
@@ -617,7 +657,7 @@ public:
         return fe_evaluation->get_divergence(q);
       }
     else
-      return FEDatas<Types...>::template get_divergence<fe_number_extern>(q);
+      return Base::template get_divergence<fe_number_extern>(q);
   }
 
   template <unsigned int fe_number_extern>
@@ -632,7 +672,7 @@ public:
         return fe_evaluation->get_laplacian(q);
       }
     else
-      return FEDatas<Types...>::template get_laplacian<fe_number_extern>(q);
+      return Base::template get_laplacian<fe_number_extern>(q);
   }
 
   template <unsigned int fe_number_extern>
@@ -647,7 +687,7 @@ public:
         return fe_evaluation->get_hessian_diagonal(q);
       }
     else
-      return FEDatas<Types...>::template get_hessian_diagonal<fe_number_extern>(q);
+      return Base::template get_hessian_diagonal<fe_number_extern>(q);
   }
 
   template <unsigned int fe_number_extern>
@@ -662,7 +702,7 @@ public:
         return fe_evaluation->get_hessian(q);
       }
     else
-      return FEDatas<Types...>::template get_hessian<fe_number_extern>(q);
+      return Base::template get_hessian<fe_number_extern>(q);
   }
 
   template <unsigned int fe_number_extern>
@@ -677,7 +717,7 @@ public:
         return fe_evaluation->get_value(q);
       }
     else
-      return FEDatas<Types...>::template get_value<fe_number_extern>(q);
+      return Base::template get_value<fe_number_extern>(q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
@@ -686,7 +726,7 @@ public:
   {
     if constexpr(fe_number == fe_number_extern) { fe_evaluation->submit_curl(value, q); }
     else
-      FEDatas<Types...>::template submit_curl<fe_number_extern, ValueType>(value, q);
+      Base::template submit_curl<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
@@ -695,7 +735,7 @@ public:
   {
     if constexpr(fe_number == fe_number_extern) { fe_evaluation->submit_divergence(value, q); }
     else
-      FEDatas<Types...>::template submit_divergence<fe_number_extern, ValueType>(value, q);
+      Base::template submit_divergence<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
@@ -704,7 +744,7 @@ public:
   {
     if constexpr(fe_number == fe_number_extern) fe_evaluation->submit_symmetric_gradient(value, q);
     else
-      FEDatas<Types...>::template submit_symmetric_gradient<fe_number_extern, ValueType>(value, q);
+      Base::template submit_symmetric_gradient<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
@@ -722,7 +762,7 @@ public:
         fe_evaluation->submit_gradient(value, q);
       }
     else
-      FEDatas<Types...>::template submit_gradient<fe_number_extern, ValueType>(value, q);
+      Base::template submit_gradient<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern, typename ValueType>
@@ -739,7 +779,7 @@ public:
         fe_evaluation->submit_value(value, q);
       }
     else
-      FEDatas<Types...>::template submit_value<fe_number_extern, ValueType>(value, q);
+      Base::template submit_value<fe_number_extern, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern>
@@ -748,7 +788,7 @@ public:
   {
     if constexpr(fe_number == fe_number_extern) return fe_data;
     else
-      return FEDatas<Types...>::template get_fe_data<fe_number_extern>();
+      return Base::template get_fe_data<fe_number_extern>();
   }
 
   template <unsigned int fe_number_extern>
@@ -757,7 +797,7 @@ public:
   {
     if constexpr(fe_number == fe_number_extern) { return fe_evaluation->dofs_per_cell; }
     else
-      return FEDatas<Types...>::template dofs_per_cell<fe_number_extern>();
+      return Base::template dofs_per_cell<fe_number_extern>();
   }
 
   template <unsigned int fe_number_extern>
@@ -767,7 +807,7 @@ public:
     if constexpr(fe_number ==
                 fe_number_extern) return FEData::FEEvaluationType::tensor_dofs_per_cell;
     else
-      return FEDatas<Types...>::template tensor_dofs_per_cell<fe_number_extern>();
+      return Base::template tensor_dofs_per_cell<fe_number_extern>();
   }
 
   template <unsigned int fe_number_extern>
@@ -776,7 +816,7 @@ public:
   {
     if constexpr(fe_number == fe_number_extern) { return fe_evaluation->begin_dof_values(); }
     else
-      return FEDatas<Types...>::template begin_dof_values<fe_number_extern>();
+      return Base::template begin_dof_values<fe_number_extern>();
   }
 
   template <class FEDataOther>
@@ -787,36 +827,6 @@ public:
     return FEDatas<FEDataOther, FEData, Types...>(new_fe_data, *this);
   }
 
-  FEDatas(const FEData fe_data_, const FEDatas<Types...> fe_datas_)
-    : FEDatas<Types...>(std::move(fe_datas_))
-    , fe_data(std::move(fe_data_))
-  {
-    FEDatas<Types...>::template check_uniqueness<fe_number>();
-    //    std::cout << "Constructor4" << std::endl;
-    static_assert(FEData::max_degree == FEDatas::max_degree,
-                  "The maximum degree must be the same for all FiniteElements!");
-    static_assert(CFL::Traits::is_fe_data<FEData>::value,
-                  "You need to construct this with a FEData object!");
-  }
-
-  explicit FEDatas(const FEData fe_data_, const Types... fe_datas_)
-    : FEDatas<Types...>(fe_datas_...)
-    , fe_data(std::move(fe_data_))
-  {
-    FEDatas<Types...>::template check_uniqueness<fe_number>();
-    //    std::cout << "Constructor3" << std::endl;
-    static_assert(FEData::max_degree == FEDatas::max_degree,
-                  "The maximum degree must be the same for all FiniteElements!");
-    static_assert(CFL::Traits::is_fe_data<FEData>::value,
-                  "You need to construct this with a FEData object!");
-  }
-
-  /*  FEDatas(const FEDatas<FEData, Types...>& fe_datas[[maybe_unused]])
-      : FEDatas<Types...>()
-    {
-      Assert(!fe_datas.initialized, dealii::ExcNotImplemented());
-    }*/
-
 protected:
   const FEData fe_data;
 
@@ -825,7 +835,7 @@ protected:
   check_uniqueness()
   {
     static_assert(fe_number != fe_number_extern, "The fe_numbers have to be unique!");
-    FEDatas<Types...>::template check_uniqueness<fe_number_extern>();
+    Base::template check_uniqueness<fe_number_extern>();
   }
 
 private:
@@ -837,20 +847,5 @@ private:
   bool evaluate_hessians = false;
   bool initialized = false;
 };
-
-template <class FEData, typename... Types>
-typename std::enable_if_t<CFL::Traits::is_fe_data<FEData>::value, FEDatas<FEData, Types...>>
-operator,(const FEData& new_fe_data, const FEDatas<Types...>& old_fe_data)
-{
-  return old_fe_data.operator,(new_fe_data);
-}
-
-template <class FEData1, class FEData2>
-std::enable_if_t<CFL::Traits::is_fe_data<FEData1>::value, FEDatas<FEData1, FEData2>>
-operator,(const FEData1& fe_data1, const FEData2& fe_data2)
-{
-  static_assert(CFL::Traits::is_fe_data<FEData2>::value, "Only FEData objects can be added!");
-  return FEDatas<FEData1, FEData2>(fe_data1, fe_data2);
-}
 
 #endif // FE_DATA_H
