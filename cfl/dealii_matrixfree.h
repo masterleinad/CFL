@@ -83,16 +83,18 @@ namespace Traits
 
   template <typename A, typename B>
   struct is_summable<
-    A, B, typename std::enable_if<fe_function_set_type<A>::value != ObjectType::none &&
-                                  fe_function_set_type<A>::value == fe_function_set_type<B>::value>::type>
+    A, B,
+    typename std::enable_if<fe_function_set_type<A>::value != ObjectType::none &&
+                            fe_function_set_type<A>::value == fe_function_set_type<B>::value>::type>
   {
     static const bool value = true;
   };
 
   template <typename A, typename B>
   struct is_multiplicable<
-    A, B, typename std::enable_if<fe_function_set_type<A>::value != ObjectType::none &&
-                                  fe_function_set_type<A>::value == fe_function_set_type<B>::value>::type>
+    A, B,
+    typename std::enable_if<fe_function_set_type<A>::value != ObjectType::none &&
+                            fe_function_set_type<A>::value == fe_function_set_type<B>::value>::type>
   {
     static const bool value = true;
   };
@@ -1000,15 +1002,14 @@ namespace dealii
       SumFEFunctions<FEFunction>
       operator-() const
       {
-        //create a copy
-        const SumFEFunctions<FEFunction> copy_this (*this);
+        // create a copy
+        const SumFEFunctions<FEFunction> copy_this(*this);
         copy_this.multiply_by_scalar(-1.);
         return copy_this;
       }
 
       template <typename Number>
-      typename std::enable_if<std::is_arithmetic<Number>::value,
-                              SumFEFunctions<FEFunction>>::type
+      typename std::enable_if<std::is_arithmetic<Number>::value, SumFEFunctions<FEFunction>>::type
       operator*(const Number scalar_factor) const
       {
         SumFEFunctions<FEFunction> tmp = *this;
@@ -1126,8 +1127,8 @@ namespace dealii
       SumFEFunctions<FEFunction, Types...>
       operator-() const
       {
-        //create a copy
-        SumFEFunctions<FEFunction, Types...> copy_this (*this);
+        // create a copy
+        SumFEFunctions<FEFunction, Types...> copy_this(*this);
         copy_this.multiply_by_scalar(-1.);
         return copy_this;
       }
@@ -1272,21 +1273,21 @@ namespace dealii
         return factor;
       }
 
-     ProductFEFunctions<FEFunction>
-     operator-() const
-     {
-       //create a copy
-       const ProductFEFunctions<FEFunction> copy_this (*this);
-       copy_this.multiply_by_scalar(-1.);
-       return copy_this;
-     }
+      ProductFEFunctions<FEFunction>
+      operator-() const
+      {
+        // create a copy
+        const ProductFEFunctions<FEFunction> copy_this(*this);
+        copy_this.multiply_by_scalar(-1.);
+        return copy_this;
+      }
 
-     template <typename Number>
-     std::enable_if_t<std::is_arithmetic<Number>::value>
-     multiply_by_scalar(const Number scalar)
-     {
-       factor.scalar_factor *= scalar;
-     }
+      template <typename Number>
+      std::enable_if_t<std::is_arithmetic<Number>::value>
+      multiply_by_scalar(const Number scalar)
+      {
+        factor.scalar_factor *= scalar;
+      }
 
     private:
       FEFunction factor;
@@ -1355,8 +1356,8 @@ namespace dealii
       ProductFEFunctions<FEFunction, Types...>
       operator-() const
       {
-        //create a copy
-        const ProductFEFunctions<FEFunction, Types...> copy_this (*this);
+        // create a copy
+        const ProductFEFunctions<FEFunction, Types...> copy_this(*this);
         copy_this.multiply_by_scalar(-1.);
         return copy_this;
       }

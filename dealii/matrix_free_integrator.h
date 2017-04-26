@@ -131,8 +131,8 @@ protected:
     phi.integrate_face();
   }
 
-  void local_apply([[maybe_unused]] const dealii::MatrixFree<dim, Number>& data_,
-                   VectorType& dst, const VectorType& src,
+  void local_apply([[maybe_unused]] const dealii::MatrixFree<dim, Number>& data_, VectorType& dst,
+                   const VectorType& src,
                    const std::pair<unsigned int, unsigned int>& cell_range) const
   {
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());

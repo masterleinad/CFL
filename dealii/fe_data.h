@@ -175,7 +175,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Reinit FEDatas " << fe_number << std::endl;
+        std::cout << "Reinit cell FEDatas " << fe_number << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
         fe_data.fe_evaluation->reinit(cell);
@@ -189,7 +189,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Reinit FEDatas " << fe_number << std::endl;
+        std::cout << "Reinit face FEDatas " << fe_number << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
         fe_data.fe_evaluation_interior->reinit(face);
@@ -204,7 +204,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Read DoF values " << fe_number << std::endl;
+        std::cout << "Read cell DoF values " << fe_number << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
 
@@ -222,7 +222,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Read DoF values " << fe_number << std::endl;
+        std::cout << "Read face DoF values " << fe_number << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
 
@@ -247,9 +247,9 @@ public:
     integrate_values |= integrate_value;
     integrate_gradients |= integrate_gradient;
 #ifdef DEBUG_OUTPUT
-    std::cout << "integrate value end: " << fe_number << " " << integrate_values << " "
+    std::cout << "integrate cell value end: " << fe_number << " " << integrate_values << " "
               << integrate_value << std::endl;
-    std::cout << "integrate gradients end: " << fe_number << " " << integrate_gradients << " "
+    std::cout << "integrate cell gradients end: " << fe_number << " " << integrate_gradients << " "
               << integrate_gradient << std::endl;
 #endif
   }
@@ -262,9 +262,9 @@ public:
     integrate_values |= integrate_value;
     integrate_gradients |= integrate_gradient;
 #ifdef DEBUG_OUTPUT
-    std::cout << "integrate value end: " << fe_number << " " << integrate_values << " "
+    std::cout << "integrate face value end: " << fe_number << " " << integrate_values << " "
               << integrate_value << std::endl;
-    std::cout << "integrate gradients end: " << fe_number << " " << integrate_gradients << " "
+    std::cout << "integrate face gradients end: " << fe_number << " " << integrate_gradients << " "
               << integrate_gradient << std::endl;
 #endif
   }
@@ -298,7 +298,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data<FEData>::value) if (integrate_values | integrate_gradients)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Distribute DoF values " << fe_number << std::endl;
+        std::cout << "Distribute cell DoF values " << fe_number << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
         if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
@@ -316,7 +316,7 @@ public:
                                                                  integrate_gradients)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Distribute DoF values " << fe_number << std::endl;
+        std::cout << "Distribute face DoF values " << fe_number << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
         if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
@@ -336,18 +336,21 @@ public:
   void
   initialize(const dealii::MatrixFree<dim, OtherNumber>& mf)
   {
-#ifdef DEBUG_OUTPUT
-    std::cout << "Initialize FEDatas " << fe_number << std::endl;
-#endif
     static_assert(std::is_same<NumberType, OtherNumber>::value,
                   "Number type of MatrixFree and FEDatas has to match!");
-    //    Assert (fe_data.fe_evaluation == nullptr, dealii::ExcMessage("Already initialized!"));
 
     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "Initialize cell FEDatas " << fe_number << std::endl;
+#endif
         fe_data.fe_evaluation.reset(new typename FEData::FEEvaluationType(mf, fe_number));
+      }
     else
     {
-      std::cout << "fe_number: " << fe_number << std::endl;
+#ifdef DEBUG_OUTPUT
+      std::cout << "Initialize face FEDatas " << fe_number << std::endl;
+#endif
       fe_data.fe_evaluation_interior.reset(new
                                            typename FEData::FEEvaluationType(mf, true, fe_number));
       fe_data.fe_evaluation_exterior.reset(new
@@ -363,7 +366,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
+        std::cout << "Evaluate cell FEDatas " << fe_number << " " << evaluate_values << " "
                   << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
@@ -378,7 +381,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
+        std::cout << "Evaluate face FEDatas " << fe_number << " " << evaluate_values << " "
                   << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
@@ -478,7 +481,7 @@ public:
   get_face_value(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
+    std::cout << "get face value FEDatas " << fe_number << " " << q << std::endl;
 #endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     if constexpr(interior) return fe_data.fe_evaluation_interior->get_value(q);
@@ -492,9 +495,6 @@ public:
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
-//    for (unsigned int i=0; i<2; ++i)
-//      std::cout << " " << value[i][0];
-//    std::cout << std::endl;
 #endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_data.fe_evaluation->submit_gradient(value, q);
@@ -548,9 +548,6 @@ public:
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit value FEDatas" << fe_number << " " << q << std::endl;
-//    for (unsigned int i=0; i<2; ++i)
-//      std::cout << " " << value[i][0];
-//    std::cout << std::endl;
 #endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_data.fe_evaluation->submit_value(value, q);
@@ -561,10 +558,7 @@ public:
   submit_face_value(const ValueType& value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "submit value FEDatas" << fe_number << " " << q << std::endl;
-//    for (unsigned int i=0; i<2; ++i)
-//      std::cout << " " << value[i][0];
-//    std::cout << std::endl;
+    std::cout << "submit face value FEDatas" << fe_number << " " << q << std::endl;
 #endif
     static_assert(fe_number == fe_number_extern, "Component not found!");
     if constexpr(interior) fe_data.fe_evaluation_interior->submit_value(value, q);
@@ -576,7 +570,7 @@ public:
   integrate()
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "integrate FEDatas " << fe_number << " " << integrate_values << " "
+    std::cout << "integrate cell FEDatas " << fe_number << " " << integrate_values << " "
               << integrate_gradients << std::endl;
 #endif
     if constexpr(CFL::Traits::is_fe_data<FEData>::value) if (integrate_values | integrate_gradients)
@@ -587,7 +581,7 @@ public:
   integrate_face()
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "integrate FEDatas " << fe_number << " " << integrate_values << " "
+    std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
               << integrate_gradients << std::endl;
 #endif
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
@@ -682,17 +676,21 @@ public:
   void
   initialize(const dealii::MatrixFree<dim, OtherNumber>& mf)
   {
-#ifdef DEBUG_OUTPUT
-    std::cout << "Initialize FEDatas " << fe_number << std::endl;
-    std::cout << "integrate_valus at initialize: " << integrate_values << std::endl;
-#endif
     static_assert(std::is_same<NumberType, OtherNumber>::value,
                   "Number type of MatrixFree and FEDatas do not match!");
 
     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "Initialize cell FEDatas " << fe_number << std::endl;
+#endif
         fe_data.fe_evaluation.reset(new typename FEData::FEEvaluationType(mf, fe_number));
+      }
     else
     {
+#ifdef DEBUG_OUTPUT
+      std::cout << "Initialize face FEDatas " << fe_number << std::endl;
+#endif
       fe_data.fe_evaluation_interior.reset(new
                                            typename FEData::FEEvaluationType(mf, fe_number, true));
       fe_data.fe_evaluation_exterior.reset(new
@@ -707,11 +705,14 @@ public:
   void
   reinit(const Cell& cell)
   {
+    if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+      {
 #ifdef DEBUG_OUTPUT
-    std::cout << "Reinit FEDatas " << fe_number << std::endl;
+        std::cout << "Reinit cell FEDatas " << fe_number << std::endl;
 #endif
-    Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
-    fe_data.fe_evaluation->reinit(cell);
+        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        fe_data.fe_evaluation->reinit(cell);
+      }
     FEDatas<Types...>::reinit(cell);
   }
 
@@ -719,11 +720,11 @@ public:
   void
   reinit_face(const Face& face)
   {
-#ifdef DEBUG_OUTPUT
-    std::cout << "Reinit FEDatas " << fe_number << std::endl;
-#endif
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
+#ifdef DEBUG_OUTPUT
+        std::cout << "Reinit face FEDatas " << fe_number << std::endl;
+#endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
         fe_data.fe_evaluation_interior->reinit(face);
         fe_data.fe_evaluation_exterior->reinit(face);
@@ -763,7 +764,7 @@ public:
         if (integrate_values | integrate_gradients)
         {
 #ifdef DEBUG_OUTPUT
-          std::cout << "Distribute DoF values " << fe_number << std::endl;
+          std::cout << "Distribute cell DoF values " << fe_number << std::endl;
 #endif
           Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
           fe_data.fe_evaluation->distribute_local_to_global(vector.block(fe_number));
@@ -783,15 +784,15 @@ public:
   void
   evaluate()
   {
-     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
-     {
+    if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+      {
 #ifdef DEBUG_OUTPUT
-    std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
-              << evaluate_gradients << " " << evaluate_hessians << std::endl;
+        std::cout << "Evaluate cell FEDatas " << fe_number << " " << evaluate_values << " "
+                  << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
-    Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
-    fe_data.fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
-     }
+        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        fe_data.fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
+      }
     FEDatas<Types...>::evaluate();
   }
 
@@ -801,7 +802,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Evaluate FEDatas " << fe_number << " " << evaluate_values << " "
+        std::cout << "Evaluate face FEDatas " << fe_number << " " << evaluate_values << " "
                   << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
@@ -816,7 +817,7 @@ public:
   integrate()
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "integrate FEDatas " << fe_number << " " << integrate_values << " "
+    std::cout << "integrate cell FEDatas " << fe_number << " " << integrate_values << " "
               << integrate_gradients << std::endl;
 #endif
     if constexpr(CFL::Traits::is_fe_data<FEData>::value) if (integrate_values | integrate_gradients)
@@ -828,7 +829,7 @@ public:
   integrate_face()
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "integrate FEDatas " << fe_number << " " << integrate_values << " "
+    std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
               << integrate_gradients << std::endl;
 #endif
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
@@ -846,9 +847,9 @@ public:
         integrate_values |= integrate_value;
         integrate_gradients |= integrate_gradient;
 #ifdef DEBUG_OUTPUT
-        std::cout << "integrate value: " << fe_number << " " << integrate_values << " "
+        std::cout << "integrate cell value: " << fe_number << " " << integrate_values << " "
                   << integrate_value << std::endl;
-        std::cout << "integrate gradients: " << fe_number << " " << integrate_gradients << " "
+        std::cout << "integrate cell gradients: " << fe_number << " " << integrate_gradients << " "
                   << integrate_gradient << std::endl;
 #endif
       }
@@ -1011,7 +1012,13 @@ public:
   void
   submit_curl(const ValueType& value, unsigned int q)
   {
-    if constexpr(fe_number == fe_number_extern) { fe_data.fe_evaluation->submit_curl(value, q); }
+    if constexpr(fe_number == fe_number_extern)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "submit curl FEDatas " << fe_number << " " << q << std::endl;
+#endif
+        fe_data.fe_evaluation->submit_curl(value, q);
+      }
     else
       FEDatas<Types...>::template submit_curl<fe_number_extern, ValueType>(value, q);
   }
@@ -1020,7 +1027,13 @@ public:
   void
   submit_divergence(const ValueType& value, unsigned int q)
   {
-    if constexpr(fe_number == fe_number_extern) fe_data.fe_evaluation->submit_divergence(value, q);
+    if constexpr(fe_number == fe_number_extern)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "submit divergence FEDatas " << fe_number << " " << q << std::endl;
+#endif
+        fe_data.fe_evaluation->submit_divergence(value, q);
+      }
     else
       FEDatas<Types...>::template submit_divergence<fe_number_extern, ValueType>(value, q);
   }
@@ -1030,7 +1043,12 @@ public:
   submit_symmetric_gradient(const ValueType& value, unsigned int q)
   {
     if constexpr(fe_number == fe_number_extern)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "submit symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
+#endif
         fe_data.fe_evaluation->submit_symmetric_gradient(value, q);
+      }
     else
       FEDatas<Types...>::template submit_symmetric_gradient<fe_number_extern, ValueType>(value, q);
   }
@@ -1043,9 +1061,6 @@ public:
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
-//    for (unsigned int i=0; i<2; ++i)
-//      std::cout << " " << value[i][0];
-//    std::cout << std::endl;
 #endif
         fe_data.fe_evaluation->submit_gradient(value, q);
       }
@@ -1060,9 +1075,7 @@ public:
     if constexpr(fe_number == fe_number_extern)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
-//    for (unsigned int i=0; i<value.size(); ++i)
-//      std::cout << "value: " << value[i][0] << std::endl;
+        std::cout << "submit value FEDatas " << fe_number << " " << q << std::endl;
 #endif
         fe_data.fe_evaluation->submit_value(value, q);
       }
