@@ -1,5 +1,8 @@
 constructor1
 DEAL::Grid type 0 Cells 1 DoFs 8
+integrate cell value end: 0 1 1
+integrate cell gradients end: 0 0 0
+Initialize cell FEDatas 0
 Vector 0 has size 8
 Vector 0 has size 8
 Vector 0 has size 8
@@ -16,6 +19,23 @@ Vector data:
 0	5	0	5
 0	6	0	6
 0	7	0	7
+Reinit cell FEDatas 0
+Read cell DoF values 0
+Evaluate cell FEDatas 0 1 0 0
+get value FEDatas 0 0
+submit TestFunction 0 0
+submit value FEDatas0 0
+get value FEDatas 0 1
+submit TestFunction 0 1
+submit value FEDatas0 1
+get value FEDatas 0 2
+submit TestFunction 0 2
+submit value FEDatas0 2
+get value FEDatas 0 3
+submit TestFunction 0 3
+submit value FEDatas0 3
+integrate cell FEDatas 0 1 0
+Distribute cell DoF values 0
 0	0	0	0.5
 0	1	0	0.75
 0	2	0	0.666667
@@ -33,6 +53,23 @@ Vector data:
 1	5	0	5
 1	6	0	6
 1	7	0	7
+Reinit cell FEDatas 0
+Read cell DoF values 0
+Evaluate cell FEDatas 0 1 0 0
+get value FEDatas 0 0
+submit TestFunction 0 0
+submit value FEDatas0 0
+get value FEDatas 0 1
+submit TestFunction 0 1
+submit value FEDatas0 1
+get value FEDatas 0 2
+submit TestFunction 0 2
+submit value FEDatas0 2
+get value FEDatas 0 3
+submit TestFunction 0 3
+submit value FEDatas0 3
+integrate cell FEDatas 0 1 0
+Distribute cell DoF values 0
 1	0	0	0.5
 1	1	0	0.75
 1	2	0	0.666667

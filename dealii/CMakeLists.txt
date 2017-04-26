@@ -34,11 +34,6 @@ ENDIF()
 
 OPTION(PVS-Analysis "Use static code analyzer PVS-Studio?" OFF)
 
-OPTION(DEBUG-OUTPUT "Enable verbose debug output?" OFF)
-IF (DEBUG-OUTPUT)
-  ADD_DEFINITIONS(-DDEBUG_OUTPUT)
-ENDIF()
-
 IF(PVS-Analysis)
   INCLUDE(../PVS-Studio.cmake)
   SET(CMAKE_EXPORT_COMPILE_COMMANDS "ON")

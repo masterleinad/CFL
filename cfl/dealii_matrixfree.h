@@ -273,7 +273,7 @@ namespace dealii
                       "the TestFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit TestFunction " << Base::index << " " << q << std::endl;
+        std::cout << "submit TestFunctionInteriorFace " << Base::index << " " << q << std::endl;
 #endif
         phi.template submit_face_value<Base::index, true>(value, q);
       }
@@ -299,7 +299,7 @@ namespace dealii
                       "the TestFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit TestFunction " << Base::index << " " << q << std::endl;
+        std::cout << "submit TestFunctionExteriorFace " << Base::index << " " << q << std::endl;
 #endif
         phi.template submit_face_value<Base::index, false>(value, q);
       }
@@ -371,7 +371,7 @@ namespace dealii
                       "the TestGradient is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit SymmetricGradient " << Base::index << " " << q << std::endl;
+        std::cout << "submit TestSymmetricGradient " << Base::index << " " << q << std::endl;
 #endif
         phi.template submit_symmetric_gradient<Base::index>(value, q);
       }

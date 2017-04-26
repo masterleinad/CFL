@@ -1,6 +1,8 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+#define DEBUG_OUTPUT
+
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/lac/vector.h>
 #include <dealii/meshworker_data.h>
