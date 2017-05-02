@@ -8,7 +8,7 @@
 
 //// Test case FEDataCreation
 // Type: Positive test case
-// Coverage: following classes - FEData
+// Coverage: following classes - FEData and FEDataFace
 // Checks for:
 // 1. Template instantiation with several combinations of (degree,number of components,dim,index)
 // 2. Object creation in each case, and basic state check for the object
@@ -27,10 +27,14 @@ struct FEDatafunctor
     FE_Q<dim[i]> fe(degree[i]);
 
     FEData<FE_Q, degree[i], n_comp[i], dim[i], fe_no[i], max_degree> obj(fe);
-
     // Check basic state of object
     BOOST_TEST(obj.fe_number == fe_no[i]);
     BOOST_TEST(obj.max_degree == max_degree);
+
+    FEDataFace<FE_Q, degree[i], n_comp[i], dim[i], fe_no[i], max_degree> face_obj(fe);
+    // Check basic state of object
+    BOOST_TEST(face_obj.fe_number == fe_no[i]);
+    BOOST_TEST(face_obj.max_degree == max_degree);
   }
 };
 
