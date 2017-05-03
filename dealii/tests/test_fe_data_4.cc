@@ -25,16 +25,16 @@ BOOST_FIXTURE_TEST_CASE(FEDatasComma, FEDatasFixture)
   BOOST_TEST(fedatas1.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas1.get_fe_data<1>().fe_number == fe_1);
 
-  //fedatas = (fedatas,fedata_1_system); TBD, cant be supported see point no. 9
+  // fedatas = (fedatas,fedata_1_system); TBD, cant be supported see point no. 9
 
   // Check the state of objects added through comma operator
   FEDatas<decltype(fedata_0_system)> fedatas2 = fedata_0_system;
 
-  auto fedatas3 = (fedatas2,fedata_1_system);
+  auto fedatas3 = (fedatas2, fedata_1_system);
   BOOST_TEST(fedatas3.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas3.get_fe_data<1>().fe_number == fe_1);
 
-  auto fedatas4 = (fedatas,fedata_1_system,fedata_2_system);
+  auto fedatas4 = (fedatas, fedata_1_system, fedata_2_system);
   BOOST_TEST(fedatas4.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas4.get_fe_data<1>().fe_number == fe_1);
   BOOST_TEST(fedatas4.get_fe_data<2>().fe_number == fe_2);

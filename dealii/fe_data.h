@@ -36,7 +36,7 @@ public:
                 dealii::ExcDimensionMismatch(fe->n_components(), n_components));
   }
 
-  //for (feData,feData)
+  // for (feData,feData)
   template <class FEDataOther>
   typename std::enable_if_t<CFL::Traits::is_fe_data<FEDataOther>::value,
                             FEDatas<FEDataOther, FEData>>
@@ -45,14 +45,14 @@ public:
     return FEDatas<FEDataOther, FEData>(new_fe_data, *this);
   }
 
-  //for (feData,feDatas)
+  // for (feData,feDatas)
   template <class FEData, typename... Types>
   auto operator,(const FEDatas<FEData,Types...>& old_fedatas)
   {
-    static_assert(CFL::Traits::is_fe_data<FEData>::value,"The second operand in this expression must be of type FEDatas");
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "The second operand in this expression must be of type FEDatas");
     return old_fedatas.operator,(*this);
   }
-
 };
 
 namespace CFL
@@ -80,7 +80,7 @@ public:
   static constexpr unsigned int max_degree = FEData::max_degree;
   static constexpr unsigned int n = 1;
 
-  //Note: This constructor is deliberately not marked as explicit to allow initializations like:
+  // Note: This constructor is deliberately not marked as explicit to allow initializations like:
   // .......
   // FEData<....> fedata_obj;
   // FEDatas<decltype(fedata_obj)> fedatas_obj = fedata_obj;
@@ -583,10 +583,7 @@ public:
 #endif
       }
     else
-    {
-      Base::template set_integration_flags<fe_number_extern>(integrate_value,
-                                                                          integrate_gradient);
-    }
+    Base::template set_integration_flags<fe_number_extern>(integrate_value, integrate_gradient);
   }
 
   template <unsigned int fe_number_extern>

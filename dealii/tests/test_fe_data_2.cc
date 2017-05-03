@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(FEDataPositive)
   BOOST_TEST(fe_shared.use_count() == 4);
 
   // Check the state of objects added through comma operator
-  fedata_e_system,fedata_u_system; //This is just to check that comma operation is not broken
+  fedata_e_system, fedata_u_system; // This is just to check that comma operation is not broken
   auto fedatas_2 = (fedata_e_system, fedata_u_system); // ok, but using () has to be remembered
   BOOST_TEST(fedatas_2.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas_2.get_fe_data<1>().fe_number == fe_1);
