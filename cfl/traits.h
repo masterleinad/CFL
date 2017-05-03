@@ -135,6 +135,12 @@ namespace Traits
     static constexpr bool value = false;
   };
 
+  template <class T,class Enable = void>
+  struct is_fe_expr
+  {
+    static constexpr bool value = false;
+  };
+
   /**
    * \brief True if the object is a CFL unary operator
    */
