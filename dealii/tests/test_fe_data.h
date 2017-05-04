@@ -16,13 +16,18 @@ const unsigned int fe_0 = 0, fe_1 = 1, fe_2 = 2, fe_3 = 3, fe_4 = 4;
 
 struct FEDatasFixture
 {
-  // This fixture provides 5 objects of FEData, each with a unique fe_number
+  // This fixture provides 5 objects each of FEData and FEDataFace, each with a unique fe_number
   FEDatasFixture()
     : fedata_0_system(fe_shared)
     , fedata_1_system(fe_shared)
     , fedata_2_system(fe_shared)
     , fedata_3_system(fe_shared)
     , fedata_4_system(fe_shared)
+    , fedataface_0_system(fe_shared)
+    , fedataface_1_system(fe_shared)
+    , fedataface_2_system(fe_shared)
+    , fedataface_3_system(fe_shared)
+    , fedataface_4_system(fe_shared)
   {
   }
   ~FEDatasFixture() {}
@@ -40,6 +45,11 @@ struct FEDatasFixture
   FEData<FE_Q, fe_degree, n_components, dim, 2, max_fe_degree, double> fedata_2_system;
   FEData<FE_Q, fe_degree, n_components, dim, 3, max_fe_degree, double> fedata_3_system;
   FEData<FE_Q, fe_degree, n_components, dim, 4, max_fe_degree, double> fedata_4_system;
+  FEDataFace<FE_Q, fe_degree, n_components, dim, 0, max_fe_degree, double> fedataface_0_system;
+  FEDataFace<FE_Q, fe_degree, n_components, dim, 1, max_fe_degree, double> fedataface_1_system;
+  FEDataFace<FE_Q, fe_degree, n_components, dim, 2, max_fe_degree, double> fedataface_2_system;
+  FEDataFace<FE_Q, fe_degree, n_components, dim, 3, max_fe_degree, double> fedataface_3_system;
+  FEDataFace<FE_Q, fe_degree, n_components, dim, 4, max_fe_degree, double> fedataface_4_system;
 };
 
 FEDatasFixture::fe_shared_type FEDatasFixture::fe_shared =

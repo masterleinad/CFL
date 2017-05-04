@@ -25,26 +25,28 @@ BOOST_FIXTURE_TEST_CASE(FEDatasComma, FEDatasFixture)
   BOOST_TEST(fedatas1.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas1.get_fe_data<1>().fe_number == fe_1);
 
-  // Check the state of objects added through comma operator
-  // FEDatas<decltype(fedata_e_system)> fedatas = fedata_e_system; //fails due to explicit
-  // constructor disallowing copy initialization
-  auto fedatas2 = (fedatas, fedata_1_system);
-  BOOST_TEST(fedatas2.get_fe_data<0>().fe_number == fe_0);
-  BOOST_TEST(fedatas2.get_fe_data<1>().fe_number == fe_1);
+  //fedatas = (fedatas,fedata_1_system); TBD, cant be supported see point no. 9
 
-  auto fedatas3 = (fedatas, fedata_1_system, fedata_2_system);
+  // Check the state of objects added through comma operator
+  FEDatas<decltype(fedata_0_system)> fedatas2 = fedata_0_system;
+
+  auto fedatas3 = (fedatas2,fedata_1_system);
   BOOST_TEST(fedatas3.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas3.get_fe_data<1>().fe_number == fe_1);
-  BOOST_TEST(fedatas3.get_fe_data<2>().fe_number == fe_2);
 
-  auto fedatas4 = (fedata_1_system, fedatas);
+  auto fedatas4 = (fedatas,fedata_1_system,fedata_2_system);
   BOOST_TEST(fedatas4.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas4.get_fe_data<1>().fe_number == fe_1);
+  BOOST_TEST(fedatas4.get_fe_data<2>().fe_number == fe_2);
 
-  auto fedatas5 = (fedatas, fedata_1_system, fedata_2_system);
+  auto fedatas5 = (fedata_1_system, fedatas);
   BOOST_TEST(fedatas5.get_fe_data<0>().fe_number == fe_0);
   BOOST_TEST(fedatas5.get_fe_data<1>().fe_number == fe_1);
-  BOOST_TEST(fedatas5.get_fe_data<2>().fe_number == fe_2);
+
+  auto fedatas6 = (fedatas, fedata_1_system, fedata_2_system);
+  BOOST_TEST(fedatas6.get_fe_data<0>().fe_number == fe_0);
+  BOOST_TEST(fedatas6.get_fe_data<1>().fe_number == fe_1);
+  BOOST_TEST(fedatas6.get_fe_data<2>().fe_number == fe_2);
 
 // TBD: This fails since we cant combine FEDatas with comma operator. Discuss if needed
 #if 0
