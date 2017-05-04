@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 #include "matrixfree_data.h"
-#include <deal.II/fe/fe_q.h>
+#include <deal.II/fe/fe_dgq.h>
 #include <deal.II/fe/fe_system.h>
 
 #include <deal.II/dofs/dof_renumbering.h>
@@ -28,7 +28,7 @@ test(unsigned int refine, unsigned int degree, const LinearAlgebra::distributed:
   GridGenerator::hyper_cube(tria);
   tria.refine_global(refine);
 
-  FESystem<dim> fe(FE_Q<dim>(degree), dim);
+  FE_DGQ<dim> fe(degree);
   DoFHandler<dim> dof(tria);
   dof.distribute_dofs(fe);
   ConstraintMatrix constraints;
@@ -92,27 +92,27 @@ template <int dim>
 void
 run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 {
-  FESystem<dim> fe_u(FE_Q<dim>(degree), dim);
+  FE_DGQ<dim> fe_u(degree);
 
-  FEData<FESystem, 1, dim, dim, 0, 1> fedata1(fe_u);
-  FEDataFace<FESystem, 1, dim, dim, 0, 1> fedata_face1(fe_u);
+  FEData<FE_DGQ, 1, 1, dim, 0, 1> fedata1(fe_u);
+  FEDataFace<FE_DGQ, 1, 1, dim, 0, 1> fedata_face1(fe_u);
   auto fe_datas = (fedata1, fedata_face1);
 
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
 
-  TestFunction<1, dim, 0> v;
-  TestFunctionInteriorFace<1, dim, 0> v_plus;
-  TestFunctionExteriorFace<1, dim, 0> v_minus;
+  TestFunction<0, 1, 0> v;
+  TestFunctionInteriorFace<0, 1, 0> v_plus;
+  TestFunctionExteriorFace<0, 1, 0> v_minus;
   auto Dv = grad(v);
-  FEFunction<1, dim, 0> u("u");
-  FEFunctionInteriorFace<1, dim, 0> u_plus("u");
-  FEFunctionExteriorFace<1, dim, 0> u_minus("u");
+  FEFunction<0, 1, 0> u("u");
+  FEFunctionInteriorFace<0, 1, 0> u_plus("u");
+  FEFunctionExteriorFace<0, 1, 0> u_minus("u");
   auto Du = grad(u);
   auto f1 = form(Du, Dv);
   auto f2 = face_form(u_plus - u_minus, v_plus);
   auto f3 = face_form(u_minus - u_plus, v_minus);
-  auto f = /*f1 + */ f2 - f3;
+  auto f = /*f1 + */ f2 + f3;
 
   MatrixFreeData<dim,
                  decltype(fe_datas),

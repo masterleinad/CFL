@@ -20,12 +20,10 @@ BOOST_AUTO_TEST_CASE(FEDataNegative)
   typedef FEDataFace<FE_Q, 3 /*unequal degree*/, 1, 2, 1, 4> ErrFEDataFace1;
   BOOST_CHECK_THROW(ErrFEDataFace1 obj(fe), dealii::ExcIndexRange);
 
-
   // Mmismatch in number of components
   typedef FEData<FE_Q, 2, 2 /*unequal components*/, 2, 1, 4> ErrFEData2;
   BOOST_CHECK_THROW(ErrFEData2 obj(fe), dealii::ExcDimensionMismatch);
 
   typedef FEDataFace<FE_Q, 2, 2 /*unequal components*/, 2, 1, 4> ErrFEDataFace2;
   BOOST_CHECK_THROW(ErrFEDataFace2 obj(fe), dealii::ExcDimensionMismatch);
-
 }

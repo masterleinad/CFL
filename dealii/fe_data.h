@@ -121,7 +121,7 @@ public:
   static constexpr unsigned int max_degree = FEData::max_degree;
   static constexpr unsigned int n = 1;
 
-  //Note: This constructor is deliberately not marked as explicit to allow initializations like:
+  // Note: This constructor is deliberately not marked as explicit to allow initializations like:
   // .......
   // FEData<....> fedata_obj;
   // FEDatas<decltype(fedata_obj)> fedatas_obj = fedata_obj;
@@ -459,6 +459,8 @@ public:
 #ifdef DEBUG_OUTPUT
     std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
 #endif
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "This function can only be called for FEData objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_data.fe_evaluation->get_value(q);
   }
@@ -470,6 +472,8 @@ public:
 #ifdef DEBUG_OUTPUT
     std::cout << "get face value FEDatas " << fe_number << " " << q << std::endl;
 #endif
+    static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
+                  "This function can only be called for FEDataFace objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     if constexpr(interior) return fe_data.fe_evaluation_interior->get_value(q);
     else
@@ -583,6 +587,8 @@ public:
   const auto&
   get_fe_data() const
   {
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "Component not found, not a FEData object!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_data;
   }
@@ -591,7 +597,8 @@ public:
   const auto&
   get_fe_data_face() const
   {
-	static_assert(CFL::Traits::is_fe_data_face<FEData>::value, "Component not found, not a Face");
+    static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
+                  "Component not found, not a FEDataFace object");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_data;
   }
@@ -676,7 +683,6 @@ public:
                   "You need to construct this with a FEData object!");
   }
 
-
   explicit FEDatas(const FEData fe_data_, const Types... fe_datas_)
     : Base(fe_datas_...)
     , fe_data(std::move(fe_data_))
@@ -699,7 +705,7 @@ public:
   {
     if constexpr(fe_number == fe_number_extern) { return TensorTraits::rank; }
     else
-      return FEDatas<Types...>::template rank<fe_number_extern>();
+      return Base::template rank<fe_number_extern>();
   }
 
   template <int dim, typename OtherNumber>
@@ -726,7 +732,6 @@ public:
       fe_data.fe_evaluation_exterior.reset(new
                                            typename FEData::FEEvaluationType(mf, fe_number, false));
     }
-
     initialized = true;
     Base::initialize(mf);
   }
@@ -772,7 +777,13 @@ public:
         std::cout << "Read DoF values " << fe_number << std::endl;
 #endif
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
-        fe_data.fe_evaluation->read_dof_values(vector.block(fe_number));
+        if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+            fe_data.fe_evaluation->read_dof_values(vector.block(fe_number));
+        else
+        {
+          fe_data.fe_evaluation_interior->read_dof_values(vector.block(fe_number));
+          fe_data.fe_evaluation_exterior->read_dof_values(vector.block(fe_number));
+        }
         Base::read_dof_values(vector);
       }
     else
@@ -797,7 +808,13 @@ public:
           std::cout << "Distribute cell DoF values " << fe_number << std::endl;
 #endif
           Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
-          fe_data.fe_evaluation->distribute_local_to_global(vector.block(fe_number));
+          if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+              fe_data.fe_evaluation->distribute_local_to_global(vector.block(fe_number));
+          else
+          {
+            fe_data.fe_evaluation_interior->distribute_local_to_global(vector.block(fe_number));
+            fe_data.fe_evaluation_exterior->distribute_local_to_global(vector.block(fe_number));
+          }
         }
         Base::distribute_local_to_global(vector);
       }
@@ -864,7 +881,10 @@ public:
 #endif
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
                                                                  integrate_gradients)
-        fe_data.fe_evaluation->integrate(integrate_values, integrate_gradients);
+      {
+        fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
+        fe_data.fe_evaluation_exterior->integrate(integrate_values, integrate_gradients);
+      }
     Base::integrate_face();
   }
 
@@ -884,10 +904,7 @@ public:
 #endif
       }
     else
-    {
-      Base::template set_integration_flags<fe_number_extern>(integrate_value,
-                                                                          integrate_gradient);
-    }
+      Base::template set_integration_flags<fe_number_extern>(integrate_value, integrate_gradient);
   }
 
   template <unsigned int fe_number_extern>
@@ -1126,15 +1143,11 @@ public:
   const auto&
   get_fe_data_face() const
   {
-	  if constexpr(fe_number == fe_number_extern)
-	  {
-		  if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
-				  return fe_data;
-		  else
-			  return Base::template get_fe_data_face<fe_number_extern>();
-	  }
-	  else
-		  return Base::template get_fe_data_face<fe_number_extern>();
+    if constexpr(fe_number == fe_number_extern &&
+                 CFL::Traits::is_fe_data_face<FEData>::value) 
+      return fe_data;
+    else
+      return Base::template get_fe_data_face<fe_number_extern>();
   }
 
   template <unsigned int fe_number_extern>
@@ -1174,7 +1187,6 @@ public:
     return FEDatas<FEDataOther, FEData, Types...>(new_fe_data, *this);
   }
 
-
 protected:
   FEData fe_data;
 
@@ -1204,7 +1216,6 @@ private:
   bool evaluate_hessians = false;
   bool initialized = false;
 };
-
 
 template <class FEData, typename... Types>
 typename std::enable_if_t<CFL::Traits::is_fe_data<FEData>::value ||
