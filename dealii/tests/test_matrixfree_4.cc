@@ -20,23 +20,38 @@ template <template <int, int, unsigned int> typename FEFuncType, int rank, int d
 void
 sumfe_same_types()
 {
-  using FEFunc = FEFuncType<rank, dim, idx>;
+  constexpr unsigned int idx1 = idx;
+  constexpr unsigned int idx2 = idx + 2;
+  constexpr unsigned int idx3 = idx + 4;
+  constexpr unsigned int idx4 = idx + 2;
+  constexpr int max_idx = idx4;
 
-  FEFunc fe_function1("test_fe1");
-  FEFunc fe_function2("test_fe2");
-  FEFunc fe_function3("test_fe3");
+  bitset<max_idx> bs;
+
+  FEFuncType<rank, dim, idx1> fe_function1("test_fe1");
+  FEFuncType<rank, dim, idx2> fe_function2("test_fe2");
+  FEFuncType<rank, dim, idx3> fe_function3("test_fe3");
+  FEFuncType<rank, dim, idx4> fe_function4("test_fe4");
 
   auto sum1 = fe_function1 + fe_function2;
   auto sum2 = fe_function2 + fe_function1;
+
+  // TBD: Prod of sum, its return type is to be discussed
+  auto prod1 = sum1 * sum2;
+
   auto sum3 = fe_function2 + fe_function1 + fe_function3;
-#if 0 // See 15
+
   auto sum4 = sum1 + fe_function1 + fe_function2;
-  auto sum5 = fe_function1 + fe_function2 + sum1;
-  auto sum6 = sum1 + sum2;
-  auto sum7 = sum1 + sum2 + fe_function1;
-  auto sum8 = fe_function2 + sum1 + sum2;
-  auto sum9 = sum6 + sum8;
-#endif
+  auto sum5 = fe_function1 + sum1 + fe_function2;
+  auto sum6 = fe_function1 + fe_function2 + sum1;
+  auto sum7 = sum1 + sum2;
+  auto sum8 = sum1 + sum2 + fe_function1;
+  auto sum9 = fe_function2 + sum1 + sum2;
+  auto sum10 = sum6 + sum8;
+  auto sum11 = fe_function3 + fe_function4;
+  auto sum12 = sum11 + sum10;
+
+  auto sum13 = sum2 + sum5 + sum8 + sum10 + sum12; // something complicated
 }
 
 template <int i>
@@ -52,6 +67,7 @@ struct SumFEfunctor
   run()
   {
     sumfe_same_types<FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+#if 0
     sumfe_same_types<FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     // sumfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>(); 9. TBD
@@ -60,11 +76,12 @@ struct SumFEfunctor
     sumfe_same_types<FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+#endif
   }
 };
 BOOST_FIXTURE_TEST_CASE(SumFEObjSameType, FEFixture)
 {
-  for_<0, 9>::run<SumFEfunctor>();
+  for_<0, 1>::run<SumFEfunctor>();
 
   // auto sumf = fe_function_scalar1 + fe_function_scalar2; //TBD why does this not hit
   // static_assertion although compilation fails?

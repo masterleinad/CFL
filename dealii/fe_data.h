@@ -954,7 +954,7 @@ public:
   auto
   get_gradient(unsigned int q) const
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -969,7 +969,7 @@ public:
   auto
   get_symmetric_gradient(unsigned int q) const
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -984,7 +984,7 @@ public:
   auto
   get_divergence(unsigned int q) const
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get divergence FEDatas " << fe_number << " " << q << std::endl;
@@ -999,7 +999,7 @@ public:
   auto
   get_laplacian(unsigned int q) const
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get laplacian FEDatas " << fe_number << " " << q << std::endl;
@@ -1014,7 +1014,7 @@ public:
   auto
   get_hessian_diagonal(unsigned int q) const
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get hessian_diagonal FEDatas " << fe_number << " " << q << std::endl;
@@ -1029,7 +1029,7 @@ public:
   auto
   get_hessian(unsigned int q) const
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get hessian FEDatas " << fe_number << " " << q << std::endl;
@@ -1044,7 +1044,7 @@ public:
   auto
   get_value(unsigned int q) const
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
@@ -1059,7 +1059,7 @@ public:
   void
   submit_curl(const ValueType& value, unsigned int q)
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "submit curl FEDatas " << fe_number << " " << q << std::endl;
@@ -1074,7 +1074,7 @@ public:
   void
   submit_divergence(const ValueType& value, unsigned int q)
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "submit divergence FEDatas " << fe_number << " " << q << std::endl;
@@ -1089,7 +1089,7 @@ public:
   void
   submit_symmetric_gradient(const ValueType& value, unsigned int q)
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "submit symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -1104,7 +1104,7 @@ public:
   void
   submit_gradient(const ValueType& value, unsigned int q)
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
@@ -1119,7 +1119,7 @@ public:
   void
   submit_value(const ValueType& value, unsigned int q)
   {
-    if constexpr(fe_number == fe_number_extern)
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
         std::cout << "submit value FEDatas " << fe_number << " " << q << std::endl;
@@ -1144,7 +1144,7 @@ public:
   get_fe_data_face() const
   {
     if constexpr(fe_number == fe_number_extern &&
-                 CFL::Traits::is_fe_data_face<FEData>::value) 
+                 CFL::Traits::is_fe_data_face<FEData>::value)
       return fe_data;
     else
       return Base::template get_fe_data_face<fe_number_extern>();
