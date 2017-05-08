@@ -15,28 +15,62 @@
 //    - result of ProductFEFunction is of correct type
 //    There are no check on values since they are available from dealii library function
 // results which we ignore in out test
+//TBD: It only tests for generation of form. not their types and result e.g. result of
+//multiplication
 template <template <int, int, unsigned int> typename FEFuncType, int rank, int dim,
           unsigned int idx>
 void
 prodfe_same_types()
 {
-  using FEFunc = FEFuncType<rank, dim, idx>;
+  constexpr unsigned int idx1 = idx;
+  constexpr unsigned int idx2 = idx+2;
+  constexpr unsigned int idx3 = idx+4;
+  constexpr unsigned int idx4 = idx+2;
+  constexpr int max_idx = idx4;
 
-  FEFunc fe_function1("test_fe1");
-  FEFunc fe_function2("test_fe2");
-  FEFunc fe_function3("test_fe3");
+  bitset<max_idx> bs;
 
+  FEFuncType<rank, dim, idx1> fe_function1("test_fe1");
+  FEFuncType<rank, dim, idx2> fe_function2("test_fe2");
+  FEFuncType<rank, dim, idx3> fe_function3("test_fe3");
+  FEFuncType<rank, dim, idx4> fe_function4("test_fe4");
+
+  //multiplication of fefunction and prodfefunction amongst themselves
   auto prod1 = fe_function1 * fe_function2;
   auto prod2 = fe_function2 * fe_function1;
+
+  //TBD: Sum of product, its return type is to be discussed
+  auto sum1 = prod1+prod2;
+
   auto prod3 = fe_function2 * fe_function1 * fe_function3;
+
   auto prod4 = prod1 * fe_function1 * fe_function2;
-#if 0 // See 15
-  auto prod5 = fe_function1 * fe_function2 * prod1;
-  auto prod6 = prod1 * prod2;
-  auto prod7 = prod1 * prod2 * fe_function1;
-  auto prod8 = fe_function2 * prod1 * prod2;
-  auto prod9 = prod6 * prod8;
-#endif
+  auto prod5 = fe_function1 * prod1 * fe_function2;
+  auto prod6 = fe_function1 * fe_function2 * prod1;
+  auto prod7 = prod1 * prod2;
+  auto prod8 = prod1 * prod2 * fe_function1;
+  auto prod9 = fe_function2 * prod1 * prod2;
+  auto prod10 = prod6 * prod8;
+
+  auto prod11 = fe_function3 * fe_function4;
+  auto prod12 = prod11 * prod10;
+
+  //multiplciation of fefunction and prodfefunction with scalar
+  auto prod13 = fe_function1 * 2;
+  auto prod14 = 2 * fe_function1;
+  auto prod15 = fe_function2 * 2.0;
+  auto prod16 = 2.0 * fe_function2;
+  auto prod17 = prod1 * prod15 * 2;
+  auto prod18 = 2 * prod1 * prod15;
+
+  auto prod19 = prod7 * 2.0;
+  auto prod20 = 2.0 * prod7;
+
+  auto prod21 = 2 * prod2 * prod5 * prod8 * prod10 *  prod15; //something complicated
+
+  auto prod22 = fe_function3 * true; //this is stupid but accepted
+  auto prod23 = false * fe_function3; //this is stupid but accepted
+  auto prod24 = 'c' * fe_function3; //this is stupid but accepted
 }
 
 template <int i>
@@ -62,7 +96,7 @@ struct ProdFEfunctor
     prodfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
   }
 };
-BOOST_FIXTURE_TEST_CASE(ProdFEObjSameType, FEFixture)
+BOOST_AUTO_TEST_CASE(ProdFEObjSameType)
 {
   for_<0, 9>::run<ProdFEfunctor>();
 }
