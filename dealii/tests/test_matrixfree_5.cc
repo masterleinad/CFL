@@ -15,6 +15,8 @@
 //    - result of ProductFEFunction is of correct type
 //    There are no check on values since they are available from dealii library function
 // results which we ignore in out test
+//TBD: It only tests for generation of form. not their types and result e.g. result of
+//multiplication
 template <template <int, int, unsigned int> typename FEFuncType, int rank, int dim,
           unsigned int idx>
 void
@@ -23,30 +25,25 @@ prodfe_same_types()
   constexpr unsigned int idx1 = idx;
   constexpr unsigned int idx2 = idx+2;
   constexpr unsigned int idx3 = idx+4;
+  constexpr unsigned int idx4 = idx+2;
+  constexpr int max_idx = idx4;
 
-
-  constexpr int max_idx = idx3;
   bitset<max_idx> bs;
 
   FEFuncType<rank, dim, idx1> fe_function1("test_fe1");
   FEFuncType<rank, dim, idx2> fe_function2("test_fe2");
   FEFuncType<rank, dim, idx3> fe_function3("test_fe3");
+  FEFuncType<rank, dim, idx4> fe_function4("test_fe4");
 
   //multiplication of fefunction and prodfefunction amongst themselves
   auto prod1 = fe_function1 * fe_function2;
-  //check_FeOpComplete(prod1,bs,vector<unsigned int> {idx1,idx2});
-  //BOOST_TEST(bs.none());
-  //BOOST_TEST(prod1.n == 2);
-
   auto prod2 = fe_function2 * fe_function1;
-  //check_FeOpComplete(prod2,bs,vector<unsigned int> {idx1,idx2});
-  //BOOST_TEST(bs.none());
-  //BOOST_TEST(prod2.n == 1);
 
   //TBD: Sum of product, its return type is to be discussed
   auto sum1 = prod1+prod2;
 
   auto prod3 = fe_function2 * fe_function1 * fe_function3;
+
   auto prod4 = prod1 * fe_function1 * fe_function2;
   auto prod5 = fe_function1 * prod1 * fe_function2;
   auto prod6 = fe_function1 * fe_function2 * prod1;
@@ -54,24 +51,26 @@ prodfe_same_types()
   auto prod8 = prod1 * prod2 * fe_function1;
   auto prod9 = fe_function2 * prod1 * prod2;
   auto prod10 = prod6 * prod8;
-#if 0
+
+  auto prod11 = fe_function3 * fe_function4;
+  auto prod12 = prod11 * prod10;
+
   //multiplciation of fefunction and prodfefunction with scalar
-  auto prod11 = fe_function1 * 2;
-  auto prod12 = 2 * fe_function1;
-  auto prod13 = fe_function2 * 2.0;
-  auto prod14 = 2.0 * fe_function2;
-  auto prod15 = prod1 * prod11 * 2;
-  auto prod16 = 2 * prod1 * prod11;
+  auto prod13 = fe_function1 * 2;
+  auto prod14 = 2 * fe_function1;
+  auto prod15 = fe_function2 * 2.0;
+  auto prod16 = 2.0 * fe_function2;
+  auto prod17 = prod1 * prod15 * 2;
+  auto prod18 = 2 * prod1 * prod15;
 
-  auto prod17 = prod7 * 2.0;
-  auto prod18 = 2.0 * prod7;
+  auto prod19 = prod7 * 2.0;
+  auto prod20 = 2.0 * prod7;
 
-  auto prod19 = 2 * prod2 * prod5 * prod8 * prod10 *  prod15; //something complicated
+  auto prod21 = 2 * prod2 * prod5 * prod8 * prod10 *  prod15; //something complicated
 
-  auto prod20 = fe_function3 * true; //this is stupid but accepted
-  auto prod21 = false * fe_function3; //this is stupid but accepted
-  auto prod22 = 'c' * fe_function3; //this is stupid but accepted
-#endif
+  auto prod22 = fe_function3 * true; //this is stupid but accepted
+  auto prod23 = false * fe_function3; //this is stupid but accepted
+  auto prod24 = 'c' * fe_function3; //this is stupid but accepted
 }
 
 template <int i>
@@ -87,7 +86,6 @@ struct ProdFEfunctor
   run()
   {
     prodfe_same_types<FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-#if 0
     prodfe_same_types<FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     // prodfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>(); 12. TBD
@@ -96,12 +94,11 @@ struct ProdFEfunctor
     prodfe_same_types<FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-#endif
   }
 };
 BOOST_AUTO_TEST_CASE(ProdFEObjSameType)
 {
-  for_<0, 1>::run<ProdFEfunctor>();
+  for_<0, 9>::run<ProdFEfunctor>();
 }
 
 //// Test case ProdFEObjDiffType

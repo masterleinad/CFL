@@ -960,8 +960,7 @@ namespace dealii
       }
 
       template <class NewFEFunction>
-      SumFEFunctions<NewFEFunction, FEFunction>
-      operator+(const NewFEFunction& new_summand) const
+      auto operator+(const NewFEFunction& new_summand) const
       {
         static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
                       "Only FEFunction objects can be added!");
@@ -1034,13 +1033,14 @@ namespace dealii
     public:
       using TensorTraits =
         Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
+      using Base = SumFEFunctions<Types...>;
 
       template <class FEEvaluation>
       auto
       value(const FEEvaluation& phi, unsigned int q) const
       {
         const auto own_value = summand.value(phi, q);
-        const auto other_value = SumFEFunctions<Types...>::value(phi, q);
+        const auto other_value = Base::value(phi, q);
         assert_is_compatible(own_value, other_value);
         return own_value + other_value;
       }
@@ -1050,51 +1050,50 @@ namespace dealii
       set_evaluation_flags(FEEvaluation& phi)
       {
         FEFunction::set_evaluation_flags(phi);
-        SumFEFunctions<Types...>::set_evaluation_flags(phi);
+        Base::set_evaluation_flags(phi);
       }
 
       explicit SumFEFunctions(const FEFunction summand_, const Types... old_sum)
-        : SumFEFunctions<Types...>(std::move(old_sum...))
+        : Base(std::move(old_sum...))
         , summand(std::move(summand_))
       {
         static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                       "You need to construct this with a FEFunction object!");
-        static_assert(TensorTraits::dim == SumFEFunctions<Types...>::TensorTraits::dim,
+        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == SumFEFunctions<Types...>::TensorTraits::rank,
+        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
                       "You can only add tensors of equal rank!");
       }
 
       SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
-        : SumFEFunctions<Types...>(old_sum)
+        : Base(old_sum)
         , summand(summand_)
       {
         static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                       "You need to construct this with a FEFunction object!");
-        static_assert(TensorTraits::dim == SumFEFunctions<Types...>::TensorTraits::dim,
+        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
                       "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == SumFEFunctions<Types...>::TensorTraits::rank,
+        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
                       "You can only add tensors of equal rank!");
       }
 
-      template <class NewFEFunction>
-      typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
-                                  ObjectType::none &&
-                                Traits::fe_function_set_type<NewFEFunction>::value ==
-                                  Traits::fe_function_set_type<FEFunction>::value &&
-                                !Traits::is_fe_function_sum<NewFEFunction>::value,
-                              SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
-      operator+(const NewFEFunction& new_summand) const
+      template <class NewFEFunction,
+      	  	  typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
+              ObjectType::none &&
+              Traits::fe_function_set_type<NewFEFunction>::value ==
+              Traits::fe_function_set_type<FEFunction>::value &&
+              !Traits::is_fe_function_sum<NewFEFunction>::value>::type *unused = nullptr>
+      auto operator+(const NewFEFunction& new_summand) const
       {
         return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_summand, *this);
       }
 
-      template <class NewFEFunction1, class NewFEFunction2, typename... NewTypes>
-      typename std::enable_if<
-        Traits::fe_function_set_type<NewFEFunction1>::value != ObjectType::none &&
-          Traits::fe_function_set_type<NewFEFunction1>::value ==
-            Traits::fe_function_set_type<FEFunction>::value,
-        SumFEFunctions<NewFEFunction2, NewTypes..., NewFEFunction1, FEFunction, Types...>>::type
+      template <class NewFEFunction1, class NewFEFunction2, typename... NewTypes,
+      	  	  typename std::enable_if<
+      	  	  Traits::fe_function_set_type<NewFEFunction1>::value != ObjectType::none &&
+      	  	  Traits::fe_function_set_type<NewFEFunction1>::value ==
+              Traits::fe_function_set_type<FEFunction>::value>::type *unused = nullptr>
+      auto
       operator+(const SumFEFunctions<NewFEFunction1, NewFEFunction2, NewTypes...>& new_sum) const
       {
         return SumFEFunctions<NewFEFunction1, FEFunction, Types...>(new_sum.get_summand(), *this) +
@@ -1102,13 +1101,12 @@ namespace dealii
                  static_cast<const SumFEFunctions<NewFEFunction2, NewTypes...>&>(new_sum));
       }
 
-      template <class NewFEFunction>
-      typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
-                                  ObjectType::none &&
-                                Traits::fe_function_set_type<NewFEFunction>::value ==
-                                  Traits::fe_function_set_type<FEFunction>::value,
-                              SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
-      operator+(const SumFEFunctions<NewFEFunction>& new_sum) const
+      template <class NewFEFunction,
+      	  	  typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
+              ObjectType::none &&
+              Traits::fe_function_set_type<NewFEFunction>::value ==
+              Traits::fe_function_set_type<FEFunction>::value>::type *unused = nullptr>
+      auto operator+(const SumFEFunctions<NewFEFunction>& new_sum) const
       {
         return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this);
       }
@@ -1148,7 +1146,7 @@ namespace dealii
       multiply_by_scalar(const Number scalar)
       {
         summand.scalar_factor *= scalar;
-        SumFEFunctions<Types...>::multiply_by_scalar(scalar);
+        Base::multiply_by_scalar(scalar);
       }
 
       template <class NewFEFunction, typename... NewTypes>
@@ -1183,14 +1181,13 @@ namespace dealii
       FEFunction summand;
     };
 
-    template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
+    template <class FEFunction1, class FEFunction2,
+    		typename std::enable_if<Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
                               Traits::fe_function_set_type<FEFunction1>::value ==
                                 Traits::fe_function_set_type<FEFunction2>::value &&
                               !Traits::is_fe_function_sum<FEFunction1>::value &&
-                              !Traits::is_fe_function_sum<FEFunction2>::value,
-                            SumFEFunctions<FEFunction2, FEFunction1>>::type
-    operator+(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+                              !Traits::is_fe_function_sum<FEFunction2>::value>::type *unused = nullptr>
+    auto operator+(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
     {
 
       static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
@@ -1200,11 +1197,10 @@ namespace dealii
       return SumFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
     }
 
-    template <class FEFunction, typename... Types>
-    typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
-                              !Traits::is_fe_function_sum<FEFunction>::value,
-                            SumFEFunctions<FEFunction, Types...>>::type
-    operator+(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
+    template <class FEFunction, typename... Types,
+    		typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
+                            !Traits::is_fe_function_sum<FEFunction>::value>::type *unused = nullptr>
+    auto operator+(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
       return old_fe_function + new_fe_function;
     }
@@ -1244,7 +1240,8 @@ namespace dealii
 
       //prodfefunc * fefunc
       template <class NewFEFunction>
-      ProductFEFunctions<NewFEFunction, FEFunction> operator*(const NewFEFunction& new_factor) const
+      auto
+      operator*(const NewFEFunction& new_factor) const
       {
         static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
                       "Only FEFunction objects can be added!");
@@ -1347,13 +1344,13 @@ namespace dealii
       }
 
       //prodfefunc * fefunc
-      template <class NewFEFunction>
-      typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
-                                  ObjectType::none &&
-                                Traits::fe_function_set_type<NewFEFunction>::value ==
-                                  Traits::fe_function_set_type<FEFunction>::value,
-                              ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type
-      operator*(const NewFEFunction& new_factor) const
+      template <class NewFEFunction,
+      	  	  typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
+                          ObjectType::none &&
+                          Traits::fe_function_set_type<NewFEFunction>::value ==
+                          Traits::fe_function_set_type<FEFunction>::value,
+                          ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type *unused = nullptr>
+      auto operator*(const NewFEFunction& new_factor) const
       {
         return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_factor, *this);
       }
@@ -1368,10 +1365,10 @@ namespace dealii
       }
 
       //prodfefunc * number
-      template <typename Number>
-      typename std::enable_if<std::is_arithmetic<Number>::value,
-                              ProductFEFunctions<FEFunction, Types...>>::type
-      operator*(const Number scalar_factor) const
+      template <typename Number,
+      	  	  typename std::enable_if<std::is_arithmetic<Number>::value,
+                       ProductFEFunctions<FEFunction, Types...>>::type *unused = nullptr>
+      auto operator*(const Number scalar_factor) const
       {
         ProductFEFunctions<FEFunction, Types...> tmp = *this;
         tmp.multiply_by_scalar(scalar_factor);
@@ -1388,30 +1385,32 @@ namespace dealii
 
       //prodfefunc * prodfefunc
       //ProductFEFunctions<NewTypes..., NewFEFunction2, NewFEFunction1, FEFunction, Types...>>::type
-      template <class NewFEFunction1, class NewFEFunction2, typename... NewTypes>
-      typename std::enable_if<
-        Traits::fe_function_set_type<NewFEFunction1>::value != ObjectType::none &&
-          Traits::fe_function_set_type<NewFEFunction1>::value ==
-            Traits::fe_function_set_type<FEFunction>::value &&
-            Traits::fe_function_set_type<NewFEFunction2>::value != ObjectType::none &&
-            Traits::fe_function_set_type<NewFEFunction2>::value ==
-            Traits::fe_function_set_type<FEFunction>::value,
-        ProductFEFunctions<NewFEFunction1, NewFEFunction2, NewTypes..., FEFunction, Types...>>::type
+      template <class NewFEFunction1, class NewFEFunction2, typename... NewTypes,
+      	  	  typename std::enable_if<
+      	  	  Traits::fe_function_set_type<NewFEFunction1>::value != ObjectType::none &&
+      	  	  Traits::fe_function_set_type<NewFEFunction1>::value ==
+      	  	  Traits::fe_function_set_type<FEFunction>::value &&
+              Traits::fe_function_set_type<NewFEFunction2>::value != ObjectType::none &&
+              Traits::fe_function_set_type<NewFEFunction2>::value ==
+              Traits::fe_function_set_type<FEFunction>::value>::type *unused = nullptr>
+      auto
       operator*(const ProductFEFunctions<NewFEFunction1, NewFEFunction2, NewTypes...>& new_product) const
       {
-        return ProductFEFunctions<NewFEFunction1, FEFunction, Types...>(new_product.get_factor(),
+        auto a = ProductFEFunctions<NewFEFunction1, FEFunction, Types...>(new_product.get_factor(),
                                                                        *this) *
                ProductFEFunctions<NewFEFunction2, NewTypes...>(
                  static_cast<const ProductFEFunctions<NewFEFunction2, NewTypes...>&>(new_product));
+
+        return a;
       }
 
       //prodfefunc * prodfefunc
-      template <class NewFEFunction>
-      typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
-                                  ObjectType::none &&
-                                Traits::fe_function_set_type<NewFEFunction>::value ==
-                                  Traits::fe_function_set_type<FEFunction>::value,
-                              ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type
+      template <class NewFEFunction,
+      	  	  typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
+                       ObjectType::none &&
+                       Traits::fe_function_set_type<NewFEFunction>::value ==
+                       Traits::fe_function_set_type<FEFunction>::value>::type *unused = nullptr>
+      auto
       operator*(const ProductFEFunctions<NewFEFunction>& new_product) const
       {
         return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_product.get_factor(),
@@ -1429,14 +1428,14 @@ namespace dealii
     };
 
     //fefunc * fefunc
-    template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
+    template <class FEFunction1, class FEFunction2,
+    		typename std::enable_if<Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
                               Traits::fe_function_set_type<FEFunction1>::value ==
                                 Traits::fe_function_set_type<FEFunction2>::value &&
                               !Traits::is_fe_function_product<FEFunction1>::value &&
                               !Traits::is_fe_function_product<FEFunction2>::value,
-                            ProductFEFunctions<FEFunction2, FEFunction1>>::type
-    operator*(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+                            ProductFEFunctions<FEFunction2, FEFunction1>>::type *unused = nullptr>
+    auto operator*(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
     {
       static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
                     "You can multiply add tensors of equal dimension!");
@@ -1445,11 +1444,13 @@ namespace dealii
       return ProductFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
     }
 
+    //Note: this function changes the order of template parameters compared with its other sibling
+    // functions which perform multiplication operation on prodfefunc and fefunc
     //fefunc * prodfefunc
-    template <class FEFunction, typename... Types>
-    typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                            ProductFEFunctions<FEFunction, Types...>>::type
-    operator*(const FEFunction& new_fe_function,
+    template <class FEFunction, typename... Types,
+    			typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
+                            ProductFEFunctions<FEFunction, Types...>>::type *unused = nullptr>
+    auto operator*(const FEFunction& new_fe_function,
               const ProductFEFunctions<Types...>& old_fe_function)
     {
       return old_fe_function * new_fe_function;
