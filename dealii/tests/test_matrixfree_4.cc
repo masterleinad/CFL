@@ -20,40 +20,38 @@ template <template <int, int, unsigned int> typename FEFuncType, int rank, int d
 void
 sumfe_same_types()
 {
-	constexpr unsigned int idx1 = idx;
-	constexpr unsigned int idx2 = idx+2;
-	constexpr unsigned int idx3 = idx+4;
-	constexpr unsigned int idx4 = idx+2;
-	constexpr int max_idx = idx4;
+  constexpr unsigned int idx1 = idx;
+  constexpr unsigned int idx2 = idx + 2;
+  constexpr unsigned int idx3 = idx + 4;
+  constexpr unsigned int idx4 = idx + 2;
+  constexpr int max_idx = idx4;
 
-	bitset<max_idx> bs;
+  bitset<max_idx> bs;
 
+  FEFuncType<rank, dim, idx1> fe_function1("test_fe1");
+  FEFuncType<rank, dim, idx2> fe_function2("test_fe2");
+  FEFuncType<rank, dim, idx3> fe_function3("test_fe3");
+  FEFuncType<rank, dim, idx4> fe_function4("test_fe4");
 
-	FEFuncType<rank, dim, idx1> fe_function1("test_fe1");
-	FEFuncType<rank, dim, idx2> fe_function2("test_fe2");
-	FEFuncType<rank, dim, idx3> fe_function3("test_fe3");
-	FEFuncType<rank, dim, idx4> fe_function4("test_fe4");
+  auto sum1 = fe_function1 + fe_function2;
+  auto sum2 = fe_function2 + fe_function1;
 
-	auto sum1 = fe_function1 + fe_function2;
-	auto sum2 = fe_function2 + fe_function1;
+  // TBD: Prod of sum, its return type is to be discussed
+  auto prod1 = sum1 * sum2;
 
-	//TBD: Prod of sum, its return type is to be discussed
-	auto prod1 = sum1*sum2;
+  auto sum3 = fe_function2 + fe_function1 + fe_function3;
 
-	auto sum3 = fe_function2 + fe_function1 + fe_function3;
+  auto sum4 = sum1 + fe_function1 + fe_function2;
+  auto sum5 = fe_function1 + sum1 + fe_function2;
+  auto sum6 = fe_function1 + fe_function2 + sum1;
+  auto sum7 = sum1 + sum2;
+  auto sum8 = sum1 + sum2 + fe_function1;
+  auto sum9 = fe_function2 + sum1 + sum2;
+  auto sum10 = sum6 + sum8;
+  auto sum11 = fe_function3 + fe_function4;
+  auto sum12 = sum11 + sum10;
 
-	auto sum4 = sum1 + fe_function1 + fe_function2;
-	auto sum5 = fe_function1 + sum1 + fe_function2;
-	auto sum6 = fe_function1 + fe_function2 + sum1;
-	auto sum7 = sum1 + sum2;
-	auto sum8 = sum1 + sum2 + fe_function1;
-	auto sum9 = fe_function2 + sum1 + sum2;
-	auto sum10 = sum6 + sum8;
-	auto sum11 = fe_function3 + fe_function4;
-	auto sum12 = sum11 + sum10;
-
-	auto sum13 = sum2 + sum5 + sum8 + sum10 +  sum12; //something complicated
-
+  auto sum13 = sum2 + sum5 + sum8 + sum10 + sum12; // something complicated
 }
 
 template <int i>

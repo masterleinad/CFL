@@ -1144,7 +1144,7 @@ public:
   get_fe_data_face() const
   {
     if constexpr(fe_number == fe_number_extern &&
-                 CFL::Traits::is_fe_data_face<FEData>::value) 
+                 CFL::Traits::is_fe_data_face<FEData>::value)
       return fe_data;
     else
       return Base::template get_fe_data_face<fe_number_extern>();

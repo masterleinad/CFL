@@ -15,17 +15,17 @@
 //    - result of ProductFEFunction is of correct type
 //    There are no check on values since they are available from dealii library function
 // results which we ignore in out test
-//TBD: It only tests for generation of form. not their types and result e.g. result of
-//multiplication
+// TBD: It only tests for generation of form. not their types and result e.g. result of
+// multiplication
 template <template <int, int, unsigned int> typename FEFuncType, int rank, int dim,
           unsigned int idx>
 void
 prodfe_same_types()
 {
   constexpr unsigned int idx1 = idx;
-  constexpr unsigned int idx2 = idx+2;
-  constexpr unsigned int idx3 = idx+4;
-  constexpr unsigned int idx4 = idx+2;
+  constexpr unsigned int idx2 = idx + 2;
+  constexpr unsigned int idx3 = idx + 4;
+  constexpr unsigned int idx4 = idx + 2;
   constexpr int max_idx = idx4;
 
   bitset<max_idx> bs;
@@ -35,12 +35,12 @@ prodfe_same_types()
   FEFuncType<rank, dim, idx3> fe_function3("test_fe3");
   FEFuncType<rank, dim, idx4> fe_function4("test_fe4");
 
-  //multiplication of fefunction and prodfefunction amongst themselves
+  // multiplication of fefunction and prodfefunction amongst themselves
   auto prod1 = fe_function1 * fe_function2;
   auto prod2 = fe_function2 * fe_function1;
 
-  //TBD: Sum of product, its return type is to be discussed
-  auto sum1 = prod1+prod2;
+  // TBD: Sum of product, its return type is to be discussed
+  auto sum1 = prod1 + prod2;
 
   auto prod3 = fe_function2 * fe_function1 * fe_function3;
 
@@ -55,7 +55,7 @@ prodfe_same_types()
   auto prod11 = fe_function3 * fe_function4;
   auto prod12 = prod11 * prod10;
 
-  //multiplciation of fefunction and prodfefunction with scalar
+  // multiplciation of fefunction and prodfefunction with scalar
   auto prod13 = fe_function1 * 2;
   auto prod14 = 2 * fe_function1;
   auto prod15 = fe_function2 * 2.0;
@@ -66,11 +66,11 @@ prodfe_same_types()
   auto prod19 = prod7 * 2.0;
   auto prod20 = 2.0 * prod7;
 
-  auto prod21 = 2 * prod2 * prod5 * prod8 * prod10 *  prod15; //something complicated
+  auto prod21 = 2 * prod2 * prod5 * prod8 * prod10 * prod15; // something complicated
 
-  auto prod22 = fe_function3 * true; //this is stupid but accepted
-  auto prod23 = false * fe_function3; //this is stupid but accepted
-  auto prod24 = 'c' * fe_function3; //this is stupid but accepted
+  auto prod22 = fe_function3 * true;  // this is stupid but accepted
+  auto prod23 = false * fe_function3; // this is stupid but accepted
+  auto prod24 = 'c' * fe_function3;   // this is stupid but accepted
 }
 
 template <int i>
