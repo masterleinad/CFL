@@ -1,9 +1,9 @@
 #ifndef TEST_MATRIXFREE_H_
 #define TEST_MATRIXFREE_H_
 
-#include <boost/test/data/monomorphic.hpp>
-#include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/test/data/test_case.hpp>
+#include <boost/test/data/monomorphic.hpp>
 
 #include "test_utils.h"
 
@@ -12,9 +12,9 @@
 #include <deal.II/fe/fe_q.h>
 #include <dealii/fe_data.h>
 
-#include <bitset>
 #include <iostream>
 #include <map>
+#include <bitset>
 
 using namespace std;
 using namespace boost;
