@@ -92,7 +92,7 @@ template <int dim>
 void
 run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 {
-  FESystem<dim> fe_u{ FE_Q<dim>(degree), dim };
+  auto fe_u = std::make_shared<FESystem<dim> >(FE_Q<dim>(degree), dim);
 
   FEData<FESystem, 1, dim, dim, 0, 1> fedata1{ fe_u };
   FEDatas<decltype(fedata1)> fe_datas{ fedata1 };
@@ -102,7 +102,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   auto f = form(u, v);
 
   std::vector<FiniteElement<dim>*> fes;
-  fes.push_back(&fe_u);
+  fes.push_back(&(*fe_u));
 
   MatrixFreeData<dim,
                  decltype(fe_datas),

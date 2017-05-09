@@ -27,7 +27,7 @@ public:
   {
   }
 
-  explicit FEData(const std::shared_ptr<const FiniteElementType<dim, dim>> fe_)
+  explicit FEData(std::shared_ptr<const FiniteElementType<dim, dim>> fe_)
     : fe(std::move(fe_))
   {
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
@@ -487,6 +487,8 @@ public:
 #ifdef DEBUG_OUTPUT
     std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "This function can only be called for FEData objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_data.fe_evaluation->submit_gradient(value, q);
   }
@@ -501,6 +503,8 @@ public:
       std::cout << " " << value[i][0];
     std::cout << std::endl;
 #endif
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "This function can only be called for FEData objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_data.fe_evaluation->submit_curl(value, q);
   }
@@ -515,6 +519,8 @@ public:
       std::cout << " " << value[i][0];
     std::cout << std::endl;
 #endif
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "This function can only be called for FEData objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_data.fe_evaluation->submit_divergence(value, q);
   }
@@ -529,6 +535,8 @@ public:
       std::cout << " " << value[i][0];
     std::cout << std::endl;
 #endif
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "This function can only be called for FEData objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_data.fe_evaluation->submit_symmetric_gradient(value, q);
   }
@@ -540,6 +548,8 @@ public:
 #ifdef DEBUG_OUTPUT
     std::cout << "submit value FEDatas" << fe_number << " " << q << std::endl;
 #endif
+    static_assert(CFL::Traits::is_fe_data<FEData>::value,
+                  "This function can only be called for FEData objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     fe_data.fe_evaluation->submit_value(value, q);
   }
@@ -550,7 +560,9 @@ public:
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit face value FEDatas" << fe_number << " " << q << std::endl;
-#endif
+#endif    
+    static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
+                  "This function can only be called for FEDataFace objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     if constexpr(interior) fe_data.fe_evaluation_interior->submit_value(value, q);
     else
@@ -1055,6 +1067,24 @@ public:
       return Base::template get_value<fe_number_extern>(q);
   }
 
+  template <unsigned int fe_number_extern, bool interior>
+  auto
+  get_face_value(unsigned int q) const
+  {
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+    {
+#ifdef DEBUG_OUTPUT
+    std::cout << "get face value FEDatas " << fe_number << " " << q << std::endl;
+#endif
+    if constexpr(interior)
+      return fe_data.fe_evaluation_interior->get_value(q);
+    else
+      return fe_data.fe_evaluation_exterior->get_value(q);
+    }
+    else
+      return Base::template get_face_value<fe_number_extern, interior>(q);
+  }
+
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_curl(const ValueType& value, unsigned int q)
@@ -1128,6 +1158,24 @@ public:
       }
     else
       Base::template submit_value<fe_number_extern, ValueType>(value, q);
+  }
+
+  template <unsigned int fe_number_extern, bool interior, typename ValueType>
+  void
+  submit_face_value(const ValueType& value, unsigned int q)
+  {
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "submit face value FEDatas" << fe_number << " " << q << std::endl;
+#endif
+        if constexpr(interior)
+          fe_data.fe_evaluation_interior->submit_value(value, q);
+        else
+          fe_data.fe_evaluation_exterior->submit_value(value, q);
+      }
+    else
+      Base::template submit_face_value<fe_number_extern, interior, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern>

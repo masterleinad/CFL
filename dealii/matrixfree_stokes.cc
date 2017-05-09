@@ -151,16 +151,16 @@ template <int dim>
 void
 run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 {
-  FESystem<dim> fe_u(FE_Q<dim>(degree + 1), dim);
-  FE_Q<dim> fe_p(degree);
+  auto fe_u = std::make_shared<FESystem<dim> >(FE_Q<dim>(degree + 1), dim);
+  auto fe_p = std::make_shared<FE_Q<dim> > (degree);
 
   FEData<FESystem, 2, dim, dim, 0, 2> fedata1(fe_u);
   FEData<FE_Q, 1, 1, dim, 1, 2> fedata2(fe_p);
   auto fe_datas = (fedata1, fedata2);
 
   std::vector<FiniteElement<dim>*> fes;
-  fes.push_back(&fe_u);
-  fes.push_back(&fe_p);
+  fes.push_back(&(*fe_u));
+  fes.push_back(&(*fe_p));
 
   TestFunction<1, dim, 0> v;
   TestFunction<0, dim, 1> q;
