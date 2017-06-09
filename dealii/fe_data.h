@@ -382,8 +382,19 @@ public:
   static constexpr unsigned int
   get_n_q_points()
   {
-    static_assert(fe_number == fe_number_extern, "Component not found!");
-    return FEData::FEEvaluationType::static_n_q_points;
+    if constexpr(CFL::Traits::is_fe_data<FEData>::value &&
+                fe_number_extern == fe_number) return FEData::FEEvaluationType::static_n_q_points;
+    return 0;
+  }
+
+  template <unsigned int fe_number_extern = fe_number>
+  static constexpr unsigned int
+  get_n_q_points_face()
+  {
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value &&
+                fe_number_extern == fe_number) static_assert(fe_number_extern == fe_number,
+                                                             "Component not found!");
+    return 0;
   }
 
   template <unsigned int fe_number_extern>
@@ -560,7 +571,7 @@ public:
   {
 #ifdef DEBUG_OUTPUT
     std::cout << "submit face value FEDatas" << fe_number << " " << q << std::endl;
-#endif    
+#endif
     static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
                   "This function can only be called for FEDataFace objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
@@ -957,9 +968,20 @@ public:
   static constexpr unsigned int
   get_n_q_points()
   {
-    if constexpr(fe_number_extern == fe_number) return FEData::FEEvaluationType::static_n_q_points;
+    if constexpr(CFL::Traits::is_fe_data<FEData>::value && fe_number_extern == fe_number)
+      return FEData::FEEvaluationType::static_n_q_points;
     else
       return Base::template get_n_q_points<fe_number_extern>();
+  }
+
+  template <unsigned int fe_number_extern = fe_number>
+  static constexpr unsigned int
+  get_n_q_points_face()
+  {
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value && fe_number_extern == fe_number)
+      return FEData::FEEvaluationType::static_n_q_points;
+    else
+      return Base::template get_n_q_points_face<fe_number_extern>();
   }
 
   template <unsigned int fe_number_extern>
@@ -1072,15 +1094,14 @@ public:
   get_face_value(unsigned int q) const
   {
     if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
-    {
+      {
 #ifdef DEBUG_OUTPUT
-    std::cout << "get face value FEDatas " << fe_number << " " << q << std::endl;
+        std::cout << "get face value FEDatas " << fe_number << " " << q << std::endl;
 #endif
-    if constexpr(interior)
-      return fe_data.fe_evaluation_interior->get_value(q);
-    else
-      return fe_data.fe_evaluation_exterior->get_value(q);
-    }
+        if constexpr(interior) return fe_data.fe_evaluation_interior->get_value(q);
+        else
+          return fe_data.fe_evaluation_exterior->get_value(q);
+      }
     else
       return Base::template get_face_value<fe_number_extern, interior>(q);
   }
@@ -1169,8 +1190,7 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "submit face value FEDatas" << fe_number << " " << q << std::endl;
 #endif
-        if constexpr(interior)
-          fe_data.fe_evaluation_interior->submit_value(value, q);
+        if constexpr(interior) fe_data.fe_evaluation_interior->submit_value(value, q);
         else
           fe_data.fe_evaluation_exterior->submit_value(value, q);
       }
@@ -1192,8 +1212,7 @@ public:
   get_fe_data_face() const
   {
     if constexpr(fe_number == fe_number_extern &&
-                 CFL::Traits::is_fe_data_face<FEData>::value)
-      return fe_data;
+                CFL::Traits::is_fe_data_face<FEData>::value) return fe_data;
     else
       return Base::template get_fe_data_face<fe_number_extern>();
   }

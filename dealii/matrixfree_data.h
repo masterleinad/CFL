@@ -68,8 +68,15 @@ public:
       dealii::deallog << dh_ptr_vector[i]->n_dofs() << "+";
     dealii::deallog << dh_ptr_vector[fe.size() - 1]->n_dofs() << std::endl;
 
+    typename dealii::MatrixFree<dim, double>::AdditionalData addit_data;
+    addit_data.tasks_parallel_scheme = dealii::MatrixFree<dim, double>::AdditionalData::none;
+    addit_data.tasks_block_size = 3;
+    addit_data.level_mg_handler = dealii::numbers::invalid_unsigned_int;
+    addit_data.build_face_info = true;
+
     mf = std::make_shared<dealii::MatrixFree<dim, double>>();
-    mf->reinit(mapping, dh_const_ptr_vector, constraint_const_ptr_vector, quadrature_vector);
+    mf->reinit(
+      mapping, dh_const_ptr_vector, constraint_const_ptr_vector, quadrature_vector, addit_data);
 
     integrator.initialize(mf, forms, fe_datas);
   }

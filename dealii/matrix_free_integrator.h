@@ -54,9 +54,7 @@ public:
 protected:
   std::shared_ptr<const FORM> form = nullptr;
   std::shared_ptr<FEDatas> fe_datas = nullptr;
-  bool use_cell = false;
-  bool use_face = false;
-  bool use_boundary = false;
+  std::array<bool, 3> use_objects{ { /*cell*/ false, /*face*/ false, /*boundary*/ false } };
 
   // convenience function to avoid shared_ptr
   void
@@ -68,10 +66,27 @@ protected:
   void
   initialize(const std::shared_ptr<FORM>& form_, std::shared_ptr<FEDatas>& fe_datas_)
   {
+    // first retrieve information about integration loops to use from the Forms object
+    FORM::get_form_kinds(use_objects);
+    const bool use_cell = use_objects[0];
+    const bool use_face = use_objects[1];
+    const bool use_boundary = use_objects[2];
+
+    // then initialize the objects given appropriately
     form = form_;
     fe_datas = fe_datas_;
-    form->set_evaluation_flags(*fe_datas);
-    form->set_integration_flags(*fe_datas);
+
+    if (use_cell)
+    {
+      form->set_evaluation_flags(*fe_datas);
+      form->set_integration_flags(*fe_datas);
+    }
+    if (use_face | use_boundary)
+    {
+      form->set_evaluation_flags_face(*fe_datas);
+      form->set_integration_flags_face(*fe_datas);
+    }
+
     Assert(this->data != nullptr, dealii::ExcNotInitialized());
     fe_datas->initialize(*(this->data));
   }
@@ -84,12 +99,24 @@ protected:
         std::is_same<VectorType, dealii::LinearAlgebra::distributed::BlockVector<Number>>::value,
       "This is only implemented for dealii::LinearAlgebra::distributed::Vector<Number> "
       "and dealii::LinearAlgebra::distributed::BlockVector<Number> objects!");
-    Base::data->loop(&MatrixFreeIntegratorBase::local_apply,
-                     &MatrixFreeIntegratorBase::local_apply_face,
-                     &MatrixFreeIntegratorBase::local_apply_boundary,
-                     this,
-                     dst,
-                     src);
+    const bool use_cell = use_objects[0];
+    const bool use_face = use_objects[1];
+    const bool use_boundary = use_objects[2];
+
+    if (use_cell | use_face | use_boundary)
+    {
+      if (use_face | use_boundary)
+      {
+        Base::data->loop(use_cell ? &MatrixFreeIntegratorBase::local_apply : nullptr,
+                         use_face ? &MatrixFreeIntegratorBase::local_apply_face : nullptr,
+                         use_boundary ? &MatrixFreeIntegratorBase::local_apply_boundary : nullptr,
+                         this,
+                         dst,
+                         src);
+      }
+      else
+        Base::data->cell_loop(&MatrixFreeIntegratorBase::local_apply, this, dst, src);
+    }
   }
 
   template <class FEEvaluation>
@@ -110,7 +137,7 @@ protected:
   do_operation_on_face(FEEvaluation& phi, const unsigned int /*cell*/) const
   {
     phi.evaluate_face();
-    constexpr unsigned int n_q_points = FEEvaluation::get_n_q_points();
+    constexpr unsigned int n_q_points = FEEvaluation::get_n_q_points_face();
     // static_for_old<0, n_q_points>()([&](int q)
     for (unsigned int q = 0; q < n_q_points; ++q)
       form->evaluate_face(phi, q);
@@ -123,7 +150,7 @@ protected:
   do_operation_on_boundary(FEEvaluation& phi, const unsigned int /*cell*/) const
   {
     phi.evaluate_face();
-    constexpr unsigned int n_q_points = FEEvaluation::get_n_q_points();
+    constexpr unsigned int n_q_points = FEEvaluation::get_n_q_points_face();
     // static_for_old<0, n_q_points>()([&](int q)
     for (unsigned int q = 0; q < n_q_points; ++q)
       form->evaluate_boundary(phi, q);
@@ -152,6 +179,7 @@ protected:
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
     for (unsigned int face = face_range.first; face < face_range.second; face++)
     {
+      std::cout << "local_apply_face" << std::endl;
       fe_datas->reinit_face(face);
       fe_datas->read_dof_values_face(src);
       do_operation_on_face(*fe_datas, face);

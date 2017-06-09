@@ -183,6 +183,27 @@ public:
                   "Test function and expression must have the same dimension!");
   }
 
+  static constexpr void get_form_kinds(std::array<bool,3> &use_objects)
+  {
+      switch (form_kind)
+      {
+          case FormKind::cell:
+               use_objects[0] = true;
+              break;
+
+          case FormKind::face:
+               use_objects[1] = true;
+              break;
+
+          case FormKind::boundary:
+               use_objects[2] = true;
+              break;
+
+          default:
+              static_assert ("Invalid FormKind!");
+      }
+  }
+
   std::string
   latex() const
   {
@@ -229,7 +250,7 @@ public:
   {
     // only to be used if there is only one form!
     if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        expr.set_evaluation_flags_face(phi);
+        expr.set_evaluation_flags(phi);
   }
 
   number
@@ -419,6 +440,28 @@ public:
                   "You need to construct this with a Form object!");
   }
 
+  static constexpr void get_form_kinds(std::array<bool,3> &use_objects)
+  {
+      switch (form_kind)
+      {
+          case FormKind::cell:
+               use_objects[0] = true;
+              break;
+
+          case FormKind::face:
+               use_objects[1] = true;
+              break;
+
+          case FormKind::boundary:
+               use_objects[2] = true;
+              break;
+
+          default:
+              static_assert ("Invalid FormKind!");
+      }
+  }
+
+
   template <class FEEvaluation>
   static void
   set_integration_flags(FEEvaluation& phi)
@@ -543,6 +586,28 @@ public:
   {
     std::cout << "operator+2" << std::endl;
     return Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>(new_form, *this);
+  }
+
+  static constexpr void get_form_kinds(std::array<bool,3> &use_objects)
+  {
+      switch (form_kind)
+      {
+          case FormKind::cell:
+               use_objects[0] = true;
+              break;
+
+          case FormKind::face:
+               use_objects[1] = true;
+              break;
+
+          case FormKind::boundary:
+               use_objects[2] = true;
+              break;
+
+          default:
+              static_assert ("Invalid FormKind!");
+      }
+      Forms<Types...>::get_form_kinds(use_objects);
   }
 
   template <class FEEvaluation>

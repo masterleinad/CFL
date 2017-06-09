@@ -1,6 +1,8 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
+#define DEBUG_OUTPUT
+
 #include "matrixfree_data.h"
 #include <deal.II/fe/fe_dgq.h>
 #include <deal.II/fe/fe_system.h>
@@ -79,10 +81,9 @@ test(unsigned int refine, unsigned int degree, const LinearAlgebra::distributed:
         }
       }
 
-      for (unsigned int face_no=0; face_no < GeometryInfo<dim>::faces_per_cell; ++face_no)
-          {
-
-          }
+      for (unsigned int face_no = 0; face_no < GeometryInfo<dim>::faces_per_cell; ++face_no)
+      {
+      }
 
       cell->get_dof_indices(local_dof_indices);
       constraints.distribute_local_to_global(cell_matrix, local_dof_indices, sparse_matrix);
@@ -101,7 +102,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 
   FEData<FE_DGQ, 1, 1, dim, 0, 1> fedata1(fe_u);
   FEDataFace<FE_DGQ, 1, 1, dim, 0, 1> fedata_face1(fe_u);
-  auto fe_datas = (fedata_face1, fedata1);
+  auto fe_datas = (fedata1, fedata_face1);
 
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
@@ -115,9 +116,9 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FEFunctionExteriorFace<0, 1, 0> u_minus("u");
   auto Du = grad(u);
   auto f1 = form(Du, Dv);
-  auto f2 = face_form(u_plus - u_minus, v_plus);
+  auto f2 = face_form(u_plus, v_plus);
   auto f3 = face_form(u_minus - u_plus, v_minus);
-  auto f = f1/* + f2 + f3*/;
+  auto f = /*f1 +*/ f2 /* + f3*/;
 
   MatrixFreeData<dim,
                  decltype(fe_datas),
@@ -190,7 +191,7 @@ main(int /*argc*/, char** /*argv*/)
   std::cout << ::dealii::MultithreadInfo::n_threads() << std::endl;
   try
   {
-    const unsigned int refine = 1;
+    const unsigned int refine = 2;
     const unsigned int degree = 1;
     run<2>(0, refine, degree);
   }
