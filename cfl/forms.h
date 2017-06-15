@@ -490,7 +490,7 @@ public:
   set_evaluation_flags_face(FEEvaluation& phi) const
   {
     if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        form.expr.set_evaluation_flags_face(phi);
+        form.expr.set_evaluation_flags(phi);
   }
 
   template <class FEEvaluation>
@@ -548,6 +548,12 @@ public:
     phi.template integrate<fe_number>(integrate_value, integrate_gradient);
   }
 
+  const FormType&
+  get_form() const
+  {
+      return form;
+  }
+
 private:
   const FormType& form;
 };
@@ -586,6 +592,22 @@ public:
   {
     std::cout << "operator+2" << std::endl;
     return Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>(new_form, *this);
+  }
+
+  template <class NewForm1, class NewForm2, typename... NewForms>
+  auto
+  operator+(const Forms<NewForm1, NewForm2, NewForms...>& new_forms) const
+  {
+    return Forms<NewForm1, FormType, Types...>(new_forms.get_form(), *this) +
+           Forms<NewForm2, NewForms...>(
+             static_cast<const Forms<NewForm2, NewForms...>&>(new_forms));
+  }
+
+  template <class NewForm>
+  auto
+  operator+(const Forms<NewForm>& new_forms) const
+  {
+    return Forms<NewForm, FormType, Types...>(new_forms.get_form(), *this);
   }
 
   static constexpr void get_form_kinds(std::array<bool,3> &use_objects)
@@ -720,6 +742,12 @@ public:
   {
     phi.template integrate<fe_number>(integrate_value, integrate_gradient);
     Forms<Types...>::integrate(phi);
+  }
+
+  const FormType&
+  get_form() const
+  {
+      return form;
   }
 
 private:

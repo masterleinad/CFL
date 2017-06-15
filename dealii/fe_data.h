@@ -76,10 +76,12 @@ public:
                 dealii::ExcDimensionMismatch(fe->n_components(), n_components));
   }
 
+  template<bool interior=true, bool exterior=true>
   bool
   evaluation_is_initialized() const
   {
-    return (fe_evaluation_interior != nullptr && fe_evaluation_exterior != nullptr);
+    return ((interior || fe_evaluation_interior != nullptr)
+            && (exterior || fe_evaluation_exterior != nullptr));
   }
 
 private:
@@ -181,6 +183,22 @@ public:
         Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
         fe_data.fe_evaluation_interior->reinit(face);
         fe_data.fe_evaluation_exterior->reinit(face);
+      }
+  }
+
+  template <typename Face>
+  void
+  reinit_boundary(const Face& face)
+  {
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "Reinit face FEDatas " << fe_number << std::endl;
+#endif
+        // For boundaries we only consider interior faces
+        Assert((fe_data.template evaluation_is_initialized<true, false>()),
+               dealii::ExcInternalError());
+        fe_data.fe_evaluation_interior->reinit(face);
       }
   }
 
@@ -408,6 +426,20 @@ public:
     return fe_data.fe_evaluation->get_gradient(q);
   }
 
+  template <unsigned int fe_number_extern, bool interior>
+  auto
+  get_normal_gradient(unsigned int q) const
+  {
+#ifdef DEBUG_OUTPUT
+    std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
+#endif
+    static_assert(fe_number == fe_number_extern, "Component not found!");
+    if constexpr(interior)
+        return fe_data.fe_evaluation_interior->get_normal_gradient(q);
+        else
+          return fe_data.fe_evaluation_exterior->get_normal_gradient(q);
+  }
+
   template <unsigned int fe_number_extern>
   auto
   get_symmetric_gradient(unsigned int q) const
@@ -578,6 +610,21 @@ public:
     if constexpr(interior) fe_data.fe_evaluation_interior->submit_value(value, q);
     else
       fe_data.fe_evaluation_exterior->submit_value(value, q);
+  }
+
+  template <unsigned int fe_number_extern, bool interior, typename ValueType>
+  void
+  submit_normal_gradient(const ValueType& value, unsigned int q)
+  {
+#ifdef DEBUG_OUTPUT
+    std::cout << "submit normal gradient FEDatas" << fe_number << " " << q << std::endl;
+#endif
+    static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
+                  "This function can only be called for FEDataFace objects!");
+    static_assert(fe_number == fe_number_extern, "Component not found!");
+    if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_gradient(value, q);
+    else
+      fe_data.fe_evaluation_exterior->submit_normal_gradient(value, q);
   }
 
   void
@@ -790,6 +837,23 @@ public:
     Base::reinit_face(face);
   }
 
+  template <typename Face>
+  void
+  reinit_boundary(const Face& face)
+  {
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "Reinit face FEDatas " << fe_number << std::endl;
+#endif
+        // For boundaries we only consider the interior faces
+        Assert((fe_data.template evaluation_is_initialized<true, false>()),
+               dealii::ExcInternalError());
+        fe_data.fe_evaluation_interior->reinit(face);
+      }
+    Base::reinit_boundary(face);
+  }
+
   template <typename VectorType>
   void
   read_dof_values(const VectorType& vector)
@@ -999,6 +1063,23 @@ public:
       return Base::template get_gradient<fe_number_extern>(q);
   }
 
+  template <unsigned int fe_number_extern, bool interior>
+  auto
+  get_normal_gradient(unsigned int q) const
+  {
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "get face value FEDatas " << fe_number << " " << q << std::endl;
+#endif
+        if constexpr(interior) return fe_data.fe_evaluation_interior->get_normal_gradient(q);
+        else
+          return fe_data.fe_evaluation_exterior->get_normal_gradient(q);
+      }
+    else
+      return Base::template get_normal_gradient<fe_number_extern, interior>(q);
+  }
+
   template <unsigned int fe_number_extern>
   auto
   get_symmetric_gradient(unsigned int q) const
@@ -1196,6 +1277,23 @@ public:
       }
     else
       Base::template submit_face_value<fe_number_extern, interior, ValueType>(value, q);
+  }
+
+  template <unsigned int fe_number_extern, bool interior, typename ValueType>
+  void
+  submit_normal_gradeint(const ValueType& value, unsigned int q)
+  {
+    if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "submit normal gradient" << fe_number << " " << q << std::endl;
+#endif
+        if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_gradient(value, q);
+        else
+          fe_data.fe_evaluation_exterior->submit_normal_gradient(value, q);
+      }
+    else
+      Base::template submit_normal_gradient<fe_number_extern, interior, ValueType>(value, q);
   }
 
   template <unsigned int fe_number_extern>

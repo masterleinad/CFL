@@ -108,17 +108,32 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   fes.push_back(&fe_u);
 
   TestFunction<0, 1, 0> v;
-  TestFunctionInteriorFace<0, 1, 0> v_plus;
-  TestFunctionExteriorFace<0, 1, 0> v_minus;
   auto Dv = grad(v);
+  TestFunctionInteriorFace<0, 1, 0> v_p;
+  TestFunctionExteriorFace<0, 1, 0> v_m;
+  TestNormalGradientInteriorFace<0, 1, 0> Dnv_p;
+  TestNormalGradientExteriorFace<0, 1, 0> Dnv_m;
+
   FEFunction<0, 1, 0> u("u");
-  FEFunctionInteriorFace<0, 1, 0> u_plus("u");
-  FEFunctionExteriorFace<0, 1, 0> u_minus("u");
   auto Du = grad(u);
-  auto f1 = form(Du, Dv);
-  auto f2 = face_form(u_plus, v_plus);
-  auto f3 = face_form(u_minus - u_plus, v_minus);
-  auto f = /*f1 +*/ f2 /* + f3*/;
+  FEFunctionInteriorFace<0, 1, 0> u_p("u+");
+  FEFunctionExteriorFace<0, 1, 0> u_m("u-");
+  FENormalGradientInteriorFace<0, 1, 0> Dnu_p("u+");
+  FENormalGradientExteriorFace<0, 1, 0> Dnu_m("u-");
+
+  auto cell = form(Du, Dv);
+
+  auto jump = face_form(u_p-u_m, v_p)-face_form(u_m-u_p, v_m);
+
+  auto flux1 = face_form(u_p-u_m, Dnv_p)-face_form(u_m-u_p, Dnv_m);
+  auto flux2 = face_form(Dnu_p-Dnu_m, v_p)-face_form(Dnu_m-Dnu_p, v_m);
+
+  auto boundary1 = boundary_form(u_p, v_p);
+  auto boundary2 = boundary_form(Dnu_p, v_p);
+  auto boundary3 = boundary_form(u_p, Dnv_p);
+
+  auto face = jump+flux1+flux2;
+  auto f = cell+face+boundary1+boundary2+boundary3;
 
   MatrixFreeData<dim,
                  decltype(fe_datas),

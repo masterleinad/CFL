@@ -194,7 +194,7 @@ protected:
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
     for (unsigned int face = face_range.first; face < face_range.second; face++)
     {
-      fe_datas->reinit_face(face);
+      fe_datas->reinit_boundary(face);
       fe_datas->read_dof_values_face(src);
       do_operation_on_boundary(*fe_datas, face);
       fe_datas->distribute_local_to_global_face(dst);

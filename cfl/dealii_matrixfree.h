@@ -284,7 +284,7 @@ namespace dealii
       : public TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>
     {
     public:
-      using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
+      using Base = TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>;
       static constexpr bool integrate_value = true;
       static constexpr bool integrate_gradient = false;
 
@@ -302,6 +302,58 @@ namespace dealii
         std::cout << "submit TestFunctionExteriorFace " << Base::index << " " << q << std::endl;
 #endif
         phi.template submit_face_value<Base::index, false>(value, q);
+      }
+    };
+
+    template <int rank, int dim, unsigned int idx>
+    class TestNormalGradientInteriorFace final
+      : public TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>
+    {
+    public:
+      using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
+      static constexpr bool integrate_value = true;
+      static constexpr bool integrate_gradient = false;
+
+      template <class FEEvaluation, typename ValueType>
+      static void
+      submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
+      {
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 0),
+                      "Either the proposed FiniteElement is scalar valued "
+                      "and the TestFunction is vector valued or "
+                      "the TestFunction is scalar valued and "
+                      "the FiniteElement is vector valued!");
+#ifdef DEBUG_OUTPUT
+        std::cout << "submit TestNormalGradientInteriorFace " << Base::index << " " << q << std::endl;
+#endif
+        phi.template submit_normal_gradient<Base::index, true>(value, q);
+      }
+    };
+
+    template <int rank, int dim, unsigned int idx>
+    class TestNormalGradientExteriorFace final
+      : public TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>
+    {
+    public:
+      using Base = TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>;
+      static constexpr bool integrate_value = true;
+      static constexpr bool integrate_gradient = false;
+
+      template <class FEEvaluation, typename ValueType>
+      static void
+      submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
+      {
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 0),
+                      "Either the proposed FiniteElement is scalar valued "
+                      "and the TestFunction is vector valued or "
+                      "the TestFunction is scalar valued and "
+                      "the FiniteElement is vector valued!");
+#ifdef DEBUG_OUTPUT
+        std::cout << "submit TestNormalGradientExteriorFace " << Base::index << " " << q << std::endl;
+#endif
+        phi.template submit_normal_gradient<Base::index, false>(value, q);
       }
     };
 
@@ -563,7 +615,7 @@ namespace dealii
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
         static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
-                      "The evaluation object doe not act on faces!");
+                      "The evaluation object does not act on faces!");
         phi.template set_evaluation_flags_face<Base::index>(true, false, false);
       }
     };
@@ -595,8 +647,72 @@ namespace dealii
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
         static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
-                      "The evaluation object doe not act on faces!");
+                      "The evaluation object does not act on faces!");
         phi.template set_evaluation_flags_face<Base::index>(true, false, false);
+      }
+    };
+
+    template <int rank, int dim, unsigned int idx>
+    class FENormalGradientInteriorFace final
+      : public FEFunctionFaceBase<FENormalGradientInteriorFace<rank, dim, idx>>
+    {
+    public:
+      using Base = FEFunctionFaceBase<FENormalGradientInteriorFace<rank, dim, idx>>;
+      // inherit constructors
+      using Base::Base;
+
+      template <class FEDatas>
+      auto
+      value(const FEDatas& phi, unsigned int q) const
+      {
+        return Base::scalar_factor * phi.template get_normal_gradient<Base::index, true>(q);
+      }
+
+      template <class FEEvaluation>
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
+      {
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 0),
+                      "Either the proposed FiniteElement is scalar valued "
+                      "and the FEFunction is vector valued or "
+                      "the FEFunction is scalar valued and "
+                      "the FiniteElement is vector valued!");
+        static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
+                      "The evaluation object does not act on faces!");
+        phi.template set_evaluation_flags_face<Base::index>(false, true, false);
+      }
+    };
+
+    template <int rank, int dim, unsigned int idx>
+    class FENormalGradientExteriorFace final
+      : public FEFunctionFaceBase<FENormalGradientExteriorFace<rank, dim, idx>>
+    {
+    public:
+      using Base = FEFunctionFaceBase<FENormalGradientExteriorFace<rank, dim, idx>>;
+      // inherit constructors
+      using Base::Base;
+
+      template <class FEDatas>
+      auto
+      value(const FEDatas& phi, unsigned int q) const
+      {
+        return Base::scalar_factor * phi.template get_normal_gradient<Base::index, false>(q);
+      }
+
+      template <class FEEvaluation>
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
+      {
+        static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
+                        (Base::TensorTraits::rank > 0),
+                      "Either the proposed FiniteElement is scalar valued "
+                      "and the FEFunction is vector valued or "
+                      "the FEFunction is scalar valued and "
+                      "the FiniteElement is vector valued!");
+        static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
+                      "The evaluation object does not act on faces!");
+        phi.template set_evaluation_flags_face<Base::index>(false, true, false);
       }
     };
 
@@ -989,7 +1105,7 @@ namespace dealii
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
-      {
+      {        
         FEFunction::set_evaluation_flags(phi);
       }
 
@@ -1049,7 +1165,7 @@ namespace dealii
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
-      {
+      {          
         FEFunction::set_evaluation_flags(phi);
         Base::set_evaluation_flags(phi);
       }
