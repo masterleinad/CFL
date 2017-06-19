@@ -31,7 +31,7 @@ public:
     : fe(std::move(fe_))
   {
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
-    AssertThrow(fe->degree == fe_degree, dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree));
+    AssertThrow(fe->degree == fe_degree, dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree+1));
     AssertThrow(fe->n_components() == n_components,
                 dealii::ExcDimensionMismatch(fe->n_components(), n_components));
   }

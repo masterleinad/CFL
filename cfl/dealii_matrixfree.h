@@ -601,6 +601,7 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
+        std::cout << "Return: " << (Base::scalar_factor * phi.template get_face_value<Base::index, true>(q))[0];
         return Base::scalar_factor * phi.template get_face_value<Base::index, true>(q);
       }
 
@@ -1099,6 +1100,7 @@ namespace dealii
       auto
       value(FEEvaluation& phi, unsigned int q) const
       {
+        std::cout << "Innermost summand returns: ";// << summand.value(phi,q)[0];
         return summand.value(phi, q);
       }
 
@@ -1159,6 +1161,7 @@ namespace dealii
         const auto own_value = summand.value(phi, q);
         const auto other_value = Base::value(phi, q);
         assert_is_compatible(own_value, other_value);
+        //std::cout << "Total sum returns: " << (own_value+other_value)[0];
         return own_value + other_value;
       }
 

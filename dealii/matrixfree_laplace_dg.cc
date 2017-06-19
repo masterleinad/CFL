@@ -17,9 +17,82 @@
 #include <cfl/cfl.h>
 #include <cfl/dealii_matrixfree.h>
 
+// To generate a reference solution
+#include <deal.II/meshworker/dof_info.h>
+#include <deal.II/meshworker/integration_info.h>
+#include <deal.II/meshworker/assembler.h>
+#include <deal.II/meshworker/loop.h>
+#include <deal.II/integrators/laplace.h>
+
 using namespace dealii;
 using namespace CFL;
 using namespace CFL::dealii::MatrixFree;
+
+// Reference solution created with MeshWorker
+template <int dim>
+class MatrixIntegrator : public MeshWorker::LocalIntegrator<dim>
+{
+public:
+  void cell(MeshWorker::DoFInfo<dim> &dinfo,
+            typename MeshWorker::IntegrationInfo<dim> &info) const;
+  void boundary(MeshWorker::DoFInfo<dim> &dinfo,
+                typename MeshWorker::IntegrationInfo<dim> &info) const;
+  void face(MeshWorker::DoFInfo<dim> &dinfo1,
+            MeshWorker::DoFInfo<dim> &dinfo2,
+            typename MeshWorker::IntegrationInfo<dim> &info1,
+            typename MeshWorker::IntegrationInfo<dim> &info2) const;
+};
+
+
+
+template <int dim>
+void MatrixIntegrator<dim>::cell(
+  MeshWorker::DoFInfo<dim> &dinfo,
+  typename MeshWorker::IntegrationInfo<dim> &info) const
+{
+  //LocalIntegrators::Laplace::cell_matrix(dinfo.matrix(0,false).matrix, info.fe_values());
+}
+
+
+
+template <int dim>
+void MatrixIntegrator<dim>::face(
+  MeshWorker::DoFInfo<dim> &dinfo1,
+  MeshWorker::DoFInfo<dim> &dinfo2,
+  typename MeshWorker::IntegrationInfo<dim> &info1,
+  typename MeshWorker::IntegrationInfo<dim> &info2) const
+{/*
+  const unsigned int deg = info1.fe_values(0).get_fe().tensor_degree();
+  // Manually compute penalty parameter instead of using the function
+  // compute_penalty because we do it slightly differently on non-Cartesian
+  // meshes.
+  Tensor<2,dim> inverse_jacobian = transpose(info1.fe_values(0).jacobian(0).covariant_form());
+  const double normal_volume_fraction1 = std::abs((inverse_jacobian[GeometryInfo<dim>::unit_normal_direction[dinfo1.face_number]]*info1.fe_values(0).normal_vector(0)));
+  inverse_jacobian = transpose(info2.fe_values(0).jacobian(0).covariant_form());
+  const double normal_volume_fraction2 = std::abs((inverse_jacobian[GeometryInfo<dim>::unit_normal_direction[dinfo2.face_number]]*info1.fe_values(0).normal_vector(0)));
+  double penalty = 0.5*(normal_volume_fraction1+normal_volume_fraction2)*
+                   std::max(1U,deg)*(deg+1.0);*/
+  const double penalty = 1.;
+  LocalIntegrators::Laplace
+  ::ip_matrix(dinfo1.matrix(0,false).matrix, dinfo1.matrix(0,true).matrix,
+              dinfo2.matrix(0,true).matrix, dinfo2.matrix(0,false).matrix,
+              info1.fe_values(0), info2.fe_values(0), penalty);
+}
+
+
+
+template <int dim>
+void MatrixIntegrator<dim>::boundary(
+  MeshWorker::DoFInfo<dim> &dinfo,
+  typename MeshWorker::IntegrationInfo<dim> &info) const
+{/*
+  const unsigned int deg = info.fe_values(0).get_fe().tensor_degree();
+  Tensor<2,dim> inverse_jacobian = transpose(info.fe_values(0).jacobian(0).covariant_form());
+  const double normal_volume_fraction = std::abs((inverse_jacobian[GeometryInfo<dim>::unit_normal_direction[dinfo.face_number]]*info.fe_values(0).normal_vector(0)));
+  double penalty = normal_volume_fraction * std::max(1U,deg) * (deg + 1.0);
+  LocalIntegrators::Laplace
+  ::nitsche_matrix(dinfo.matrix(0,false).matrix, info.fe_values(0), penalty);*/
+}
 
 template <int dim>
 void
@@ -33,75 +106,45 @@ test(unsigned int refine, unsigned int degree, const LinearAlgebra::distributed:
   FE_DGQ<dim> fe(degree);
   DoFHandler<dim> dof(tria);
   dof.distribute_dofs(fe);
-  ConstraintMatrix constraints;
-  constraints.close();
 
-  MappingQ<dim, dim> mapping(degree);
+  MappingQGeneric<dim, dim> mapping(degree);
   const unsigned int n_dofs = dof.n_dofs();
 
   SparsityPattern sparsity;
   {
     DynamicSparsityPattern csp(n_dofs, n_dofs);
-    DoFTools::make_sparsity_pattern(dof, csp, constraints, true);
+    DoFTools::make_flux_sparsity_pattern(dof, csp);
     sparsity.copy_from(csp);
   }
-  SparseMatrix<double> sparse_matrix(sparsity);
-  {
-    QGauss<dim> quadrature_formula(degree + 1);
+  SparseMatrix<double> matrix(sparsity);
 
-    FEValues<dim> fe_values(
-      mapping, dof.get_fe(), quadrature_formula, update_gradients | update_JxW_values);
+  MeshWorker::IntegrationInfoBox<dim> info_box;
+  UpdateFlags update_flags = update_values | update_gradients | update_jacobians;
+  info_box.add_update_flags_all(update_flags);
+  info_box.initialize_gauss_quadrature(degree+1, degree+1, degree+1);
+  info_box.initialize(dof.get_fe(), mapping);
 
-    const unsigned int dofs_per_cell = dof.get_fe().dofs_per_cell;
-    const unsigned int n_q_points = quadrature_formula.size();
+  MeshWorker::DoFInfo<dim> dof_info(dof);
 
-    FullMatrix<double> cell_matrix(dofs_per_cell, dofs_per_cell);
-    std::vector<types::global_dof_index> local_dof_indices(dofs_per_cell);
+  MeshWorker::Assembler::MatrixSimple<SparseMatrix<double> > assembler;
+  assembler.initialize(matrix);
 
-    typename DoFHandler<dim>::active_cell_iterator cell = dof.begin_active(), endc = dof.end();
-    for (; cell != endc; ++cell)
-    {
-      cell_matrix = 0;
-      fe_values.reinit(cell);
+  MatrixIntegrator<dim> integrator;
+  MeshWorker::integration_loop<dim, dim>
+  (dof.begin_active(), dof.end(), dof_info, info_box, integrator, assembler);
 
-      for (unsigned int q_point = 0; q_point < n_q_points; ++q_point)
-      {
-        for (unsigned int i = 0; i < dofs_per_cell; ++i)
-        {
-          unsigned int component_i = fe.system_to_component_index(i).first;
-          for (unsigned int j = 0; j < dofs_per_cell; ++j)
-          {
-            unsigned int component_j = fe.system_to_component_index(j).first;
-            if (component_i == component_j)
-            {
-              cell_matrix(i, j) += (fe_values.shape_grad(i, q_point) *
-                                    fe_values.shape_grad(j, q_point) * fe_values.JxW(q_point));
-            }
-          }
-        }
-      }
-
-      for (unsigned int face_no = 0; face_no < GeometryInfo<dim>::faces_per_cell; ++face_no)
-      {
-      }
-
-      cell->get_dof_indices(local_dof_indices);
-      constraints.distribute_local_to_global(cell_matrix, local_dof_indices, sparse_matrix);
-    }
-  }
-
-  sparse_matrix.vmult(out, in);
+  matrix.vmult(out, in);
   out.print(std::cout);
 }
 
-template <int dim>
+template <int dim, unsigned int degree>
 void
-run(unsigned int grid_index, unsigned int refine, unsigned int degree)
+run(unsigned int grid_index, unsigned int refine)
 {
   FE_DGQ<dim> fe_u(degree);
 
-  FEData<FE_DGQ, 1, 1, dim, 0, 1> fedata1(fe_u);
-  FEDataFace<FE_DGQ, 1, 1, dim, 0, 1> fedata_face1(fe_u);
+  FEData<FE_DGQ, degree, 1, dim, 0, 1> fedata1(fe_u);
+  FEDataFace<FE_DGQ, degree, 1, dim, 0, 1> fedata_face1(fe_u);
   auto fe_datas = (fedata1, fedata_face1);
 
   std::vector<FiniteElement<dim>*> fes;
@@ -123,17 +166,20 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
 
   auto cell = form(Du, Dv);
 
-  auto jump = face_form(u_p-u_m, v_p)-face_form(u_m-u_p, v_m);
+  SumFEFunctions<FEFunctionExteriorFace<0, 1, 0>,
+                 FEFunctionInteriorFace<0, 1, 0> > flux = u_p-u_m;
+  auto flux_grad = Dnu_p-Dnu_m;
+  auto jump = face_form(u_m-u_p, v_m)/*-face_form(flux, v_m)*/;
 
-  auto flux1 = face_form(u_p-u_m, Dnv_p)-face_form(u_m-u_p, Dnv_m);
-  auto flux2 = face_form(Dnu_p-Dnu_m, v_p)-face_form(Dnu_m-Dnu_p, v_m);
+  auto flux1 = face_form(flux, Dnv_p)+face_form(flux, Dnv_m);
+  auto flux2 = face_form(flux_grad, v_p)-face_form(flux_grad, v_m);
 
   auto boundary1 = boundary_form(u_p, v_p);
   auto boundary2 = boundary_form(Dnu_p, v_p);
   auto boundary3 = boundary_form(u_p, Dnv_p);
 
-  auto face = jump+flux1+flux2;
-  auto f = cell+face+boundary1+boundary2+boundary3;
+  auto face = jump/*+flux1+flux2*/;
+  auto f = face/*+cell+boundary1+boundary2+boundary3*/;
 
   MatrixFreeData<dim,
                  decltype(fe_datas),
@@ -151,7 +197,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   for (size_t i = 0; i < b.n_blocks(); ++i)
   {
     for (types::global_dof_index j = 0; j < b.block(i).size(); ++j)
-      b.block(i)[j] = j;
+      b.block(i)[j] = 1/*j*/;
   }
 
   test<dim>(refine, degree, b.block(0), x_ref.block(0));
@@ -175,22 +221,24 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
       for (types::global_dof_index j = 0; j < x_new.block(k).size(); ++j)
       {
         // if (x_new.block(k)[j] != 0.)
-        std::cout << i << '\t' << j << '\t' << k << '\t' << x_new.block(k)[j] << std::endl;
+        std::cout << i << '\t' << j << '\t' << k << '\t'
+                  << '\t' << x_ref.block(k)[j]
+                  << '\t' << x_new.block(k)[j] << std::endl;
       }
+      x_ref.block(k) -= x_new.block(k);
+      std::cout << i << " error_ref: " << x_ref.block(k).l2_norm() << std::endl;
+      Assert(x_ref.block(k).l2_norm() < 1.e-20 ||
+               x_ref.block(k).l2_norm() < 1.e-6 * x_new.block(k).l2_norm(),
+             ExcInternalError());
     }
     if (i > 0)
     {
       for (size_t k = 0; k < b.n_blocks(); ++k)
       {
         x_old.block(k) -= x_new.block(k);
-        x_ref.block(k) -= x_new.block(k);
         std::cout << i << " error: " << x_old.block(k).l2_norm() << std::endl;
-        std::cout << i << " error_ref: " << x_ref.block(k).l2_norm() << std::endl;
         Assert(x_old.block(k).l2_norm() < 1.e-20 ||
                  x_old.block(k).l2_norm() < 1.e-6 * x_new.block(k).l2_norm(),
-               ExcInternalError());
-        Assert(x_ref.block(k).l2_norm() < 1.e-20 ||
-                 x_ref.block(k).l2_norm() < 1.e-6 * x_new.block(k).l2_norm(),
                ExcInternalError());
       }
     }
@@ -206,9 +254,9 @@ main(int /*argc*/, char** /*argv*/)
   std::cout << ::dealii::MultithreadInfo::n_threads() << std::endl;
   try
   {
-    const unsigned int refine = 2;
-    const unsigned int degree = 1;
-    run<2>(0, refine, degree);
+    constexpr unsigned int refine = 1;
+    constexpr unsigned int degree = 1;
+    run<2, degree>(0, refine);
   }
   catch (std::exception& exc)
   {
