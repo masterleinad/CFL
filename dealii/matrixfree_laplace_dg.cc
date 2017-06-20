@@ -48,7 +48,7 @@ void
 MatrixIntegrator<dim>::cell(MeshWorker::DoFInfo<dim>& dinfo,
                             typename MeshWorker::IntegrationInfo<dim>& info) const
 {
-  LocalIntegrators::Laplace::cell_matrix(dinfo.matrix(0, false).matrix, info.fe_values());
+  // LocalIntegrators::Laplace::cell_matrix(dinfo.matrix(0,false).matrix, info.fe_values());
 }
 
 template <int dim>
@@ -132,15 +132,36 @@ void
 MatrixIntegrator<dim>::boundary(MeshWorker::DoFInfo<dim>& dinfo,
                                 typename MeshWorker::IntegrationInfo<dim>& info) const
 {
-  return;
   /*const unsigned int deg = info.fe_values(0).get_fe().tensor_degree();
   Tensor<2,dim> inverse_jacobian = transpose(info.fe_values(0).jacobian(0).covariant_form());
   const double normal_volume_fraction =
   std::abs((inverse_jacobian[GeometryInfo<dim>::unit_normal_direction[dinfo.face_number]]*info.fe_values(0).normal_vector(0)));
   double penalty = normal_volume_fraction * std::max(1U,deg) * (deg + 1.0);*/
+
   const double penalty = 1.;
-  LocalIntegrators::Laplace::nitsche_matrix(
-    dinfo.matrix(0, false).matrix, info.fe_values(0), penalty);
+  const double factor = 1.;
+  const FEValuesBase<dim>& fe = info.fe_values(0);
+  FullMatrix<double>& M = dinfo.matrix(0, false).matrix;
+
+  const unsigned int n_dofs = fe.dofs_per_cell;
+  const unsigned int n_comp = fe.get_fe().n_components();
+
+  Assert(M.m() == n_dofs, ExcDimensionMismatch(M.m(), n_dofs));
+  Assert(M.n() == n_dofs, ExcDimensionMismatch(M.n(), n_dofs));
+
+  for (unsigned int k = 0; k < fe.n_quadrature_points; ++k)
+  {
+    const double dx = fe.JxW(k) * factor;
+    const Tensor<1, dim> n = fe.normal_vector(k);
+    for (unsigned int i = 0; i < n_dofs; ++i)
+      for (unsigned int j = 0; j < n_dofs; ++j)
+        for (unsigned int d = 0; d < n_comp; ++d)
+          M(i, j) +=
+            dx *
+            (2. * fe.shape_value_component(i, k, d) * penalty * fe.shape_value_component(j, k, d) -
+             (n * fe.shape_grad_component(i, k, d)) * fe.shape_value_component(j, k, d) -
+             (n * fe.shape_grad_component(j, k, d)) * fe.shape_value_component(i, k, d));
+  }
 }
 
 template <int dim>
@@ -229,11 +250,11 @@ run(unsigned int grid_index, unsigned int refine)
   auto flux1 = -face_form(.5 * flux, Dnv_p) + face_form(.5 * flux, Dnv_m);
   auto flux2 = -face_form(-flux + .5 * flux_grad, v_p) + face_form(-flux + .5 * flux_grad, v_m);
 
-  auto boundary1 = boundary_form(2. * u_p - Dnu_p, v_p);
-  auto boundary3 = -boundary_form(u_p, Dnv_p);
+  auto boundary1 = boundary_form(2. * u_p - Dnu_p, v_p) + boundary_form(0. * u_p, v_m);
+  auto boundary3 = -boundary_form(u_p, Dnv_p) + boundary_form(0 * u_p, Dnv_m);
 
   auto face = flux2 + flux1;
-  auto f = /*face+cell*/ boundary1 + boundary3;
+  auto f = /*cell+*/ face + boundary1 + boundary3;
 
   MatrixFreeData<dim,
                  decltype(fe_datas),
