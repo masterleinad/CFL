@@ -401,8 +401,8 @@ public:
   static constexpr unsigned int
   get_n_q_points()
   {
-    if constexpr(CFL::Traits::is_fe_data<FEData>::value && fe_number_extern == fe_number)
-      return FEData::FEEvaluationType::static_n_q_points;
+    if constexpr(CFL::Traits::is_fe_data<FEData>::value &&
+                fe_number_extern == fe_number) return FEData::FEEvaluationType::static_n_q_points;
     return 0;
   }
 
@@ -410,8 +410,8 @@ public:
   static constexpr unsigned int
   get_n_q_points_face()
   {
-    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value && fe_number_extern == fe_number)
-      return FEData::FEEvaluationType::static_n_q_points;
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value &&
+                fe_number_extern == fe_number) return FEData::FEEvaluationType::static_n_q_points;
     return 0;
   }
 
@@ -642,24 +642,26 @@ public:
   void
   integrate()
   {
-#ifdef DEBUG_OUTPUT
-    std::cout << "integrate cell FEDatas " << fe_number << " " << integrate_values << " "
-              << integrate_gradients << std::endl;
-#endif
     if constexpr(CFL::Traits::is_fe_data<FEData>::value) if (integrate_values | integrate_gradients)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "integrate cell FEDatas " << fe_number << " " << integrate_values << " "
+                  << integrate_gradients << std::endl;
+#endif
         fe_data.fe_evaluation->integrate(integrate_values, integrate_gradients);
+      }
   }
 
   void
   integrate_face()
   {
-#ifdef DEBUG_OUTPUT
-    std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
-              << integrate_gradients << std::endl;
-#endif
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
                                                                  integrate_gradients)
       {
+#ifdef DEBUG_OUTPUT
+        std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
+                  << integrate_gradients << std::endl;
+#endif
         fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
         fe_data.fe_evaluation_exterior->integrate(integrate_values, integrate_gradients);
       }
@@ -962,25 +964,27 @@ public:
   void
   integrate()
   {
-#ifdef DEBUG_OUTPUT
-    std::cout << "integrate cell FEDatas " << fe_number << " " << integrate_values << " "
-              << integrate_gradients << std::endl;
-#endif
     if constexpr(CFL::Traits::is_fe_data<FEData>::value) if (integrate_values | integrate_gradients)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "integrate cell FEDatas " << fe_number << " " << integrate_values << " "
+                  << integrate_gradients << std::endl;
+#endif
         fe_data.fe_evaluation->integrate(integrate_values, integrate_gradients);
+      }
     Base::integrate();
   }
 
   void
   integrate_face()
   {
-#ifdef DEBUG_OUTPUT
-    std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
-              << integrate_gradients << std::endl;
-#endif
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
                                                                  integrate_gradients)
       {
+#ifdef DEBUG_OUTPUT
+        std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
+                  << integrate_gradients << std::endl;
+#endif
         fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
         fe_data.fe_evaluation_exterior->integrate(integrate_values, integrate_gradients);
       }
@@ -1189,8 +1193,7 @@ public:
     if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get face value FEDatas " << fe_number << " " << q << " " << interior
-                  << ": ";
+        std::cout << "get face value FEDatas " << fe_number << " " << q << " " << interior << ": ";
 
 #endif
         if constexpr(interior)

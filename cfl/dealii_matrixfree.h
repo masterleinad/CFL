@@ -311,8 +311,8 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = true;
-      static constexpr bool integrate_gradient = false;
+      static constexpr bool integrate_value = false;
+      static constexpr bool integrate_gradient = true;
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -337,8 +337,8 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = true;
-      static constexpr bool integrate_gradient = false;
+      static constexpr bool integrate_value = false;
+      static constexpr bool integrate_gradient = true;
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -669,7 +669,9 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
-        return Base::scalar_factor * phi.template get_normal_gradient<Base::index, true>(q);
+          const auto value = Base::scalar_factor * phi.template get_normal_gradient<Base::index, true>(q);
+          std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
+          return value;
       }
 
       template <class FEEvaluation>
@@ -701,7 +703,9 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
-        return Base::scalar_factor * phi.template get_normal_gradient<Base::index, false>(q);
+          const auto value = Base::scalar_factor * phi.template get_normal_gradient<Base::index, false>(q);
+          std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
+          return value;
       }
 
       template <class FEEvaluation>

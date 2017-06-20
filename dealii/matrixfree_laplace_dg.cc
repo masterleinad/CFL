@@ -48,7 +48,7 @@ void
 MatrixIntegrator<dim>::cell(MeshWorker::DoFInfo<dim>& dinfo,
                             typename MeshWorker::IntegrationInfo<dim>& info) const
 {
-  // LocalIntegrators::Laplace::cell_matrix(dinfo.matrix(0,false).matrix, info.fe_values());
+  LocalIntegrators::Laplace::cell_matrix(dinfo.matrix(0, false).matrix, info.fe_values());
 }
 
 template <int dim>
@@ -56,7 +56,8 @@ void
 MatrixIntegrator<dim>::face(MeshWorker::DoFInfo<dim>& dinfo1, MeshWorker::DoFInfo<dim>& dinfo2,
                             typename MeshWorker::IntegrationInfo<dim>& info1,
                             typename MeshWorker::IntegrationInfo<dim>& info2) const
-{ /*
+{
+  /*
    const unsigned int deg = info1.fe_values(0).get_fe().tensor_degree();
    // Manually compute penalty parameter instead of using the function
    // compute_penalty because we do it slightly differently on non-Cartesian
@@ -115,10 +116,11 @@ MatrixIntegrator<dim>::face(MeshWorker::DoFInfo<dim>& dinfo1, MeshWorker::DoFInf
           const double dnui = n * fe1.shape_grad_component(j, k, d);
           const double ue = fe2.shape_value_component(j, k, d);
           const double dnue = n * fe2.shape_grad_component(j, k, d);
-          M11(i, j) += dx * (/*-.5*nui*dnvi*ui-.5*nui*dnui*vi+*/ nu * penalty * ui * vi);
-          M12(i, j) += dx * (/* .5*nui*dnvi*ue-.5*nue*dnue*vi+*/ -nu * penalty * vi * ue);
-          M21(i,j) += dx*(/*-.5*nue*dnve*ui+.5*nui*dnui*ve+*/-nu*penalty*ui*ve);
-          M22(i,j) += dx*(/* .5*nue*dnve*ue+.5*nue*dnue*ve+*/nu*penalty*ue*ve);
+          M11(i, j) += dx * (-.5 * nui * dnvi * ui - .5 * nui * dnui * vi + nu * penalty * ui * vi);
+          M12(i, j) += dx * (.5 * nui * dnvi * ue - .5 * nue * dnue * vi + -nu * penalty * vi * ue);
+          M21(i, j) +=
+            dx * (-.5 * nue * dnve * ui + .5 * nui * dnui * ve + -nu * penalty * ui * ve);
+          M22(i, j) += dx * (.5 * nue * dnve * ue + .5 * nue * dnue * ve + nu * penalty * ue * ve);
         }
       }
     }
@@ -130,13 +132,15 @@ void
 MatrixIntegrator<dim>::boundary(MeshWorker::DoFInfo<dim>& dinfo,
                                 typename MeshWorker::IntegrationInfo<dim>& info) const
 {
+  return;
   /*const unsigned int deg = info.fe_values(0).get_fe().tensor_degree();
   Tensor<2,dim> inverse_jacobian = transpose(info.fe_values(0).jacobian(0).covariant_form());
   const double normal_volume_fraction =
   std::abs((inverse_jacobian[GeometryInfo<dim>::unit_normal_direction[dinfo.face_number]]*info.fe_values(0).normal_vector(0)));
-  double penalty = normal_volume_fraction * std::max(1U,deg) * (deg + 1.0);
-  LocalIntegrators::Laplace
-  ::nitsche_matrix(dinfo.matrix(0,false).matrix, info.fe_values(0), penalty);*/
+  double penalty = normal_volume_fraction * std::max(1U,deg) * (deg + 1.0);*/
+  const double penalty = 1.;
+  LocalIntegrators::Laplace::nitsche_matrix(
+    dinfo.matrix(0, false).matrix, info.fe_values(0), penalty);
 }
 
 template <int dim>
@@ -181,8 +185,10 @@ test(unsigned int refine, unsigned int degree, const LinearAlgebra::distributed:
   assembler.initialize(matrix);
 
   MatrixIntegrator<dim> integrator;
+  MeshWorker::LoopControl loop_control;
+  loop_control.own_faces = MeshWorker::LoopControl::both;
   MeshWorker::integration_loop<dim, dim>(
-    dof.begin_active(), dof.end(), dof_info, info_box, integrator, assembler);
+    dof.begin_active(), dof.end(), dof_info, info_box, integrator, assembler /*, loop_control*/);
 
   matrix.vmult(out, in);
   out.print(std::cout);
@@ -217,20 +223,17 @@ run(unsigned int grid_index, unsigned int refine)
 
   auto cell = form(Du, Dv);
 
-  SumFEFunctions<FEFunctionExteriorFace<0, 1, 0>, FEFunctionInteriorFace<0, 1, 0>> flux = u_p - u_m;
-  auto flux_grad = Dnu_p - Dnu_m;  
-  auto jump = face_form(flux, v_p) - face_form(flux, v_m);
-  std::cout << flux.get_summand().scalar_factor << std::endl;
+  auto flux = u_p - u_m;
+  auto flux_grad = Dnu_p - Dnu_m;
 
   auto flux1 = -face_form(.5 * flux, Dnv_p) + face_form(.5 * flux, Dnv_m);
-  auto flux2 = -face_form(.5 * flux_grad, v_p) - face_form(.5 * flux_grad, v_m);
+  auto flux2 = -face_form(-flux + .5 * flux_grad, v_p) + face_form(-flux + .5 * flux_grad, v_m);
 
-  auto boundary1 = boundary_form(2. * u_p, v_p);
-  auto boundary2 = -boundary_form(Dnu_p, v_p);
+  auto boundary1 = boundary_form(2. * u_p - Dnu_p, v_p);
   auto boundary3 = -boundary_form(u_p, Dnv_p);
 
-  auto face = jump /*+flux1+flux2*/;
-  auto f = face /*+cell+boundary1+boundary2+boundary3*/;
+  auto face = flux2 + flux1;
+  auto f = /*face+cell*/ boundary1 + boundary3;
 
   MatrixFreeData<dim,
                  decltype(fe_datas),
