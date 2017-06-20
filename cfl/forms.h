@@ -555,7 +555,7 @@ public:
   }
 
 private:
-  const FormType& form;
+  const FormType form;
 };
 
 template <typename FormType, typename... Types>
@@ -751,7 +751,7 @@ public:
   }
 
 private:
-  const FormType& form;
+  const FormType form;
 };
 } // namespace CFL
 

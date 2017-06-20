@@ -601,8 +601,9 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
-        std::cout << "Return: " << (Base::scalar_factor * phi.template get_face_value<Base::index, true>(q))[0];
-        return Base::scalar_factor * phi.template get_face_value<Base::index, true>(q);
+          const auto value = Base::scalar_factor * phi.template get_face_value<Base::index, true>(q);
+          std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
+          return value;
       }
 
       template <class FEEvaluation>
@@ -634,7 +635,9 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
-        return Base::scalar_factor * phi.template get_face_value<Base::index, false>(q);
+        const auto value = Base::scalar_factor * phi.template get_face_value<Base::index, false>(q);
+        std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
+        return value;
       }
 
       template <class FEEvaluation>
@@ -1098,9 +1101,8 @@ namespace dealii
 
       template <class FEEvaluation>
       auto
-      value(FEEvaluation& phi, unsigned int q) const
-      {
-        std::cout << "Innermost summand returns: ";// << summand.value(phi,q)[0];
+      value(const FEEvaluation& phi, unsigned int q) const
+      {        
         return summand.value(phi, q);
       }
 
@@ -1161,7 +1163,8 @@ namespace dealii
         const auto own_value = summand.value(phi, q);
         const auto other_value = Base::value(phi, q);
         assert_is_compatible(own_value, other_value);
-        //std::cout << "Total sum returns: " << (own_value+other_value)[0];
+        std::cout << "Total sum returns: " << own_value[0] << " " << other_value[0] << std::endl;
+        std::cout << "Total sum returns: " << own_value[1] << " " << other_value[1] << std::endl;
         return own_value + other_value;
       }
 
