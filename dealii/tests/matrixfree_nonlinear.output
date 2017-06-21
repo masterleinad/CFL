@@ -86,7 +86,6 @@ expecting cell submit from fe_number 0
 submit TestGradient 0 3
 submit gradient FEDatas 0 3
 integrate cell FEDatas 0 1 1
-integrate cell FEDatas 1 0 0
 Distribute cell DoF values 0
 0	0	-2.5
 1	0	-1.125

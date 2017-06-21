@@ -284,6 +284,14 @@ public:
     evaluate_values |= evaluate_value;
     evaluate_gradients |= evaluate_gradient;
     evaluate_hessians |= evaluate_hessian;
+#ifdef DEBUG_OUTPUT
+    std::cout << "evaluate cell value end: " << fe_number << " " << evaluate_values << " "
+              << evaluate_value << std::endl;
+    std::cout << "evaluate cell gradients end: " << fe_number << " " << evaluate_gradients << " "
+              << evaluate_gradient << std::endl;
+    std::cout << "evaluate cell hessian end: " << fe_number << " " << evaluate_hessians << " "
+              << evaluate_hessian << std::endl;
+#endif
   }
 
   template <unsigned int fe_number_extern>
@@ -295,6 +303,14 @@ public:
     evaluate_values |= evaluate_value;
     evaluate_gradients |= evaluate_gradient;
     evaluate_hessians |= evaluate_hessian;
+#ifdef DEBUG_OUTPUT
+    std::cout << "evaluate face value end: " << fe_number << " " << evaluate_values << " "
+              << evaluate_value << std::endl;
+    std::cout << "evaluate face gradients end: " << fe_number << " " << evaluate_gradients << " "
+              << evaluate_gradient << std::endl;
+    std::cout << "evaluate face: hessian end: " << fe_number << " " << evaluate_hessians << " "
+              << evaluate_hessian << std::endl;
+#endif
   }
 
   template <typename VectorType>
@@ -601,7 +617,7 @@ public:
   submit_value(const ValueType& value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "submit value FEDatas" << fe_number << " " << q << std::endl;
+    std::cout << "submit value FEDatas " << fe_number << " " << q << std::endl;
 #endif
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "This function can only be called for FEData objects!");
@@ -614,7 +630,7 @@ public:
   submit_face_value(const ValueType& value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "submit face value FEDatas" << fe_number << " " << q << std::endl;
+    std::cout << "submit face value FEDatas " << fe_number << " " << q << std::endl;
 #endif
     static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
                   "This function can only be called for FEDataFace objects!");
@@ -629,7 +645,7 @@ public:
   submit_normal_gradient(const ValueType& value, unsigned int q)
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "submit normal gradient FEDatas" << fe_number << " " << q << std::endl;
+    std::cout << "submit normal gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
     static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
                   "This function can only be called for FEDataFace objects!");
@@ -1021,6 +1037,14 @@ public:
         evaluate_values |= evaluate_value;
         evaluate_gradients |= evaluate_gradient;
         evaluate_hessians |= evaluate_hessian;
+#ifdef DEBUG_OUTPUT
+    std::cout << "evaluate face value: " << fe_number << " " << evaluate_values << " "
+              << evaluate_value << std::endl;
+    std::cout << "evaluate face gradients: " << fe_number << " " << evaluate_gradients << " "
+              << evaluate_gradient << std::endl;
+    std::cout << "evaluate face hessian: " << fe_number << " " << evaluate_hessians << " "
+              << evaluate_hessian << std::endl;
+#endif
       }
     else
     {
@@ -1038,6 +1062,14 @@ public:
         evaluate_values |= evaluate_value;
         evaluate_gradients |= evaluate_gradient;
         evaluate_hessians |= evaluate_hessian;
+#ifdef DEBUG_OUTPUT
+    std::cout << "evaluate cell value: " << fe_number << " " << evaluate_values << " "
+              << evaluate_value << std::endl;
+    std::cout << "evaluate cell gradients: " << fe_number << " " << evaluate_gradients << " "
+              << evaluate_gradient << std::endl;
+    std::cout << "evaluate cell hessian: " << fe_number << " " << evaluate_hessians << " "
+              << evaluate_hessian << std::endl;
+#endif
       }
     else
     {
@@ -1301,7 +1333,7 @@ public:
     if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit face value FEDatas" << fe_number << " " << q << std::endl;
+        std::cout << "submit face value FEDatas " << fe_number << " " << q << std::endl;
 #endif
         if constexpr(interior) fe_data.fe_evaluation_interior->submit_value(value, q);
         else
@@ -1318,7 +1350,7 @@ public:
     if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
       {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit normal gradient" << fe_number << " " << q << std::endl;
+        std::cout << "submit normal gradient " << fe_number << " " << q << std::endl;
 #endif
         if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_gradient(value, q);
         else
