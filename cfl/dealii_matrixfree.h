@@ -1174,9 +1174,7 @@ namespace dealii
       {
         const auto own_value = summand.value(phi, q);
         const auto other_value = Base::value(phi, q);
-        assert_is_compatible(own_value, other_value);
-        std::cout << "Total sum returns: " << own_value[0] << " " << other_value[0] << std::endl;
-        std::cout << "Total sum returns: " << own_value[1] << " " << other_value[1] << std::endl;
+        assert_is_compatible(own_value, other_value);        
         return own_value + other_value;
       }
 

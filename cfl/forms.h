@@ -236,8 +236,19 @@ public:
   set_integration_flags_face(FEEvaluation& phi)
   {
     // only to be used if there is only one form!
-    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::face)
+        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
+                                                           integrate_gradient, integrate_gradient_exterior);
+  }
+
+  template <class FEEvaluation>
+  static void
+  set_integration_flags_boundary(FEEvaluation& phi)
+  {
+    // only to be used if there is only one form!
+    if constexpr(form_kind == FormKind::boundary)
+        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
+                                                           integrate_gradient, integrate_gradient_exterior);
   }
 
   template <class FEEvaluation>
@@ -483,8 +494,18 @@ public:
   static void
   set_integration_flags_face(FEEvaluation& phi)
   {
-    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::face)
+        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
+                                                           integrate_gradient, integrate_gradient_exterior);
+  }
+
+  template <class FEEvaluation>
+  static void
+  set_integration_flags_boundary(FEEvaluation& phi)
+  {
+    if constexpr(form_kind == FormKind::boundary)
+        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
+                                                           integrate_gradient, integrate_gradient_exterior);
   }
 
   template <class FEEvaluation>
@@ -659,9 +680,20 @@ public:
   static void
   set_integration_flags_face(FEEvaluation& phi)
   {
-    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face<fe_number>(integrate_value, integrate_gradient);
+    if constexpr(form_kind == FormKind::face)
+        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
+                                                           integrate_gradient, integrate_gradient_exterior);
     Forms<Types...>::set_integration_flags_face(phi);
+  }
+
+  template <class FEEvaluation>
+  static void
+  set_integration_flags_boundary(FEEvaluation& phi)
+  {
+    if constexpr(form_kind == FormKind::boundary)
+        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
+                                                           integrate_gradient, integrate_gradient_exterior);
+    Forms<Types...>::set_integration_flags_boundary(phi);
   }
 
   template <class FEEvaluation>

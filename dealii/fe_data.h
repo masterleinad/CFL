@@ -247,12 +247,12 @@ public:
 
   template <unsigned int fe_number_extern>
   void
-  set_integration_flags(bool integrate_value, bool integrate_gradient)
+  set_integration_flags(bool integrate_value   , bool integrate_gradient)
   {
     static_assert(fe_number == fe_number_extern, "Component not found!");
     integrate_values |= integrate_value;
     integrate_gradients |= integrate_gradient;
-#ifdef DEBUG_OUTPUT
+#ifdef DEBUG_OUTPUT    
     std::cout << "integrate cell value end: " << fe_number << " " << integrate_values << " "
               << integrate_value << std::endl;
     std::cout << "integrate cell gradients end: " << fe_number << " " << integrate_gradients << " "
@@ -260,18 +260,37 @@ public:
 #endif
   }
 
+  void
+  reset_integration_flags_face_and_boundary()
+  {
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
+    {
+    integrate_values = false;
+    integrate_values_exterior = false;
+    integrate_gradients = false;
+    integrate_gradients_exterior = false;
+    }
+  }
+
   template <unsigned int fe_number_extern>
   void
-  set_integration_flags_face(bool integrate_value, bool integrate_gradient)
+  set_integration_flags_face_and_boundary(bool integrate_value   , bool integrate_value_exterior,
+                             bool integrate_gradient, bool integrate_gradient_exterior)
   {
     static_assert(fe_number == fe_number_extern, "Component not found!");
     integrate_values |= integrate_value;
+    integrate_values_exterior |= integrate_value_exterior;
     integrate_gradients |= integrate_gradient;
+    integrate_gradients_exterior |= integrate_gradient_exterior;
 #ifdef DEBUG_OUTPUT
     std::cout << "integrate face value end: " << fe_number << " " << integrate_values << " "
-              << integrate_value << std::endl;
+              << integrate_value_exterior << std::endl;
+    std::cout << "integrate face value exterior end: " << fe_number << " " << integrate_values_exterior << " "
+              << integrate_value_exterior << std::endl;
     std::cout << "integrate face gradients end: " << fe_number << " " << integrate_gradients << " "
               << integrate_gradient << std::endl;
+    std::cout << "integrate face gradients exterior end: " << fe_number << " " << integrate_gradients_exterior << " "
+              << integrate_gradient_exterior << std::endl;
 #endif
   }
 
@@ -671,15 +690,23 @@ public:
   void
   integrate_face()
   {
-    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
-                                                                 integrate_gradients)
-      {
-#ifdef DEBUG_OUTPUT
-        std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
-                  << integrate_gradients << std::endl;
-#endif
-        fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
-        fe_data.fe_evaluation_exterior->integrate(integrate_values, integrate_gradients);
+      if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
+                                                                   integrate_gradients)
+        {
+  #ifdef DEBUG_OUTPUT
+          std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
+                    << integrate_gradients << std::endl;
+  #endif
+          fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
+      }
+      if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values_exterior |
+                                                                   integrate_gradients_exterior)
+        {
+  #ifdef DEBUG_OUTPUT
+          std::cout << "integrate face exterior FEDatas " << fe_number << " " << integrate_values_exterior << " "
+                    << integrate_gradients_exterior << std::endl;
+  #endif
+          fe_data.fe_evaluation_exterior->integrate(integrate_values_exterior, integrate_gradients_exterior);
       }
   }
 
@@ -1004,8 +1031,16 @@ public:
                   << integrate_gradients << std::endl;
 #endif
         fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
-        fe_data.fe_evaluation_exterior->integrate(integrate_values, integrate_gradients);
-      }
+    }
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values_exterior |
+                                                                 integrate_gradients_exterior)
+      {
+#ifdef DEBUG_OUTPUT
+        std::cout << "integrate face exterior FEDatas " << fe_number << " " << integrate_values_exterior << " "
+                  << integrate_gradients_exterior << std::endl;
+#endif
+        fe_data.fe_evaluation_exterior->integrate(integrate_values_exterior, integrate_gradients_exterior);
+    }
     Base::integrate_face();
   }
 
@@ -1028,6 +1063,45 @@ public:
       Base::template set_integration_flags<fe_number_extern>(integrate_value, integrate_gradient);
   }
 
+  void
+  reset_integration_flags_face_and_boundary()
+  {
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
+    {
+    integrate_values = false;
+    integrate_values_exterior = false;
+    integrate_gradients = false;
+    integrate_gradients_exterior = false;
+    }
+    Base::reset_integration_flags_face_and_boundary();
+  }
+
+  template <unsigned int fe_number_extern>
+  void
+  set_integration_flags_face_and_boundary(bool integrate_value   , bool integrate_value_exterior,
+                             bool integrate_gradient, bool integrate_gradient_exterior)
+  {
+      if constexpr(CFL::Traits::is_fe_data_face<FEData>::value && fe_number == fe_number_extern)
+      {
+    integrate_values |= integrate_value;
+    integrate_values_exterior |= integrate_value_exterior;
+    integrate_gradients |= integrate_gradient;
+    integrate_gradients_exterior |= integrate_gradient_exterior;
+#ifdef DEBUG_OUTPUT
+    std::cout << "integrate face value: " << fe_number << " " << integrate_values << " "
+              << integrate_value_exterior << std::endl;
+    std::cout << "integrate face value exterior: " << fe_number << " " << integrate_values_exterior << " "
+              << integrate_value_exterior << std::endl;
+    std::cout << "integrate face gradients: " << fe_number << " " << integrate_gradients << " "
+              << integrate_gradient << std::endl;
+    std::cout << "integrate face gradients exterior: " << fe_number << " " << integrate_gradients_exterior << " "
+              << integrate_gradient_exterior << std::endl;
+#endif
+      }
+      Base::template set_integration_flags_face_and_boundary<fe_number_extern>(integrate_value, integrate_value_exterior,
+                                                                  integrate_gradient, integrate_gradient_exterior);
+  }
+
   template <unsigned int fe_number_extern>
   void
   set_evaluation_flags(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
@@ -1038,11 +1112,11 @@ public:
         evaluate_gradients |= evaluate_gradient;
         evaluate_hessians |= evaluate_hessian;
 #ifdef DEBUG_OUTPUT
-    std::cout << "evaluate face value: " << fe_number << " " << evaluate_values << " "
+    std::cout << "evaluate cell value: " << fe_number << " " << evaluate_values << " "
               << evaluate_value << std::endl;
-    std::cout << "evaluate face gradients: " << fe_number << " " << evaluate_gradients << " "
+    std::cout << "evaluate cell gradients: " << fe_number << " " << evaluate_gradients << " "
               << evaluate_gradient << std::endl;
-    std::cout << "evaluate face hessian: " << fe_number << " " << evaluate_hessians << " "
+    std::cout << "evaluate cell hessian: " << fe_number << " " << evaluate_hessians << " "
               << evaluate_hessian << std::endl;
 #endif
       }
@@ -1063,11 +1137,11 @@ public:
         evaluate_gradients |= evaluate_gradient;
         evaluate_hessians |= evaluate_hessian;
 #ifdef DEBUG_OUTPUT
-    std::cout << "evaluate cell value: " << fe_number << " " << evaluate_values << " "
+    std::cout << "evaluate face value: " << fe_number << " " << evaluate_values << " "
               << evaluate_value << std::endl;
-    std::cout << "evaluate cell gradients: " << fe_number << " " << evaluate_gradients << " "
+    std::cout << "evaluate face gradients: " << fe_number << " " << evaluate_gradients << " "
               << evaluate_gradient << std::endl;
-    std::cout << "evaluate cell hessian: " << fe_number << " " << evaluate_hessians << " "
+    std::cout << "evaluate face hessian: " << fe_number << " " << evaluate_hessians << " "
               << evaluate_hessian << std::endl;
 #endif
       }

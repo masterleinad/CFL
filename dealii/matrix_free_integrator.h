@@ -76,16 +76,17 @@ protected:
     form = form_;
     fe_datas = fe_datas_;
 
+    // we don't need to share these so initailize them already here.
     if (use_cell)
     {
       form->set_evaluation_flags(*fe_datas);
       form->set_integration_flags(*fe_datas);
     }
-    if (use_face | use_boundary)
-    {
-      form->set_evaluation_flags_face(*fe_datas);
-      form->set_integration_flags_face(*fe_datas);
-    }
+
+    if (use_face || use_boundary)
+        {
+        form->set_evaluation_flags_face(*fe_datas);
+        }
 
     Assert(this->data != nullptr, dealii::ExcNotInitialized());
     fe_datas->initialize(*(this->data));
@@ -172,6 +173,8 @@ protected:
                         const std::pair<unsigned int, unsigned int>& face_range) const
   {
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
+    fe_datas->reset_integration_flags_face_and_boundary();
+    form->set_integration_flags_face(*fe_datas);
     for (unsigned int face = face_range.first; face < face_range.second; face++)
     {
       std::cout << "local_apply_face" << std::endl;
@@ -186,7 +189,9 @@ protected:
                             VectorType& dst, const VectorType& src,
                             const std::pair<unsigned int, unsigned int>& face_range) const
   {
-    Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
+    Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());    
+    fe_datas->reset_integration_flags_face_and_boundary();
+    form->set_integration_flags_boundary(*fe_datas);
     for (unsigned int face = face_range.first; face < face_range.second; face++)
     {
       fe_datas->reinit_boundary(face);
