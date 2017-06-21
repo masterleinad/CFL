@@ -259,8 +259,10 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = true;
-      static constexpr bool integrate_gradient = false;
+        static constexpr bool integrate_value = true;
+        static constexpr bool integrate_value_exterior = false;
+        static constexpr bool integrate_gradient = false;
+        static constexpr bool integrate_gradient_exterior = false;
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -285,8 +287,10 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = true;
-      static constexpr bool integrate_gradient = false;
+        static constexpr bool integrate_value = false;
+        static constexpr bool integrate_value_exterior = true;
+        static constexpr bool integrate_gradient = false;
+        static constexpr bool integrate_gradient_exterior = false;
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -311,8 +315,10 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_gradient = true;
+        static constexpr bool integrate_value = false;
+        static constexpr bool integrate_value_exterior = false;
+        static constexpr bool integrate_gradient = true;
+        static constexpr bool integrate_gradient_exterior = false;
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -338,7 +344,9 @@ namespace dealii
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>;
       static constexpr bool integrate_value = false;
-      static constexpr bool integrate_gradient = true;
+      static constexpr bool integrate_value_exterior = false;
+      static constexpr bool integrate_gradient = false;
+      static constexpr bool integrate_gradient_exterior = true;
 
       template <class FEEvaluation, typename ValueType>
       static void

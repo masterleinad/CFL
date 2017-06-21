@@ -160,7 +160,11 @@ public:
 
   static constexpr unsigned int fe_number = Test::index;
   static constexpr bool integrate_value = Test::integrate_value;
+  static constexpr bool integrate_value_exterior = (kind_of_form==FormKind::face)
+          ?Test::integrate_value_exterior:false;
   static constexpr bool integrate_gradient = Test::integrate_gradient;
+  static constexpr bool integrate_gradient_exterior = (kind_of_form==FormKind::face)
+          ?Test::integrate_gradient_exterior:false;
 
   Form(Test test_, Expr expr_)
     : test(std::move(test_))
@@ -429,7 +433,12 @@ public:
   static constexpr FormKind form_kind = FormType::form_kind;
 
   static constexpr bool integrate_value = FormType::integrate_value;
+  static constexpr bool integrate_value_exterior = (form_kind==FormKind::face)
+          ?FormType::integrate_value_exterior:false;
   static constexpr bool integrate_gradient = FormType::integrate_gradient;
+  static constexpr bool integrate_gradient_exterior = (form_kind==FormKind::face)
+          ?FormType::integrate_gradient_exterior:false;
+
   static constexpr unsigned int fe_number = FormType::fe_number;
 
   explicit Forms(const FormType& form_)
@@ -565,7 +574,12 @@ public:
   static constexpr FormKind form_kind = FormType::form_kind;
 
   static constexpr bool integrate_value = FormType::integrate_value;
+  static constexpr bool integrate_value_exterior = (form_kind==FormKind::face)
+          ?FormType::integrate_value_exterior:false;
   static constexpr bool integrate_gradient = FormType::integrate_gradient;
+  static constexpr bool integrate_gradient_exterior = (form_kind==FormKind::face)
+          ?FormType::integrate_gradient_exterior:false;
+
   static constexpr unsigned int fe_number = FormType::fe_number;
 
   Forms(const FormType& form_, const Forms<Types...>& old_form)

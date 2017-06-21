@@ -105,17 +105,12 @@ protected:
 
     if (use_cell | use_face | use_boundary)
     {
-      if (use_face | use_boundary)
-      {
-        Base::data->loop(use_cell ? &MatrixFreeIntegratorBase::local_apply : nullptr,
+      Base::data->loop(use_cell ? &MatrixFreeIntegratorBase::local_apply : nullptr,
                          use_face ? &MatrixFreeIntegratorBase::local_apply_face : nullptr,
                          use_boundary ? &MatrixFreeIntegratorBase::local_apply_boundary : nullptr,
                          this,
                          dst,
-                         src);
-      }
-      else
-        Base::data->cell_loop(&MatrixFreeIntegratorBase::local_apply, this, dst, src);
+                         src);      
     }
   }
 

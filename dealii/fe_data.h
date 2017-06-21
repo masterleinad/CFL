@@ -732,7 +732,9 @@ protected:
 
 private:
   bool integrate_values = false;
+  bool integrate_values_exterior = false;
   bool integrate_gradients = false;
+  bool integrate_gradients_exterior = false;
   bool evaluate_values = false;
   bool evaluate_gradients = false;
   bool evaluate_hessians = false;
@@ -1405,7 +1407,9 @@ protected:
 
 private:
   bool integrate_values = false;
+  bool integrate_values_exterior = false;
   bool integrate_gradients = false;
+  bool integrate_gradients_exterior = false;
   bool evaluate_values = false;
   bool evaluate_gradients = false;
   bool evaluate_hessians = false;
