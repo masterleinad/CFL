@@ -222,6 +222,21 @@ namespace dealii
 {
   namespace MatrixFree
   {
+    struct IntegrationFlags
+    {
+      bool value = false;
+      bool value_exterior = false;
+      bool gradient = false;
+      bool gradient_exterior = false;
+
+      bool operator&(const IntegrationFlags& other_flags) const
+      {
+        return (value & other_flags.value) || (value_exterior & other_flags.value_exterior) ||
+               (gradient & other_flags.gradient) ||
+               (gradient_exterior & other_flags.gradient_exterior);
+      }
+    };
+
     // CRTP
     template <class T>
     class TestFunctionBaseBase
@@ -259,10 +274,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = true;
-      static constexpr bool integrate_value_exterior = false;
-      static constexpr bool integrate_gradient = false;
-      static constexpr bool integrate_gradient_exterior = false;
+      static constexpr IntegrationFlags integration_flags{ true, false, false, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -287,10 +299,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_value_exterior = true;
-      static constexpr bool integrate_gradient = false;
-      static constexpr bool integrate_gradient_exterior = false;
+      static constexpr IntegrationFlags integration_flags{ false, true, false, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -315,10 +324,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_value_exterior = false;
-      static constexpr bool integrate_gradient = true;
-      static constexpr bool integrate_gradient_exterior = false;
+      static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -344,10 +350,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_value_exterior = false;
-      static constexpr bool integrate_gradient = false;
-      static constexpr bool integrate_gradient_exterior = true;
+      static constexpr IntegrationFlags integration_flags{ false, false, false, true };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -372,8 +375,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionBase<TestFunction<rank, dim, idx>>;
-      static constexpr bool integrate_value = true;
-      static constexpr bool integrate_gradient = false;
+      static constexpr IntegrationFlags integration_flags{ true, false, false, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -397,8 +399,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionBase<TestDivergence<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_gradient = true;
+      static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -420,8 +421,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_gradient = true;
+      static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -444,8 +444,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionBase<TestCurl<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_gradient = true;
+      static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -469,8 +468,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionBase<TestGradient<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_gradient = true;
+      static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -494,8 +492,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionBase<TestHessian<rank, dim, idx>>;
-      static constexpr bool integrate_value = false;
-      static constexpr bool integrate_gradient = false;
+      static constexpr IntegrationFlags integration_flags{ false, false, false, false };
 
       template <class FEEvaluation, typename ValueType>
       static void
