@@ -377,9 +377,9 @@ public:
         if constexpr(exterior == true) if (integrate_values_exterior | integrate_gradients_exterior)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
-                fe_data.fe_evaluation_exterior->read_dof_values(vector.block(fe_number));
+                fe_data.fe_evaluation_exterior->distribute_local_to_global(vector.block(fe_number));
             else
-              fe_data.fe_evaluation_exterior->read_dof_values(vector);
+              fe_data.fe_evaluation_exterior->distribute_local_to_global(vector);
           }
       }
   }
@@ -705,24 +705,26 @@ public:
   void
   integrate_face()
   {
-    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
-                                                                 integrate_gradients)
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
+        if (integrate_values | integrate_gradients)
+        {
 #ifdef DEBUG_OUTPUT
-        std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
-                  << integrate_gradients << std::endl;
+          std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
+                    << integrate_gradients << std::endl;
 #endif
-        fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
-      }
-    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values_exterior |
-                                                                 integrate_gradients_exterior)
-      {
+          fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
+        }
+        if (integrate_values_exterior | integrate_gradients_exterior)
+        {
 #ifdef DEBUG_OUTPUT
-        std::cout << "integrate face exterior FEDatas " << fe_number << " "
-                  << integrate_values_exterior << " " << integrate_gradients_exterior << std::endl;
+          std::cout << "integrate face exterior FEDatas " << fe_number << " "
+                    << integrate_values_exterior << " " << integrate_gradients_exterior
+                    << std::endl;
 #endif
-        fe_data.fe_evaluation_exterior->integrate(integrate_values_exterior,
-                                                  integrate_gradients_exterior);
+          fe_data.fe_evaluation_exterior->integrate(integrate_values_exterior,
+                                                    integrate_gradients_exterior);
+        }
       }
   }
 
@@ -1044,24 +1046,26 @@ public:
   void
   integrate_face()
   {
-    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values |
-                                                                 integrate_gradients)
+    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
+        if (integrate_values | integrate_gradients)
+        {
 #ifdef DEBUG_OUTPUT
-        std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
-                  << integrate_gradients << std::endl;
+          std::cout << "integrate face FEDatas " << fe_number << " " << integrate_values << " "
+                    << integrate_gradients << std::endl;
 #endif
-        fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
-      }
-    if constexpr(CFL::Traits::is_fe_data_face<FEData>::value) if (integrate_values_exterior |
-                                                                 integrate_gradients_exterior)
-      {
+          fe_data.fe_evaluation_interior->integrate(integrate_values, integrate_gradients);
+        }
+        if (integrate_values_exterior | integrate_gradients_exterior)
+        {
 #ifdef DEBUG_OUTPUT
-        std::cout << "integrate face exterior FEDatas " << fe_number << " "
-                  << integrate_values_exterior << " " << integrate_gradients_exterior << std::endl;
+          std::cout << "integrate face exterior FEDatas " << fe_number << " "
+                    << integrate_values_exterior << " " << integrate_gradients_exterior
+                    << std::endl;
 #endif
-        fe_data.fe_evaluation_exterior->integrate(integrate_values_exterior,
-                                                  integrate_gradients_exterior);
+          fe_data.fe_evaluation_exterior->integrate(integrate_values_exterior,
+                                                    integrate_gradients_exterior);
+        }
       }
     Base::integrate_face();
   }

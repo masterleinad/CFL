@@ -117,9 +117,8 @@ MatrixIntegrator<dim>::face(MeshWorker::DoFInfo<dim>& dinfo1, MeshWorker::DoFInf
           const double ue = fe2.shape_value_component(j, k, d);
           const double dnue = n * fe2.shape_grad_component(j, k, d);
           M11(i, j) += dx * (-.5 * nui * dnvi * ui - .5 * nui * dnui * vi + nu * penalty * ui * vi);
-          M12(i, j) += dx * (.5 * nui * dnvi * ue - .5 * nue * dnue * vi + -nu * penalty * vi * ue);
-          M21(i, j) +=
-            dx * (-.5 * nue * dnve * ui + .5 * nui * dnui * ve + -nu * penalty * ui * ve);
+          M12(i, j) += dx * (.5 * nui * dnvi * ue - .5 * nue * dnue * vi - nu * penalty * vi * ue);
+          M21(i, j) += dx * (-.5 * nue * dnve * ui + .5 * nui * dnui * ve - nu * penalty * ui * ve);
           M22(i, j) += dx * (.5 * nue * dnve * ue + .5 * nue * dnue * ve + nu * penalty * ue * ve);
         }
       }
@@ -132,7 +131,6 @@ void
 MatrixIntegrator<dim>::boundary(MeshWorker::DoFInfo<dim>& dinfo,
                                 typename MeshWorker::IntegrationInfo<dim>& info) const
 {
-  return;
   /*const unsigned int deg = info.fe_values(0).get_fe().tensor_degree();
   Tensor<2,dim> inverse_jacobian = transpose(info.fe_values(0).jacobian(0).covariant_form());
   const double normal_volume_fraction =
@@ -251,11 +249,11 @@ run(unsigned int grid_index, unsigned int refine)
   auto flux1 = -face_form(.5 * flux, Dnv_p) + face_form(.5 * flux, Dnv_m);
   auto flux2 = -face_form(-flux + .5 * flux_grad, v_p) + face_form(-flux + .5 * flux_grad, v_m);
 
-  auto boundary1 = boundary_form(2. * u_p - Dnu_p, v_p) /*+ boundary_form(0. * u_p, v_m)*/;
-  auto boundary3 = -boundary_form(u_p, Dnv_p) /*+ boundary_form(0 * u_p, Dnv_m)*/;
+  auto boundary1 = boundary_form(2. * u_p - Dnu_p, v_p);
+  auto boundary3 = -boundary_form(u_p, Dnv_p);
 
   auto face = flux2 + flux1;
-  auto f = cell + face /*+ boundary1 + boundary3*/;
+  auto f = cell + face + boundary1 + boundary3;
 
   MatrixFreeData<dim,
                  decltype(fe_datas),
