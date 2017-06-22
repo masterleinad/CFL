@@ -4,6 +4,21 @@ operator+1
 constructor2
 constructor4
 DEAL::Grid type 0 Cells 1 DoFs 4+4
+evaluate cell value: 0 0 0
+evaluate cell gradients: 0 1 1
+evaluate cell hessian: 0 0 0
+evaluate cell value: 0 1 1
+evaluate cell gradients: 0 1 0
+evaluate cell hessian: 0 0 0
+evaluate cell value: 0 1 1
+evaluate cell gradients: 0 1 0
+evaluate cell hessian: 0 0 0
+evaluate cell value end: 1 1 1
+evaluate cell gradients end: 1 0 0
+evaluate cell hessian end: 1 0 0
+evaluate cell value end: 1 1 1
+evaluate cell gradients end: 1 0 0
+evaluate cell hessian end: 1 0 0
 integrate cell value: 0 0 0
 integrate cell gradients: 0 1 1
 integrate cell value: 0 1 1
@@ -27,6 +42,7 @@ Process #0
 Local range: [0, 4), global size: 4
 Vector data:
 -2.500e+00 -1.125e+00 7.500e-01 3.625e+00 
+Begin cell loop
 Reinit cell FEDatas 0
 Reinit cell FEDatas 1
 Read DoF values 0
@@ -87,6 +103,7 @@ submit TestGradient 0 3
 submit gradient FEDatas 0 3
 integrate cell FEDatas 0 1 1
 Distribute cell DoF values 0
+End cell loop
 0	0	-2.5
 1	0	-1.125
 2	0	0.75

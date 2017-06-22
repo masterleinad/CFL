@@ -2,14 +2,23 @@ constructor1
 constructor1
 constructor1
 DEAL::Grid type 0 Cells 1 DoFs 4
+evaluate cell value end: 0 1 1
+evaluate cell gradients end: 0 0 0
+evaluate cell hessian end: 0 0 0
 integrate cell value end: 0 1 1
 integrate cell gradients end: 0 0 0
 Initialize cell FEDatas 0
 DEAL::Grid type 0 Cells 1 DoFs 4
+evaluate cell value end: 0 1 1
+evaluate cell gradients end: 0 0 0
+evaluate cell hessian end: 0 0 0
 integrate cell value end: 0 1 1
 integrate cell gradients end: 0 0 0
 Initialize cell FEDatas 0
 DEAL::Grid type 0 Cells 1 DoFs 4
+evaluate cell value end: 0 1 1
+evaluate cell gradients end: 0 0 0
+evaluate cell hessian end: 0 0 0
 integrate cell value end: 0 1 1
 integrate cell gradients end: 0 0 0
 Initialize cell FEDatas 0
@@ -18,57 +27,63 @@ Vector 0 has size 4
 Vector 0 has size 4
 Vector 0 has size 4
 Vector 0 has size 4
+Begin cell loop
 Reinit cell FEDatas 0
 Read cell DoF values 0
 Evaluate cell FEDatas 0 1 0 0
 get value FEDatas 0 0
 submit TestFunction 0 0
-submit value FEDatas0 0
+submit value FEDatas 0 0
 get value FEDatas 0 1
 submit TestFunction 0 1
-submit value FEDatas0 1
+submit value FEDatas 0 1
 get value FEDatas 0 2
 submit TestFunction 0 2
-submit value FEDatas0 2
+submit value FEDatas 0 2
 get value FEDatas 0 3
 submit TestFunction 0 3
-submit value FEDatas0 3
+submit value FEDatas 0 3
 integrate cell FEDatas 0 1 0
 Distribute cell DoF values 0
+End cell loop
+Begin cell loop
 Reinit cell FEDatas 0
 Read cell DoF values 0
 Evaluate cell FEDatas 0 1 0 0
 get value FEDatas 0 0
 submit TestFunction 0 0
-submit value FEDatas0 0
+submit value FEDatas 0 0
 get value FEDatas 0 1
 submit TestFunction 0 1
-submit value FEDatas0 1
+submit value FEDatas 0 1
 get value FEDatas 0 2
 submit TestFunction 0 2
-submit value FEDatas0 2
+submit value FEDatas 0 2
 get value FEDatas 0 3
 submit TestFunction 0 3
-submit value FEDatas0 3
+submit value FEDatas 0 3
 integrate cell FEDatas 0 1 0
 Distribute cell DoF values 0
+End cell loop
+Begin cell loop
 Reinit cell FEDatas 0
 Read cell DoF values 0
 Evaluate cell FEDatas 0 1 0 0
 get value FEDatas 0 0
 submit TestFunction 0 0
-submit value FEDatas0 0
+submit value FEDatas 0 0
 get value FEDatas 0 1
 submit TestFunction 0 1
-submit value FEDatas0 1
+submit value FEDatas 0 1
 get value FEDatas 0 2
 submit TestFunction 0 2
-submit value FEDatas0 2
+submit value FEDatas 0 2
 get value FEDatas 0 3
 submit TestFunction 0 3
-submit value FEDatas0 3
+submit value FEDatas 0 3
 integrate cell FEDatas 0 1 0
 Distribute cell DoF values 0
+End cell loop
 0	0	0.25	-0.25	0.25
 1	0	0.333333	-0.333333	0.333333
 2	0	0.416667	-0.416667	0.416667

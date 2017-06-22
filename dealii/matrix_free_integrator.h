@@ -156,7 +156,9 @@ protected:
                    const VectorType& src,
                    const std::pair<unsigned int, unsigned int>& cell_range) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Begin cell loop" << std::endl;
+#endif
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
     for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
     {
@@ -165,33 +167,40 @@ protected:
       do_operation_on_cell(*fe_datas, cell);
       fe_datas->distribute_local_to_global(dst);
     }
+#ifdef DEBUG_OUTPUT
     std::cout << "End cell loop" << std::endl;
+#endif
   }
 
   void local_apply_face([[maybe_unused]] const dealii::MatrixFree<dim, Number>& data_,
                         VectorType& dst, const VectorType& src,
                         const std::pair<unsigned int, unsigned int>& face_range) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Begin face loop" << std::endl;
+#endif
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
     fe_datas->reset_integration_flags_face_and_boundary();
     form->set_integration_flags_face(*fe_datas);
     for (unsigned int face = face_range.first; face < face_range.second; face++)
     {
-      std::cout << "local_apply_face" << std::endl;
       fe_datas->reinit_face(face);
       fe_datas->read_dof_values_face(src);
       do_operation_on_face(*fe_datas, face);
       fe_datas->distribute_local_to_global_face(dst);
     }
+#ifdef DEBUG_OUTPUT
     std::cout << "End face loop" << std::endl;
+#endif
   }
 
   void local_apply_boundary([[maybe_unused]] const dealii::MatrixFree<dim, Number>& data_,
                             VectorType& dst, const VectorType& src,
                             const std::pair<unsigned int, unsigned int>& face_range) const
   {
+#ifdef DEBUG_OUTPUT
     std::cout << "Begin boundary loop" << std::endl;
+#endif
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
     fe_datas->reset_integration_flags_face_and_boundary();
     form->set_integration_flags_boundary(*fe_datas);
@@ -203,7 +212,9 @@ protected:
       do_operation_on_boundary(*fe_datas, face);
       fe_datas->template distribute_local_to_global_face<VectorType, true, false>(dst);
     }
+#ifdef DEBUG_OUTPUT
     std::cout << "End boundary loop" << std::endl;
+#endif
   }
 };
 
