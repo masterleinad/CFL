@@ -84,9 +84,7 @@ protected:
     }
 
     if (use_face || use_boundary)
-        {
-        form->set_evaluation_flags_face(*fe_datas);
-        }
+      form->set_evaluation_flags_face(*fe_datas);
 
     Assert(this->data != nullptr, dealii::ExcNotInitialized());
     fe_datas->initialize(*(this->data));
@@ -107,11 +105,11 @@ protected:
     if (use_cell | use_face | use_boundary)
     {
       Base::data->loop(use_cell ? &MatrixFreeIntegratorBase::local_apply : nullptr,
-                         use_face ? &MatrixFreeIntegratorBase::local_apply_face : nullptr,
-                         use_boundary ? &MatrixFreeIntegratorBase::local_apply_boundary : nullptr,
-                         this,
-                         dst,
-                         src);      
+                       use_face ? &MatrixFreeIntegratorBase::local_apply_face : nullptr,
+                       use_boundary ? &MatrixFreeIntegratorBase::local_apply_boundary : nullptr,
+                       this,
+                       dst,
+                       src);
     }
   }
 
@@ -145,7 +143,7 @@ protected:
   void
   do_operation_on_boundary(FEEvaluation& phi, const unsigned int /*cell*/) const
   {
-    phi.evaluate_face();
+    phi.template evaluate_face<true, false>();
     constexpr unsigned int n_q_points = FEEvaluation::get_n_q_points_face();
     // static_for_old<0, n_q_points>()([&](int q)
     for (unsigned int q = 0; q < n_q_points; ++q)
@@ -158,6 +156,7 @@ protected:
                    const VectorType& src,
                    const std::pair<unsigned int, unsigned int>& cell_range) const
   {
+    std::cout << "Begin cell loop" << std::endl;
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
     for (unsigned int cell = cell_range.first; cell < cell_range.second; ++cell)
     {
@@ -166,12 +165,14 @@ protected:
       do_operation_on_cell(*fe_datas, cell);
       fe_datas->distribute_local_to_global(dst);
     }
+    std::cout << "End cell loop" << std::endl;
   }
 
   void local_apply_face([[maybe_unused]] const dealii::MatrixFree<dim, Number>& data_,
                         VectorType& dst, const VectorType& src,
                         const std::pair<unsigned int, unsigned int>& face_range) const
   {
+    std::cout << "Begin face loop" << std::endl;
     Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
     fe_datas->reset_integration_flags_face_and_boundary();
     form->set_integration_flags_face(*fe_datas);
@@ -183,22 +184,26 @@ protected:
       do_operation_on_face(*fe_datas, face);
       fe_datas->distribute_local_to_global_face(dst);
     }
+    std::cout << "End face loop" << std::endl;
   }
 
   void local_apply_boundary([[maybe_unused]] const dealii::MatrixFree<dim, Number>& data_,
                             VectorType& dst, const VectorType& src,
                             const std::pair<unsigned int, unsigned int>& face_range) const
   {
-    Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());    
+    std::cout << "Begin boundary loop" << std::endl;
+    Assert(&data_ == (this->get_matrix_free()).get(), dealii::ExcInternalError());
     fe_datas->reset_integration_flags_face_and_boundary();
     form->set_integration_flags_boundary(*fe_datas);
     for (unsigned int face = face_range.first; face < face_range.second; face++)
     {
       fe_datas->reinit_boundary(face);
-      fe_datas->read_dof_values_face(src);
+      // We never need values from the "neighboring" face as there is none.
+      fe_datas->template read_dof_values_face<VectorType, true, false>(src);
       do_operation_on_boundary(*fe_datas, face);
-      fe_datas->distribute_local_to_global_face(dst);
+      fe_datas->template distribute_local_to_global_face<VectorType, true, false>(dst);
     }
+    std::cout << "End boundary loop" << std::endl;
   }
 };
 

@@ -160,11 +160,11 @@ public:
 
   static constexpr unsigned int fe_number = Test::index;
   static constexpr bool integrate_value = Test::integrate_value;
-  static constexpr bool integrate_value_exterior = (kind_of_form==FormKind::face)
-          ?Test::integrate_value_exterior:false;
+  static constexpr bool integrate_value_exterior =
+    (kind_of_form == FormKind::face) ? Test::integrate_value_exterior : false;
   static constexpr bool integrate_gradient = Test::integrate_gradient;
-  static constexpr bool integrate_gradient_exterior = (kind_of_form==FormKind::face)
-          ?Test::integrate_gradient_exterior:false;
+  static constexpr bool integrate_gradient_exterior =
+    (kind_of_form == FormKind::face) ? Test::integrate_gradient_exterior : false;
 
   Form(Test test_, Expr expr_)
     : test(std::move(test_))
@@ -185,27 +185,32 @@ public:
                   "Test function and expression must have the same tensor rank!");
     static_assert(Test::TensorTraits::dim == Expr::TensorTraits::dim,
                   "Test function and expression must have the same dimension!");
+
+    if constexpr(form_kind == FormKind::boundary) static_assert(
+        Test::integrate_value_exterior == false && Test::integrate_gradient_exterior == false,
+        "A boundary form cannot have a test function associated with the neighbor of a cell!");
   }
 
-  static constexpr void get_form_kinds(std::array<bool,3> &use_objects)
+  static constexpr void
+  get_form_kinds(std::array<bool, 3>& use_objects)
   {
-      switch (form_kind)
-      {
-          case FormKind::cell:
-               use_objects[0] = true;
-              break;
+    switch (form_kind)
+    {
+      case FormKind::cell:
+        use_objects[0] = true;
+        break;
 
-          case FormKind::face:
-               use_objects[1] = true;
-              break;
+      case FormKind::face:
+        use_objects[1] = true;
+        break;
 
-          case FormKind::boundary:
-               use_objects[2] = true;
-              break;
+      case FormKind::boundary:
+        use_objects[2] = true;
+        break;
 
-          default:
-              static_assert ("Invalid FormKind!");
-      }
+      default:
+        static_assert("Invalid FormKind!");
+    }
   }
 
   std::string
@@ -237,8 +242,11 @@ public:
   {
     // only to be used if there is only one form!
     if constexpr(form_kind == FormKind::face)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
-                                                           integrate_gradient, integrate_gradient_exterior);
+        phi.template set_integration_flags_face_and_boundary<fe_number>(
+          integrate_value,
+          integrate_value_exterior,
+          integrate_gradient,
+          integrate_gradient_exterior);
   }
 
   template <class FEEvaluation>
@@ -247,8 +255,11 @@ public:
   {
     // only to be used if there is only one form!
     if constexpr(form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
-                                                           integrate_gradient, integrate_gradient_exterior);
+        phi.template set_integration_flags_face_and_boundary<fe_number>(
+          integrate_value,
+          integrate_value_exterior,
+          integrate_gradient,
+          integrate_gradient_exterior);
   }
 
   template <class FEEvaluation>
@@ -444,11 +455,11 @@ public:
   static constexpr FormKind form_kind = FormType::form_kind;
 
   static constexpr bool integrate_value = FormType::integrate_value;
-  static constexpr bool integrate_value_exterior = (form_kind==FormKind::face)
-          ?FormType::integrate_value_exterior:false;
+  static constexpr bool integrate_value_exterior =
+    (form_kind == FormKind::face) ? FormType::integrate_value_exterior : false;
   static constexpr bool integrate_gradient = FormType::integrate_gradient;
-  static constexpr bool integrate_gradient_exterior = (form_kind==FormKind::face)
-          ?FormType::integrate_gradient_exterior:false;
+  static constexpr bool integrate_gradient_exterior =
+    (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
 
   static constexpr unsigned int fe_number = FormType::fe_number;
 
@@ -460,27 +471,27 @@ public:
                   "You need to construct this with a Form object!");
   }
 
-  static constexpr void get_form_kinds(std::array<bool,3> &use_objects)
+  static constexpr void
+  get_form_kinds(std::array<bool, 3>& use_objects)
   {
-      switch (form_kind)
-      {
-          case FormKind::cell:
-               use_objects[0] = true;
-              break;
+    switch (form_kind)
+    {
+      case FormKind::cell:
+        use_objects[0] = true;
+        break;
 
-          case FormKind::face:
-               use_objects[1] = true;
-              break;
+      case FormKind::face:
+        use_objects[1] = true;
+        break;
 
-          case FormKind::boundary:
-               use_objects[2] = true;
-              break;
+      case FormKind::boundary:
+        use_objects[2] = true;
+        break;
 
-          default:
-              static_assert ("Invalid FormKind!");
-      }
+      default:
+        static_assert("Invalid FormKind!");
+    }
   }
-
 
   template <class FEEvaluation>
   static void
@@ -495,8 +506,11 @@ public:
   set_integration_flags_face(FEEvaluation& phi)
   {
     if constexpr(form_kind == FormKind::face)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
-                                                           integrate_gradient, integrate_gradient_exterior);
+        phi.template set_integration_flags_face_and_boundary<fe_number>(
+          integrate_value,
+          integrate_value_exterior,
+          integrate_gradient,
+          integrate_gradient_exterior);
   }
 
   template <class FEEvaluation>
@@ -504,8 +518,11 @@ public:
   set_integration_flags_boundary(FEEvaluation& phi)
   {
     if constexpr(form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
-                                                           integrate_gradient, integrate_gradient_exterior);
+        phi.template set_integration_flags_face_and_boundary<fe_number>(
+          integrate_value,
+          integrate_value_exterior,
+          integrate_gradient,
+          integrate_gradient_exterior);
   }
 
   template <class FEEvaluation>
@@ -581,7 +598,7 @@ public:
   const FormType&
   get_form() const
   {
-      return form;
+    return form;
   }
 
 private:
@@ -595,11 +612,11 @@ public:
   static constexpr FormKind form_kind = FormType::form_kind;
 
   static constexpr bool integrate_value = FormType::integrate_value;
-  static constexpr bool integrate_value_exterior = (form_kind==FormKind::face)
-          ?FormType::integrate_value_exterior:false;
+  static constexpr bool integrate_value_exterior =
+    (form_kind == FormKind::face) ? FormType::integrate_value_exterior : false;
   static constexpr bool integrate_gradient = FormType::integrate_gradient;
-  static constexpr bool integrate_gradient_exterior = (form_kind==FormKind::face)
-          ?FormType::integrate_gradient_exterior:false;
+  static constexpr bool integrate_gradient_exterior =
+    (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
 
   static constexpr unsigned int fe_number = FormType::fe_number;
 
@@ -645,26 +662,27 @@ public:
     return Forms<NewForm, FormType, Types...>(new_forms.get_form(), *this);
   }
 
-  static constexpr void get_form_kinds(std::array<bool,3> &use_objects)
+  static constexpr void
+  get_form_kinds(std::array<bool, 3>& use_objects)
   {
-      switch (form_kind)
-      {
-          case FormKind::cell:
-               use_objects[0] = true;
-              break;
+    switch (form_kind)
+    {
+      case FormKind::cell:
+        use_objects[0] = true;
+        break;
 
-          case FormKind::face:
-               use_objects[1] = true;
-              break;
+      case FormKind::face:
+        use_objects[1] = true;
+        break;
 
-          case FormKind::boundary:
-               use_objects[2] = true;
-              break;
+      case FormKind::boundary:
+        use_objects[2] = true;
+        break;
 
-          default:
-              static_assert ("Invalid FormKind!");
-      }
-      Forms<Types...>::get_form_kinds(use_objects);
+      default:
+        static_assert("Invalid FormKind!");
+    }
+    Forms<Types...>::get_form_kinds(use_objects);
   }
 
   template <class FEEvaluation>
@@ -681,8 +699,11 @@ public:
   set_integration_flags_face(FEEvaluation& phi)
   {
     if constexpr(form_kind == FormKind::face)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
-                                                           integrate_gradient, integrate_gradient_exterior);
+        phi.template set_integration_flags_face_and_boundary<fe_number>(
+          integrate_value,
+          integrate_value_exterior,
+          integrate_gradient,
+          integrate_gradient_exterior);
     Forms<Types...>::set_integration_flags_face(phi);
   }
 
@@ -691,8 +712,11 @@ public:
   set_integration_flags_boundary(FEEvaluation& phi)
   {
     if constexpr(form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(integrate_value, integrate_value_exterior,
-                                                           integrate_gradient, integrate_gradient_exterior);
+        phi.template set_integration_flags_face_and_boundary<fe_number>(
+          integrate_value,
+          integrate_value_exterior,
+          integrate_gradient,
+          integrate_gradient_exterior);
     Forms<Types...>::set_integration_flags_boundary(phi);
   }
 
@@ -793,7 +817,7 @@ public:
   const FormType&
   get_form() const
   {
-      return form;
+    return form;
   }
 
 private:

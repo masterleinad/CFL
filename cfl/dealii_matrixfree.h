@@ -259,10 +259,10 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
-        static constexpr bool integrate_value = true;
-        static constexpr bool integrate_value_exterior = false;
-        static constexpr bool integrate_gradient = false;
-        static constexpr bool integrate_gradient_exterior = false;
+      static constexpr bool integrate_value = true;
+      static constexpr bool integrate_value_exterior = false;
+      static constexpr bool integrate_gradient = false;
+      static constexpr bool integrate_gradient_exterior = false;
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -287,10 +287,10 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>;
-        static constexpr bool integrate_value = false;
-        static constexpr bool integrate_value_exterior = true;
-        static constexpr bool integrate_gradient = false;
-        static constexpr bool integrate_gradient_exterior = false;
+      static constexpr bool integrate_value = false;
+      static constexpr bool integrate_value_exterior = true;
+      static constexpr bool integrate_gradient = false;
+      static constexpr bool integrate_gradient_exterior = false;
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -315,10 +315,10 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
-        static constexpr bool integrate_value = false;
-        static constexpr bool integrate_value_exterior = false;
-        static constexpr bool integrate_gradient = true;
-        static constexpr bool integrate_gradient_exterior = false;
+      static constexpr bool integrate_value = false;
+      static constexpr bool integrate_value_exterior = false;
+      static constexpr bool integrate_gradient = true;
+      static constexpr bool integrate_gradient_exterior = false;
 
       template <class FEEvaluation, typename ValueType>
       static void
@@ -331,7 +331,8 @@ namespace dealii
                       "the TestFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit TestNormalGradientInteriorFace " << Base::index << " " << q << std::endl;
+        std::cout << "submit TestNormalGradientInteriorFace " << Base::index << " " << q
+                  << std::endl;
 #endif
         phi.template submit_normal_gradient<Base::index, true>(value, q);
       }
@@ -359,7 +360,8 @@ namespace dealii
                       "the TestFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit TestNormalGradientExteriorFace " << Base::index << " " << q << std::endl;
+        std::cout << "submit TestNormalGradientExteriorFace " << Base::index << " " << q
+                  << std::endl;
 #endif
         phi.template submit_normal_gradient<Base::index, false>(value, q);
       }
@@ -609,9 +611,9 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
-          const auto value = Base::scalar_factor * phi.template get_face_value<Base::index, true>(q);
-          std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
-          return value;
+        const auto value = Base::scalar_factor * phi.template get_face_value<Base::index, true>(q);
+        std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
+        return value;
       }
 
       template <class FEEvaluation>
@@ -677,9 +679,10 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
-          const auto value = Base::scalar_factor * phi.template get_normal_gradient<Base::index, true>(q);
-          std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
-          return value;
+        const auto value =
+          Base::scalar_factor * phi.template get_normal_gradient<Base::index, true>(q);
+        std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
+        return value;
       }
 
       template <class FEEvaluation>
@@ -711,9 +714,10 @@ namespace dealii
       auto
       value(const FEDatas& phi, unsigned int q) const
       {
-          const auto value = Base::scalar_factor * phi.template get_normal_gradient<Base::index, false>(q);
-          std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
-          return value;
+        const auto value =
+          Base::scalar_factor * phi.template get_normal_gradient<Base::index, false>(q);
+        std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
+        return value;
       }
 
       template <class FEEvaluation>
@@ -1114,14 +1118,14 @@ namespace dealii
       template <class FEEvaluation>
       auto
       value(const FEEvaluation& phi, unsigned int q) const
-      {        
+      {
         return summand.value(phi, q);
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
-      {        
+      {
         FEFunction::set_evaluation_flags(phi);
       }
 
@@ -1174,14 +1178,16 @@ namespace dealii
       {
         const auto own_value = summand.value(phi, q);
         const auto other_value = Base::value(phi, q);
-        assert_is_compatible(own_value, other_value);        
+        assert_is_compatible(own_value, other_value);
+        std::cout << "Total sum returns: " << own_value[0] << " " << other_value[0] << std::endl;
+        std::cout << "Total sum returns: " << own_value[1] << " " << other_value[1] << std::endl;
         return own_value + other_value;
       }
 
       template <class FEEvaluation>
       static void
       set_evaluation_flags(FEEvaluation& phi)
-      {          
+      {
         FEFunction::set_evaluation_flags(phi);
         Base::set_evaluation_flags(phi);
       }
@@ -1536,10 +1542,9 @@ namespace dealii
         const ProductFEFunctions<NewFEFunction1, NewFEFunction2, NewTypes...>& new_product) const
       {
         return ProductFEFunctions<NewFEFunction1, FEFunction, Types...>(new_product.get_factor(),
-                                                                   *this) *
-          ProductFEFunctions<NewFEFunction2, NewTypes...>(
-            static_cast<const ProductFEFunctions<NewFEFunction2, NewTypes...>&>(new_product));
-
+                                                                        *this) *
+               ProductFEFunctions<NewFEFunction2, NewTypes...>(
+                 static_cast<const ProductFEFunctions<NewFEFunction2, NewTypes...>&>(new_product));
       }
 
       // prodfefunc * prodfefunc
