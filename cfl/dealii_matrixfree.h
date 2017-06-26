@@ -877,10 +877,10 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FECurl final : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
+    class FECurl final : public FEFunctionBase<FECurl<rank, dim, idx>>
     {
     public:
-      using Base = FEFunctionBase<FESymmetricGradient<rank, dim, idx>>;
+      using Base = FEFunctionBase<FECurl<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 
@@ -1109,8 +1109,7 @@ namespace dealii
       }
 
       template <class NewFEFunction>
-      SumFEFunctions<NewFEFunction, FEFunction>
-      operator-(const NewFEFunction& new_summand) const
+      auto operator-(const NewFEFunction& new_summand) const
       {
         return operator+(-new_summand);
       }
@@ -1250,19 +1249,16 @@ namespace dealii
         return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this);
       }
 
-      template <class NewFEFunction>
-      typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
-                                  ObjectType::none &&
-                                Traits::fe_function_set_type<NewFEFunction>::value ==
-                                  Traits::fe_function_set_type<FEFunction>::value,
-                              SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
-      operator-(const NewFEFunction& new_summand) const
+      template <class NewFEFunction, typename std::enable_if<
+               Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
+               Traits::fe_function_set_type<NewFEFunction>::value ==
+               Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
+      auto operator-(const NewFEFunction& new_summand) const
       {
         return operator+(-new_summand);
       }
 
-      SumFEFunctions<FEFunction, Types...>
-      operator-() const
+      auto operator-() const
       {
         // create a copy
         SumFEFunctions<FEFunction, Types...> copy_this(*this);
@@ -1288,24 +1284,20 @@ namespace dealii
         Base::multiply_by_scalar(scalar);
       }
 
-      template <class NewFEFunction, typename... NewTypes>
-      typename std::enable_if<
-        Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
+      template <class NewFEFunction, typename... NewTypes,typename std::enable_if<
+          Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
           Traits::fe_function_set_type<NewFEFunction>::value ==
-            Traits::fe_function_set_type<FEFunction>::value,
-        SumFEFunctions<NewTypes..., NewFEFunction, FEFunction, Types...>>::type
-      operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
+          Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
+      auto operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
       {
         return operator+(-new_sum);
       }
 
-      template <class NewFEFunction>
-      typename std::enable_if<Traits::fe_function_set_type<NewFEFunction>::value !=
-                                  ObjectType::none &&
-                                Traits::fe_function_set_type<NewFEFunction>::value ==
-                                  Traits::fe_function_set_type<FEFunction>::value,
-                              SumFEFunctions<NewFEFunction, FEFunction, Types...>>::type
-      operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
+      template <class NewFEFunction, typename std::enable_if<
+          Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
+          Traits::fe_function_set_type<NewFEFunction>::value ==
+          Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
+      auto operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
       {
         return operator+(-new_sum);
       }
@@ -1348,20 +1340,21 @@ namespace dealii
       return old_fe_function + new_fe_function;
     }
 
-    template <class FEFunction1, class FEFunction2>
-    typename std::enable_if<Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
-                              Traits::fe_function_set_type<FEFunction1>::value ==
-                                Traits::fe_function_set_type<FEFunction2>::value,
-                            SumFEFunctions<FEFunction2, FEFunction1>>::type
-    operator-(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+    template <class FEFunction1, class FEFunction2, typename std::enable_if<
+        Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
+        Traits::fe_function_set_type<FEFunction1>::value ==
+        Traits::fe_function_set_type<FEFunction2>::value &&
+        !Traits::is_fe_function_sum<FEFunction1>::value && 
+        !Traits::is_fe_function_sum<FEFunction2>::value>::type* unused = nullptr>
+    auto operator-(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
     {
       return old_fe_function + (-new_fe_function);
     }
 
-    template <class FEFunction, typename... Types>
-    typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                            SumFEFunctions<FEFunction, Types...>>::type
-    operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
+    template <class FEFunction, typename... Types, typename std::enable_if<
+        Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
+        !Traits::is_fe_function_sum<FEFunction>::value>::type* unused = nullptr>
+    auto operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
       return -(old_fe_function - new_fe_function);
     }
@@ -1418,7 +1411,7 @@ namespace dealii
       operator-() const
       {
         // create a copy
-        const ProductFEFunctions<FEFunction> copy_this(*this);
+        ProductFEFunctions<FEFunction> copy_this(*this);
         copy_this.multiply_by_scalar(-1.);
         return copy_this;
       }
@@ -1501,7 +1494,7 @@ namespace dealii
       operator-() const
       {
         // create a copy
-        const ProductFEFunctions<FEFunction, Types...> copy_this(*this);
+        ProductFEFunctions<FEFunction, Types...> copy_this(*this);
         copy_this.multiply_by_scalar(-1.);
         return copy_this;
       }
