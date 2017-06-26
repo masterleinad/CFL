@@ -549,11 +549,12 @@ public:
   get_value(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
+    std::cout << "get value FEDatas base" << fe_number << " " << q << std::endl;
 #endif
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "This function can only be called for FEData objects!");
     static_assert(fe_number == fe_number_extern, "Component not found!");
+    Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
     return fe_data.fe_evaluation->get_value(q);
   }
 

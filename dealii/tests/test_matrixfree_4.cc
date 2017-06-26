@@ -117,7 +117,7 @@ BOOST_FIXTURE_TEST_CASE(SumFEObjSameType, FEFixture)
 */
 //    i.e. valid state transitions are
 //      operation     output tensor rank
-//        F         n
+//        F           n
 //        FG          n+1
 //        FGD         n
 //        FGG         n+2
