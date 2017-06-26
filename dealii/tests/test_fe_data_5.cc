@@ -5,6 +5,12 @@
 //////////
 
 //// Test case FEDatasMemFunc
+
+//Remark: This test case is not abandoned..since until the construction of
+// of a proper MatrixFree object, we cant check the behavor of internal functions
+// The construction of MatrixFree is very problem specific (to my understanding),
+// and we dont intend to solve a complete problem during UT!
+
 //  Positive test cases for FEDatas class, checks .
 // Type: Positive test case
 // Coverage: following classes - FEDatas
