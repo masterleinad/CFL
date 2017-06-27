@@ -20,7 +20,7 @@ struct TestDatafunctor
     { 1, 3, 1, 0 }, { 2, 1, 1, 0 }, { 2, 2, 1, 0 }, { 2, 3, 1, 0 }
   };
   typedef map<string, pair<bool, bool>>
-    comb_map_t; // Testxxx class name, (integrate_value, integrate_gradient)
+    comb_map_t; // Testxxx class name, (integration_flags.value, integration_flags.gradient)
   static comb_map_t i_comb;
 
   static void
@@ -31,43 +31,43 @@ struct TestDatafunctor
     // Check basic state of object
     BOOST_TEST(test_obj1.index == obj_comb[i].index);
     BOOST_TEST(test_obj1.scalar_valued == obj_comb[i].scalar_valued);
-    BOOST_TEST(test_obj1.integrate_value == i_comb["TestFunction"].first);
-    BOOST_TEST(test_obj1.integrate_gradient == i_comb["TestFunction"].second);
+    BOOST_TEST(test_obj1.integration_flags.value == i_comb["TestFunction"].first);
+    BOOST_TEST(test_obj1.integration_flags.gradient == i_comb["TestFunction"].second);
 
     TestDivergence<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_obj2;
     // Check basic state of object
     BOOST_TEST(test_obj2.index == obj_comb[i].index);
     BOOST_TEST(test_obj2.scalar_valued == obj_comb[i].scalar_valued);
-    BOOST_TEST(test_obj2.integrate_value == i_comb["TestDivergence"].first);
-    BOOST_TEST(test_obj2.integrate_gradient == i_comb["TestDivergence"].second);
+    BOOST_TEST(test_obj2.integration_flags.value == i_comb["TestDivergence"].first);
+    BOOST_TEST(test_obj2.integration_flags.gradient == i_comb["TestDivergence"].second);
 
     TestSymmetricGradient<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_obj3;
     // Check basic state of object
     BOOST_TEST(test_obj3.index == obj_comb[i].index);
     BOOST_TEST(test_obj3.scalar_valued == obj_comb[i].scalar_valued);
-    BOOST_TEST(test_obj3.integrate_value == i_comb["TestSymmetricGradient"].first);
-    BOOST_TEST(test_obj3.integrate_gradient == i_comb["TestSymmetricGradient"].second);
+    BOOST_TEST(test_obj3.integration_flags.value == i_comb["TestSymmetricGradient"].first);
+    BOOST_TEST(test_obj3.integration_flags.gradient == i_comb["TestSymmetricGradient"].second);
 
     TestCurl<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_obj4;
     // Check basic state of object
     BOOST_TEST(test_obj4.index == obj_comb[i].index);
     BOOST_TEST(test_obj4.scalar_valued == obj_comb[i].scalar_valued);
-    BOOST_TEST(test_obj4.integrate_value == i_comb["TestCurl"].first);
-    BOOST_TEST(test_obj4.integrate_gradient == i_comb["TestCurl"].second);
+    BOOST_TEST(test_obj4.integration_flags.value == i_comb["TestCurl"].first);
+    BOOST_TEST(test_obj4.integration_flags.gradient == i_comb["TestCurl"].second);
 
     TestGradient<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_obj5;
     // Check basic state of object
     BOOST_TEST(test_obj5.index == obj_comb[i].index);
     BOOST_TEST(test_obj5.scalar_valued == obj_comb[i].scalar_valued);
-    BOOST_TEST(test_obj5.integrate_value == i_comb["TestGradient"].first);
-    BOOST_TEST(test_obj5.integrate_gradient == i_comb["TestGradient"].second);
+    BOOST_TEST(test_obj5.integration_flags.value == i_comb["TestGradient"].first);
+    BOOST_TEST(test_obj5.integration_flags.gradient == i_comb["TestGradient"].second);
 
     TestHessian<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_obj6;
     // Check basic state of object
     BOOST_TEST(test_obj6.index == obj_comb[i].index);
     BOOST_TEST(test_obj6.scalar_valued == obj_comb[i].scalar_valued);
-    BOOST_TEST(test_obj6.integrate_value == i_comb["TestHessian"].first);
-    BOOST_TEST(test_obj6.integrate_gradient == i_comb["TestHessian"].second);
+    BOOST_TEST(test_obj6.integration_flags.value == i_comb["TestHessian"].first);
+    BOOST_TEST(test_obj6.integration_flags.gradient == i_comb["TestHessian"].second);
   }
 };
 
