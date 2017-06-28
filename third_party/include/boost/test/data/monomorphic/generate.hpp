@@ -18,6 +18,8 @@
 
 #include <boost/test/detail/suppress_warnings.hpp>
 
+#include <boost/ref.hpp>
+
 //____________________________________________________________________________//
 
 namespace boost {
