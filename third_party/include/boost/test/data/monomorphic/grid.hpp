@@ -24,6 +24,8 @@
 
 #include <boost/test/detail/suppress_warnings.hpp>
 
+#include <boost/mpl/identity.hpp>
+
 //____________________________________________________________________________//
 
 namespace boost {

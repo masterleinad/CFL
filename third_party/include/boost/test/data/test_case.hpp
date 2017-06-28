@@ -40,6 +40,8 @@
 #include <boost/test/tools/detail/print_helper.hpp>
 #include <boost/test/utils/string_cast.hpp>
 
+#include <list>
+
 #if defined(BOOST_NO_CXX11_VARIADIC_TEMPLATES) \
    && !defined(BOOST_TEST_DATASET_MAX_ARITY)
 # define BOOST_TEST_DATASET_MAX_ARITY 10
