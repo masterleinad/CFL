@@ -6,6 +6,8 @@
 #include <string>
 #include <utility>
 
+#include <tuple>
+
 #include <cfl/traits.h>
 
 namespace CFL
@@ -159,12 +161,12 @@ public:
   static constexpr FormKind form_kind = kind_of_form;
 
   static constexpr unsigned int fe_number = Test::index;
-  static constexpr bool integrate_value = Test::integrate_value;
+  static constexpr bool integrate_value = Test::integration_flags.value;
   static constexpr bool integrate_value_exterior =
-    (kind_of_form == FormKind::face) ? Test::integrate_value_exterior : false;
-  static constexpr bool integrate_gradient = Test::integrate_gradient;
+    (kind_of_form == FormKind::face) ? Test::integration_flags.value_exterior : false;
+  static constexpr bool integrate_gradient = Test::integration_flags.gradient;
   static constexpr bool integrate_gradient_exterior =
-    (kind_of_form == FormKind::face) ? Test::integrate_gradient_exterior : false;
+    (kind_of_form == FormKind::face) ? Test::integration_flags.gradient_exterior : false;
 
   Form(Test test_, Expr expr_)
     : test(std::move(test_))
@@ -187,7 +189,8 @@ public:
                   "Test function and expression must have the same dimension!");
 
     if constexpr(form_kind == FormKind::boundary) static_assert(
-        Test::integrate_value_exterior == false && Test::integrate_gradient_exterior == false,
+        Test::integration_flags.value_exterior == false &&
+          Test::integration_flags.gradient_exterior == false,
         "A boundary form cannot have a test function associated with the neighbor of a cell!");
   }
 
@@ -601,6 +604,19 @@ public:
     return form;
   }
 
+   template <typename IntegrationFlags>
+  static bool
+  check_forms(std::vector<std::tuple<FormKind, unsigned int, IntegrationFlags>> container)
+  {
+    const IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
+    const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
+    for (const auto item : container)
+      if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
+          ((std::get<2>(item)) & integration_flags))
+        return false;
+    return true;
+  }
+
 private:
   const FormType form;
 };
@@ -818,6 +834,21 @@ public:
   get_form() const
   {
     return form;
+  }
+
+  template <typename IntegrationFlags>
+  static bool
+  check_forms(std::vector<std::tuple<FormKind, unsigned int, IntegrationFlags>> container)
+  {
+    const IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
+    const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
+    for (const auto item : container)
+      if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
+          ((std::get<2>(item)) & integration_flags))
+        return false;
+
+    container.push_back(new_tuple);
+    return Forms<Types...>::check_forms(container);
   }
 
 private:
