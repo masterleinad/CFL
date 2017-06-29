@@ -1,8 +1,4 @@
-constructor1
-constructor1
 operator+1
-constructor2
-constructor4
 DEAL::Grid type 0 Cells 1 DoFs 4+4
 evaluate cell value: 0 0 0
 evaluate cell gradients: 0 1 1

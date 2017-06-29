@@ -229,7 +229,7 @@ namespace dealii
       bool gradient = false;
       bool gradient_exterior = false;
 
-      bool operator&(const IntegrationFlags& other_flags) const
+      constexpr bool operator&(const IntegrationFlags& other_flags) const
       {
         return (value & other_flags.value) || (value_exterior & other_flags.value_exterior) ||
                (gradient & other_flags.gradient) ||
@@ -274,7 +274,7 @@ namespace dealii
     {
     public:
       using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
-      static constexpr IntegrationFlags integration_flags{ true, false, false, false };
+      static constexpr const IntegrationFlags integration_flags{ true, false, false, false };
 
       template <class FEEvaluation, typename ValueType>
       static void

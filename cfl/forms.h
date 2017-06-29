@@ -151,10 +151,11 @@ class Forms;
 /**
  * A Form is an expression tested by a test function set.
  */
-template <class Test, class Expr, FormKind kind_of_form, typename number = double>
+template <class Test, class Expr, FormKind kind_of_form, typename NumberType = double>
 class Form final
 {
 public:
+  using TestType = Test;
   const Test test;
   const Expr expr;
 
@@ -172,7 +173,6 @@ public:
     : test(std::move(test_))
     , expr(std::move(expr_))
   {
-    std::cout << "constructor1" << std::endl;
     static_assert(Traits::test_function_set_type<Test>::value != ObjectType::none,
                   "The first argument must be a test function!");
     static_assert(Traits::fe_function_set_type<Expr>::value != ObjectType::none,
@@ -282,7 +282,7 @@ public:
         expr.set_evaluation_flags(phi);
   }
 
-  number
+  NumberType
   evaluate(unsigned int k, unsigned int i) const
   {
     return form_evaluate_aux<Test::TensorTraits::rank, Test, Expr>()(k, i, test, expr);
@@ -465,11 +465,14 @@ public:
     (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
 
   static constexpr unsigned int fe_number = FormType::fe_number;
+  static constexpr unsigned int number = 0;
 
   explicit Forms(const FormType& form_)
     : form(form_)
   {
-    std::cout << "constructor2" << std::endl;
+    AssertThrow(
+      (check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>()),
+      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -604,20 +607,30 @@ public:
     return form;
   }
 
-   template <typename IntegrationFlags>
-  static bool
-  check_forms(std::vector<std::tuple<FormKind, unsigned int, IntegrationFlags>> container)
+protected:
+  template <unsigned int size, typename IntegrationFlags>
+  static /*constexpr*/ bool
+  check_forms(
+    std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
+      container =
+        std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
   {
     const IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
-    const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
-    for (const auto item : container)
+
+    for (unsigned int i = number; i < size; ++i)
+    {
+      const auto& item = container.at(i);
       if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
           ((std::get<2>(item)) & integration_flags))
         return false;
+    }
+
     return true;
   }
 
 private:
+  const /*static constexpr*/ bool valid =
+    check_forms<number, decltype(FormType::TestType::integration_flags)>();
   const FormType form;
 };
 
@@ -635,12 +648,15 @@ public:
     (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
 
   static constexpr unsigned int fe_number = FormType::fe_number;
+  static constexpr unsigned int number = Forms<Types...>::number + 1;
 
   Forms(const FormType& form_, const Forms<Types...>& old_form)
     : Forms<Types...>(old_form)
     , form(form_)
   {
-    std::cout << "constructor3" << std::endl;
+    AssertThrow(
+      valid,
+      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -649,7 +665,9 @@ public:
     : Forms<Types...>(old_form...)
     , form(form_)
   {
-    std::cout << "constructor4" << std::endl;
+    AssertThrow(
+      valid,
+      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -836,22 +854,32 @@ public:
     return form;
   }
 
-  template <typename IntegrationFlags>
-  static bool
-  check_forms(std::vector<std::tuple<FormKind, unsigned int, IntegrationFlags>> container)
+protected:
+  template <unsigned int size, typename IntegrationFlags>
+  static /*constexpr*/ bool
+  check_forms(
+    std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
+      container =
+        std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
   {
-    const IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
+    IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
     const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
-    for (const auto item : container)
+
+    for (unsigned int i = number; i < size; ++i)
+    {
+      const auto& item = container.at(i);
       if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
           ((std::get<2>(item)) & integration_flags))
         return false;
+    }
 
-    container.push_back(new_tuple);
-    return Forms<Types...>::check_forms(container);
+    container[number - 1] = new_tuple;
+    return Forms<Types...>::template check_forms<size, IntegrationFlags>(container);
   }
 
 private:
+  const /*static constexpr*/ bool valid =
+    check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>();
   const FormType form;
 };
 } // namespace CFL

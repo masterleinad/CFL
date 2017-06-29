@@ -249,7 +249,7 @@ run(unsigned int grid_index, unsigned int refine)
   auto flux1 = -face_form(.5 * flux, Dnv_p) + face_form(.5 * flux, Dnv_m);
   auto flux2 = -face_form(-flux + .5 * flux_grad, v_p) + face_form(-flux + .5 * flux_grad, v_m);
 
-  auto boundary1 = boundary_form(2. * u_p /*- Dnu_p*/, v_p) - boundary_form(Dnu_p,v_p);
+  auto boundary1 = boundary_form(2. * u_p /*- Dnu_p*/, v_p) - boundary_form(Dnu_p, v_p);
   auto boundary3 = -boundary_form(u_p, Dnv_p);
 
   auto face = flux2 + flux1;
@@ -259,7 +259,8 @@ run(unsigned int grid_index, unsigned int refine)
     std::make_tuple(FormKind::cell, 0, IntegrationFlags());
   std::vector<std::tuple<FormKind, unsigned int, IntegrationFlags>> storage;
   storage.push_back(tuple);
-  Assert(f.check_forms(storage), ExcInternalError());;
+  //  Assert((f.template check_forms<f.number, std::decay_t<IntegrationFlags>>()),
+  //  ExcInternalError());
 
   MatrixFreeData<dim,
                  decltype(fe_datas),
