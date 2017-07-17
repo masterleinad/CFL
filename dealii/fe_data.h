@@ -549,10 +549,11 @@ public:
   get_value(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
+    std::cout << "get value FEDatas base" << fe_number << " " << q << std::endl;
 #endif
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "This function can only be called for FEData objects!");
+    Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_data.fe_evaluation->get_value(q);
   }
@@ -746,6 +747,12 @@ public:
                   "Component not found, not a FEDataFace object");
     static_assert(fe_number == fe_number_extern, "Component not found!");
     return fe_data;
+  }
+
+
+  auto get_fe_datas() const
+  {
+      return fe_data;
   }
 
   template <unsigned int fe_number_extern>
@@ -1480,6 +1487,11 @@ public:
       return Base::template get_fe_data_face<fe_number_extern>();
   }
 
+  auto get_fe_datas() const
+  {
+      return fe_data;
+  }
+
   template <unsigned int fe_number_extern>
   unsigned int
   dofs_per_cell() const
@@ -1516,6 +1528,32 @@ public:
   {
     return FEDatas<FEDataOther, FEData, Types...>(new_fe_data, *this);
   }
+
+  template <class FEData1, class FEData2, typename... NewTypes,
+          typename std::enable_if<
+            (CFL::Traits::is_fe_data<FEData1>::value || CFL::Traits::is_fe_data_face<FEData1>::value) &&
+            (CFL::Traits::is_fe_data<FEData2>::value || CFL::Traits::is_fe_data_face<FEData2>::value)
+            >::type* unused = nullptr>
+  auto
+  operator,(const FEDatas<FEData1, FEData2, NewTypes...>& new_fe_data) const
+  {
+      auto a = FEDatas<FEData1,FEData,Types...>(new_fe_data.get_fe_datas(), *this);
+      auto b = FEDatas<FEData2,NewTypes...>(static_cast<const FEDatas<FEData2,NewTypes...>>(new_fe_data));
+      auto c = (a,b);
+      return c;
+  }
+  
+  template <class FEDataOther,
+            typename std::enable_if<
+            CFL::Traits::is_fe_data<FEDataOther>::value ||
+             CFL::Traits::is_fe_data_face<FEDataOther>::value>::type* unused = nullptr>
+  auto
+  operator,(const FEDatas<FEDataOther>& new_fe_data) const
+  {
+    return FEDatas<FEDataOther, FEData, Types...>(new_fe_data.get_fe_datas(), *this);   
+  }                                                                                     
+  
+ 
 
 protected:
   FEData fe_data;
