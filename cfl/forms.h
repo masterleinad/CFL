@@ -339,7 +339,6 @@ public:
   Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
   operator+(const Form<TestNew, ExprNew, kind_new>& new_form) const
   {
-    std::cout << "operator+1" << std::endl;
     return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this, new_form);
   }
 
@@ -347,7 +346,6 @@ public:
   Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
   operator-(const Form<TestNew, ExprNew, kind_new>& new_form) const
   {
-    std::cout << "operator+1" << std::endl;
     return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this,
                                                                                    -new_form);
   }
@@ -676,7 +674,6 @@ public:
   Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>
   operator+(const Form<Test, Expr, kind_of_form>& new_form) const
   {
-    std::cout << "operator+2" << std::endl;
     return Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>(new_form, *this);
   }
 

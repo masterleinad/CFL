@@ -47,7 +47,7 @@
 #include <deal.II/multigrid/mg_matrix.h>
 #include <deal.II/multigrid/mg_smoother.h>
 #include <deal.II/multigrid/mg_tools.h>
-#include <deal.II/multigrid/mg_transfer_matrix_free.h>
+#include "dealii/mg_transfer_matrix_free.h"
 #include <deal.II/multigrid/multigrid.h>
 
 #include <deal.II/numerics/data_out.h>
@@ -409,9 +409,12 @@ double
 LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
 {
   Timer time;
-  /*  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
-    mg_transfer.build_matrices(dof_handler);*/
-  /*    setup_time += time.wall_time();
+  std::vector<DoFHandler<dim, dim>*> mg_dof(2);
+  mg_dof.push_back(&dof_handler);
+  mg_dof.push_back(&dof_handler);
+  MGTransferBlockMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
+    mg_transfer.build(mg_dof);
+    setup_time += time.wall_time();
       time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
                    << "s\n";
       time.restart();
@@ -437,7 +440,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
           smoother_data[0].eig_cg_n_iterations = mg_matrices[0].m();
         }
         mg_matrices[level].compute_diagonal();
-        //smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
+        smoother_data[level].preconditioner = mg_matrices[level].get_matrix_diagonal_inverse();
       }
       mg_smoother.initialize(mg_matrices, smoother_data);
 
@@ -459,8 +462,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
       mg.set_edge_matrices(mg_interface, mg_interface);
 
       PreconditionMG<dim, LinearAlgebra::distributed::BlockVector<float>,
-      MGTransferPrebuilt<LinearAlgebra::distributed::BlockVector<float> > >
-        preconditioner(dof_handler, mg, mg_transfer);*/
+      MGTransferBlockMatrixFree<dim, float> >
+        preconditioner(dof_handler, mg, mg_transfer);
 
   SolverControl solver_control(dof_handler.n_dofs(), 1e-12 * system_rhs.l2_norm(), false, false);
   SolverCG<LinearAlgebra::distributed::BlockVector<double>> cg(solver_control);
@@ -479,7 +482,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
   nonlinear_components.push_back(true);
   system_matrix.set_nonlinearities(nonlinear_components, solution);
 
-  cg.solve(system_matrix, solution_update, system_rhs, /*preconditioner*/ PreconditionIdentity());
+  cg.solve(system_matrix, solution_update, system_rhs, preconditioner);
 
   constraints[0].distribute(solution_update.block(0));
   const double b = .2;
