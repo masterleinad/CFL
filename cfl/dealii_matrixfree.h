@@ -833,7 +833,7 @@ namespace dealii
       operator*(const Number scalar_factor_) const
       {
         return FELiftDivergence<FEFunctionType>(
-          FEFunctionType(fefunction.name(), fefunction.scalar_value * scalar_factor_));
+          FEFunctionType(fefunction.name(), fefunction.scalar_factor * scalar_factor_));
       }
 
       template <class FEEvaluation>
@@ -874,10 +874,10 @@ namespace dealii
     };
 
     template <int rank, int dim, unsigned int idx>
-    class FECurl final : public FEFunctionBase<FESymmetricGradient<rank, dim, idx>>
+    class FECurl final : public FEFunctionBase<FECurl<rank, dim, idx>>
     {
     public:
-      using Base = FEFunctionBase<FESymmetricGradient<rank, dim, idx>>;
+      using Base = FEFunctionBase<FECurl<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
 

@@ -77,6 +77,6 @@ check_FeOpComplete(const FEOp& feopobj, BitSetType& bs, vector<unsigned int>&& v
   // cout<<"initial bits "<<bs<<endl;
   for (unsigned int i = 1; i <= feopobj.n; i++)
     bs[feopobj.get_fe_func_index(i) - 1] = 0; // reset as and when found the FEFunc
-};
+}
 
 #endif /* TEST_MATRIXFREE_H_ */
