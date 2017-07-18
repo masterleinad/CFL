@@ -15,6 +15,8 @@
 //    - result of SumFEFunction is of correct type
 //    There are no check on values since they are available from dealii library function results
 //    which we ignore in out test
+// Does not cover:
+//     FELiftDivergence since it is different from others and does not support (+) operation yet
 template <template <int, int, unsigned int> typename FEFuncType, int rank, int dim,
           unsigned int idx>
 void
@@ -23,8 +25,9 @@ sumfe_same_types()
   constexpr unsigned int idx1 = idx;
   constexpr unsigned int idx2 = idx + 2;
   constexpr unsigned int idx3 = idx + 4;
-  constexpr unsigned int idx4 = idx + 2;
-  constexpr int max_idx = idx4;
+  constexpr unsigned int idx4 = idx + 6;
+  constexpr unsigned int idx5 = idx + 8;
+  constexpr int max_idx = idx5;
 
   bitset<max_idx> bs;
 
@@ -32,24 +35,24 @@ sumfe_same_types()
   FEFuncType<rank, dim, idx2> fe_function2("test_fe2");
   FEFuncType<rank, dim, idx3> fe_function3("test_fe3");
   FEFuncType<rank, dim, idx4> fe_function4("test_fe4");
+  FEFuncType<rank, dim, idx5> fe_function5("test_fe5");
 
   auto sum1 = fe_function1 + fe_function2;
   auto sum2 = fe_function2 + fe_function1;
 
-  // TBD: Prod of sum, its return type is to be discussed
-  auto prod1 = sum1 * sum2;
-
   auto sum3 = fe_function2 + fe_function1 + fe_function3;
-
-  auto sum4 = sum1 + fe_function1 + fe_function2;
-  auto sum5 = fe_function1 + sum1 + fe_function2;
-  auto sum6 = fe_function1 + fe_function2 + sum1;
+  auto sum4 = fe_function1 + fe_function4 + fe_function5;
+  auto sum5 = fe_function4 + sum1 + fe_function5;
+  auto sum6 = fe_function4 + fe_function5 + sum1;
   auto sum7 = sum1 + sum2;
   auto sum8 = sum1 + sum2 + fe_function1;
   auto sum9 = fe_function2 + sum1 + sum2;
   auto sum10 = sum6 + sum8;
   auto sum11 = fe_function3 + fe_function4;
   auto sum12 = sum11 + sum10;
+
+  // Prod of sum
+  auto prod1 = sum1 * sum2;
 
   auto sum13 = sum2 + sum5 + sum8 + sum10 + sum12; // something complicated
 }
@@ -67,21 +70,22 @@ struct SumFEfunctor
   run()
   {
     sumfe_same_types<FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-#if 0
     sumfe_same_types<FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    // sumfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>(); 9. TBD
-    // fails..no operator + for it. Analysis pending
+    sumfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
     sumfe_same_types<FEGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     sumfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-#endif
+    sumfe_same_types<FEFunctionInteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<FEFunctionExteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<FENormalGradientInteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<FENormalGradientExteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
   }
 };
 BOOST_FIXTURE_TEST_CASE(SumFEObjSameType, FEFixture)
 {
-  for_<0, 1>::run<SumFEfunctor>();
+  for_<0, 9>::run<SumFEfunctor>();
 
   // auto sumf = fe_function_scalar1 + fe_function_scalar2; //TBD why does this not hit
   // static_assertion although compilation fails?
@@ -116,24 +120,22 @@ BOOST_FIXTURE_TEST_CASE(SumFEObjSameType, FEFixture)
        |___|
 */
 //    i.e. valid state transitions are
-//      operation     output tensor rank
-//        F           n
-//        FG          n+1
-//        FGD         n
-//        FGG         n+2
-//        FGGD        n+1
-//        FD          n-1
-// where e.g. FGD => div(grad(FEFunction F))
+//      operation     output tensor rank   supported
+//        F           n                      Y
+//        GF          n+1                    Y
+//        DGF         n                      Y
+//        GGF         n+2                    N
+//        DGGF        n+1                    N
+//        DF          n-1                    Y
+// where e.g. DGF => div(grad(FEFunction F))
 template <typename T>
 void
 sumfe_diff_types(const T& type1, const T& type2)
 {
   auto sum1 = type1 + type2;
   auto sum2 = type2 + type1;
-#if 0
   auto sum3 = sum1 + sum2;
   auto sum4 = sum1 + sum3;
-#endif
 }
 
 BOOST_AUTO_TEST_CASE(SumFEObjDiffType)
@@ -143,20 +145,11 @@ BOOST_AUTO_TEST_CASE(SumFEObjDiffType)
   const int fe_no = 10; // random
 
   FEFunction<rank, dim, fe_no> F("test_obj");
-  auto FG = grad(F);
-  auto FGD = div(grad(F));
-  // auto FGG = grad(grad(F)); TBD: Compilation fails.
-  // auto FGGD = div(grad(grad(F))); TBD: Compilation fails.
-  auto FD = div(F);
+  auto GF = grad(F);
+  auto DGF = div(grad(F));
+  auto DF = div(F);
 
   sumfe_diff_types(F, F);
-  sumfe_diff_types(FG, FG);
-  sumfe_diff_types(FD, FD);
-#if 0 // TBD: Compilation fail, due to missing definition.
-  //sumfe_diff_types(F,FGD);
-  //sumfe_diff_types(FG,FGGD);
-  //sumfe_diff_types(FGD,FGD);
-  //sumfe_diff_types(FGG,FGG);
-  //sumfe_diff_types(FGGD,FGGD);
-#endif
+  sumfe_diff_types(GF, GF);
+  sumfe_diff_types(DF, DF);
 }
