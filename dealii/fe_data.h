@@ -549,7 +549,7 @@ public:
   get_value(unsigned int q) const
   {
 #ifdef DEBUG_OUTPUT
-    std::cout << "get value FEDatas base" << fe_number << " " << q << std::endl;
+    std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
 #endif
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "This function can only be called for FEData objects!");
