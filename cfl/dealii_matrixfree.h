@@ -692,8 +692,8 @@ namespace dealii
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
-        static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
-                      "The evaluation object does not act on faces!");
+        /*static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
+                      "The evaluation object does not act on faces!");*/
         phi.template set_evaluation_flags_face<Base::index>(false, true, false);
       }
     };
@@ -727,8 +727,8 @@ namespace dealii
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
-        static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
-                      "The evaluation object does not act on faces!");
+/*        static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
+                      "The evaluation object does not act on faces!");*/
         phi.template set_evaluation_flags_face<Base::index>(false, true, false);
       }
     };
@@ -1497,10 +1497,7 @@ namespace dealii
       }
 
       // prodfefunc * number
-      template <
-        typename Number,
-        typename std::enable_if<std::is_arithmetic<Number>::value,
-                                ProductFEFunctions<FEFunction, Types...>>::type* unused = nullptr>
+      template <typename Number, typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr>
       auto operator*(const Number scalar_factor) const
       {
         ProductFEFunctions<FEFunction, Types...> tmp = *this;

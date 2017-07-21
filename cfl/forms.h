@@ -363,6 +363,13 @@ public:
     const typename std::remove_reference<decltype(*this)>::type newform(test, -expr);
     return newform;
   }
+
+  auto
+  operator*(const double scalar) const
+  {
+    const typename std::remove_reference<decltype(*this)>::type newform(test, expr*scalar);
+    return newform;
+  }
 };
 
 namespace Traits
@@ -851,6 +858,19 @@ public:
     return form;
   }
 
+  auto
+  operator*(const double scalar) const
+  {
+    const typename std::remove_reference<decltype(*this)>::type newform(form*scalar, Forms<Types...>::get_form()*scalar);
+    return newform;
+  }
+
+  auto
+  operator-() const
+  {
+    return (*this)*-1.;
+  }
+
 protected:
   template <unsigned int size, typename IntegrationFlags>
   static /*constexpr*/ bool
@@ -879,6 +899,34 @@ private:
     check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>();
   const FormType form;
 };
+
+template <class... Args>
+  struct CFL::Traits::is_multiplicable<Forms<Args...>, double>
+  {
+    static const bool value = true;
+  };
+
+template <class... Args>
+auto
+operator *(double scalar, const Forms<Args...> &forms)
+{
+  return forms*scalar;
+}
+
+template <class... Args>
+  struct CFL::Traits::is_multiplicable<Form<Args...>, double>
+  {
+    static const bool value = true;
+  };
+
+template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
+auto
+operator *(double scalar, const Form<Test, Expr, kind_of_form, NumberType> &form)
+{
+  return form*scalar;
+}
+
+
 } // namespace CFL
 
 #endif

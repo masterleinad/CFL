@@ -222,7 +222,7 @@ run(unsigned int grid_index, unsigned int refine)
 
   FEData<FE_DGQ, degree, 1, dim, 0, 1> fedata1(fe_u);
   FEDataFace<FE_DGQ, degree, 1, dim, 0, 1> fedata_face1(fe_u);
-  auto fe_datas = (fedata1, fedata_face1);
+  auto fe_datas = (fedata_face1, fedata1);
 
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
@@ -243,17 +243,17 @@ run(unsigned int grid_index, unsigned int refine)
 
   auto cell = form(Du, Dv);
 
-  auto flux = u_p - u_m;
+  auto flux = u_p/* - u_m*/;
   auto flux_grad = Dnu_p - Dnu_m;
 
-  auto flux1 = -face_form(.5 * flux, Dnv_p) + face_form(.5 * flux, Dnv_m);
-  auto flux2 = -face_form(-flux + .5 * flux_grad, v_p) + face_form(-flux + .5 * flux_grad, v_m);
+  auto flux1 = -face_form(flux, Dnv_p)/* + face_form(flux, Dnv_m)*/;
+  auto flux2 = face_form(-flux + .5 * flux_grad, v_p) - face_form(-flux + .5 * flux_grad, v_m);
 
-  auto boundary1 = boundary_form(2. * u_p /*- Dnu_p*/, v_p) - boundary_form(Dnu_p, v_p);
+  auto boundary1 = boundary_form(2. * u_p - Dnu_p, v_p);
   auto boundary3 = -boundary_form(u_p, Dnv_p);
 
-  auto face = flux2 + flux1;
-  auto f = cell + face + boundary1 + boundary3;
+  auto face = /*-flux2 +*/ .5*flux1;
+  auto f = /*cell*/face/* + boundary1 + boundary3*/;
 
   std::tuple<FormKind, unsigned int, IntegrationFlags> tuple =
     std::make_tuple(FormKind::cell, 0, IntegrationFlags());
