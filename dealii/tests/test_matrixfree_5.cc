@@ -96,15 +96,27 @@ struct ProdFEfunctor
     prodfe_same_types<FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    prodfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+    prodfe_same_types<FECurl, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FEGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     prodfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    prodfe_same_types<FEFunctionInteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    prodfe_same_types<FEFunctionExteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    prodfe_same_types<FENormalGradientInteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    prodfe_same_types<FENormalGradientExteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    prodfe_same_types<FEFunctionInteriorFace,
+                      obj_comb[i].rank,
+                      obj_comb[i].dim,
+                      obj_comb[i].index>();
+    prodfe_same_types<FEFunctionExteriorFace,
+                      obj_comb[i].rank,
+                      obj_comb[i].dim,
+                      obj_comb[i].index>();
+    prodfe_same_types<FENormalGradientInteriorFace,
+                      obj_comb[i].rank,
+                      obj_comb[i].dim,
+                      obj_comb[i].index>();
+    prodfe_same_types<FENormalGradientExteriorFace,
+                      obj_comb[i].rank,
+                      obj_comb[i].dim,
+                      obj_comb[i].index>();
   }
 };
 BOOST_AUTO_TEST_CASE(ProdFEObjSameType)

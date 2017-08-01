@@ -623,8 +623,6 @@ namespace dealii
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
-        static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
-                      "The evaluation object does not act on faces!");
         phi.template set_evaluation_flags_face<Base::index>(true, false, false);
       }
     };
@@ -657,8 +655,6 @@ namespace dealii
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
-        static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
-                      "The evaluation object does not act on faces!");
         phi.template set_evaluation_flags_face<Base::index>(true, false, false);
       }
     };
@@ -692,8 +688,6 @@ namespace dealii
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
-        /*static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
-                      "The evaluation object does not act on faces!");*/
         phi.template set_evaluation_flags_face<Base::index>(false, true, false);
       }
     };
@@ -727,8 +721,6 @@ namespace dealii
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
-/*        static_assert(Traits::is_fe_data_face<typename FEEvaluation::FEDataType>::value,
-                      "The evaluation object does not act on faces!");*/
         phi.template set_evaluation_flags_face<Base::index>(false, true, false);
       }
     };

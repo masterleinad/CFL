@@ -7,7 +7,8 @@
 //// Test case FEObjMemFunc
 // Type: Positive test case
 // Coverage: following classes - FEFunction, FEDivergence, FELiftDivergence,
-// 				FESymmetricGradient,FECurl, FEGradient, FELaplacian, FEDiagonalHessian,
+// 				FESymmetricGradient,FECurl, FEGradient, FELaplacian,
+// FEDiagonalHessian,
 //             FEHessain, FEFunctionInteriorFace, FEFunctionExteriorFace,
 //				FENormalGradientInteriorFace, FENormalGradientExteriorFace
 // 				for operator- and operator *
@@ -51,24 +52,26 @@ BOOST_FIXTURE_TEST_CASE(FEObjMemFunc, FEFixture, *utf::tolerance(0.00001))
 
   FELiftDivergence<decltype(fe_divergence1)> lifted_divergence1(fe_divergence1);
   auto lifted_divergence2 = -lifted_divergence1;
-  //Sorry, we cant check the outcome like below in UT since this class has different interface than rest
-  //BOOST_TEST(lifted_divergence2.scalar_factor == -lifted_divergence1.scalar_factor);
+  // Sorry, we cant check the outcome like below in UT since this class has different interface than
+  // rest
+  // BOOST_TEST(lifted_divergence2.scalar_factor == -lifted_divergence1.scalar_factor);
   auto lifted_divergence3 = 0.2 * lifted_divergence1 * 0.1;
-  //Sorry, we cant check the outcome like below in UT since this class has different interface than rest
-  //BOOST_TEST(lifted_divergence3.scalar_factor == lifted_divergence1.scalar_factor * 0.1 * 0.2);
+  // Sorry, we cant check the outcome like below in UT since this class has different interface than
+  // rest
+  // BOOST_TEST(lifted_divergence3.scalar_factor == lifted_divergence1.scalar_factor * 0.1 * 0.2);
 
   FESymmetricGradient<1, dim, fe_no_0> fe_symmetric_gradient1("f_s_g_s");
   auto fe_symmetric_gradient2 = -fe_symmetric_gradient1;
   BOOST_TEST(fe_symmetric_gradient2.scalar_factor == -fe_symmetric_gradient1.scalar_factor);
   auto fe_symmetric_gradient3 = 0.2 * fe_symmetric_gradient1 * 0.1;
-  BOOST_TEST(fe_symmetric_gradient3.scalar_factor == fe_symmetric_gradient1.scalar_factor * 0.1 * 0.2);
+  BOOST_TEST(fe_symmetric_gradient3.scalar_factor ==
+             fe_symmetric_gradient1.scalar_factor * 0.1 * 0.2);
 
   FECurl<1, dim, fe_no_0> fe_curl1("f_c_s");
   auto fe_curl2 = -fe_curl1;
   BOOST_TEST(fe_curl2.scalar_factor == -fe_curl1.scalar_factor);
   auto fe_curl3 = 0.2 * fe_curl1 * 0.1;
   BOOST_TEST(fe_curl3.scalar_factor == fe_curl1.scalar_factor * 0.1 * 0.2);
-
 
   FELaplacian<0, dim, fe_no_0> fe_laplacian1 = div(fe_gradient_scalar1);
   auto fe_laplacian2 = -fe_laplacian1;

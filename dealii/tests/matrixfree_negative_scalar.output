@@ -1,23 +1,23 @@
 DEAL::Grid type 0 Cells 1 DoFs 4
-evaluate cell value end: 0 1 1
-evaluate cell gradients end: 0 0 0
-evaluate cell hessian end: 0 0 0
-integrate cell value end: 0 1 1
-integrate cell gradients end: 0 0 0
+evaluate cell value: 0 1 1
+evaluate cell gradients: 0 0 0
+evaluate cell hessian: 0 0 0
+integrate cell value: 0 1 1
+integrate cell gradients: 0 0 0
 Initialize cell FEDatas 0
 DEAL::Grid type 0 Cells 1 DoFs 4
-evaluate cell value end: 0 1 1
-evaluate cell gradients end: 0 0 0
-evaluate cell hessian end: 0 0 0
-integrate cell value end: 0 1 1
-integrate cell gradients end: 0 0 0
+evaluate cell value: 0 1 1
+evaluate cell gradients: 0 0 0
+evaluate cell hessian: 0 0 0
+integrate cell value: 0 1 1
+integrate cell gradients: 0 0 0
 Initialize cell FEDatas 0
 DEAL::Grid type 0 Cells 1 DoFs 4
-evaluate cell value end: 0 1 1
-evaluate cell gradients end: 0 0 0
-evaluate cell hessian end: 0 0 0
-integrate cell value end: 0 1 1
-integrate cell gradients end: 0 0 0
+evaluate cell value: 0 1 1
+evaluate cell gradients: 0 0 0
+evaluate cell hessian: 0 0 0
+integrate cell value: 0 1 1
+integrate cell gradients: 0 0 0
 Initialize cell FEDatas 0
 Vector has size 4
 Vector has size 4

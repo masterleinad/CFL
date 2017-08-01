@@ -32,7 +32,7 @@ struct FEfunctor
     // TBD: Change to avoid duplication??
 
     // Check possible constructions and basic state of objects
-	//default const not supported
+    // default const not supported
     FEFunction<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_fun_obj1_2(
       "test_fe_fun_obj1_2"); // one form of constr.
     FEFunction<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_fun_obj1(
@@ -52,7 +52,6 @@ struct FEfunctor
     BOOST_TEST(test_hessian_obj.name() == test_fe_grad_obj.name());
     BOOST_TEST(test_hessian_obj.scalar_factor == test_fe_grad_obj.scalar_factor);
 
-
     auto test_fe_div_obj = div(test_fe_fun_obj1);
     BOOST_TEST(test_fe_div_obj.index == test_fe_fun_obj1.index);
     BOOST_TEST(test_fe_div_obj.name() == test_fe_fun_obj1.name());
@@ -64,43 +63,45 @@ struct FEfunctor
     BOOST_TEST(test_fe_laplacian_obj.scalar_factor == test_fe_grad_obj.scalar_factor);
 
     FESymmetricGradient<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_symm_grad(
-          "test_fe_symm_grad", obj_comb[i].scalar_factor); // second form of constr.
+      "test_fe_symm_grad", obj_comb[i].scalar_factor); // second form of constr.
     BOOST_TEST(test_fe_symm_grad.index == obj_comb[i].index);
     BOOST_TEST(test_fe_symm_grad.name() == "test_fe_symm_grad");
     BOOST_TEST(test_fe_symm_grad.scalar_factor == obj_comb[i].scalar_factor);
 
     FECurl<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_curl(
-          "test_fe_curl", obj_comb[i].scalar_factor); // second form of constr.
+      "test_fe_curl", obj_comb[i].scalar_factor); // second form of constr.
     BOOST_TEST(test_fe_curl.index == obj_comb[i].index);
     BOOST_TEST(test_fe_curl.name() == "test_fe_curl");
     BOOST_TEST(test_fe_curl.scalar_factor == obj_comb[i].scalar_factor);
 
     FEDiagonalHessian<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_diag_hessian(
-          "test_fe_diag_hessian", obj_comb[i].scalar_factor); // second form of constr.
+      "test_fe_diag_hessian", obj_comb[i].scalar_factor); // second form of constr.
     BOOST_TEST(test_fe_diag_hessian.index == obj_comb[i].index);
     BOOST_TEST(test_fe_diag_hessian.name() == "test_fe_diag_hessian");
     BOOST_TEST(test_fe_diag_hessian.scalar_factor == obj_comb[i].scalar_factor);
 
     FEFunctionInteriorFace<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_int_face(
-          "test_fe_int_face", obj_comb[i].scalar_factor); // second form of constr.
+      "test_fe_int_face", obj_comb[i].scalar_factor); // second form of constr.
     BOOST_TEST(test_fe_int_face.index == obj_comb[i].index);
     BOOST_TEST(test_fe_int_face.name() == "test_fe_int_face");
     BOOST_TEST(test_fe_int_face.scalar_factor == obj_comb[i].scalar_factor);
 
     FEFunctionExteriorFace<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_ext_face(
-          "test_fe_ext_face", obj_comb[i].scalar_factor); // second form of constr.
+      "test_fe_ext_face", obj_comb[i].scalar_factor); // second form of constr.
     BOOST_TEST(test_fe_ext_face.index == obj_comb[i].index);
     BOOST_TEST(test_fe_ext_face.name() == "test_fe_ext_face");
     BOOST_TEST(test_fe_ext_face.scalar_factor == obj_comb[i].scalar_factor);
 
-    FENormalGradientInteriorFace<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_grad_int_face(
-          "test_fe_grad_int_face", obj_comb[i].scalar_factor); // second form of constr.
+    FENormalGradientInteriorFace<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>
+      test_fe_grad_int_face("test_fe_grad_int_face",
+                            obj_comb[i].scalar_factor); // second form of constr.
     BOOST_TEST(test_fe_grad_int_face.index == obj_comb[i].index);
     BOOST_TEST(test_fe_grad_int_face.name() == "test_fe_grad_int_face");
     BOOST_TEST(test_fe_grad_int_face.scalar_factor == obj_comb[i].scalar_factor);
 
-    FENormalGradientExteriorFace<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_fe_grad_ext_face(
-          "test_fe_grad_ext_face", obj_comb[i].scalar_factor); // second form of constr.
+    FENormalGradientExteriorFace<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>
+      test_fe_grad_ext_face("test_fe_grad_ext_face",
+                            obj_comb[i].scalar_factor); // second form of constr.
     BOOST_TEST(test_fe_grad_ext_face.index == obj_comb[i].index);
     BOOST_TEST(test_fe_grad_ext_face.name() == "test_fe_grad_ext_face");
     BOOST_TEST(test_fe_grad_ext_face.scalar_factor == obj_comb[i].scalar_factor);

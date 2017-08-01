@@ -55,7 +55,6 @@ minusfe_same_types()
   auto prod1 = minus1 * minus2;
 
   auto minus13 = minus2 - minus5 - minus8 - minus10 - minus12; // something complicated
-
 }
 
 template <int i>
@@ -73,15 +72,27 @@ struct MinusFEfunctor
     minusfe_same_types<FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     minusfe_same_types<FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     minusfe_same_types<FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    minusfe_same_types<FECurl,obj_comb[i].rank,obj_comb[i].dim,obj_comb[i].index>();
+    minusfe_same_types<FECurl, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     minusfe_same_types<FEGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     minusfe_same_types<FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     minusfe_same_types<FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
     minusfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    minusfe_same_types<FEFunctionInteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    minusfe_same_types<FEFunctionExteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    minusfe_same_types<FENormalGradientInteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    minusfe_same_types<FENormalGradientExteriorFace, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    minusfe_same_types<FEFunctionInteriorFace,
+                       obj_comb[i].rank,
+                       obj_comb[i].dim,
+                       obj_comb[i].index>();
+    minusfe_same_types<FEFunctionExteriorFace,
+                       obj_comb[i].rank,
+                       obj_comb[i].dim,
+                       obj_comb[i].index>();
+    minusfe_same_types<FENormalGradientInteriorFace,
+                       obj_comb[i].rank,
+                       obj_comb[i].dim,
+                       obj_comb[i].index>();
+    minusfe_same_types<FENormalGradientExteriorFace,
+                       obj_comb[i].rank,
+                       obj_comb[i].dim,
+                       obj_comb[i].index>();
   }
 };
 BOOST_FIXTURE_TEST_CASE(MinusFEObjSameType, FEFixture)
