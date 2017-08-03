@@ -12,6 +12,14 @@
 
 #include <utility>
 
+/**
+* @brief Class which wraps the operational aspects of MatrixFree implementation
+*
+* This class provides a simplified interface to the integration kernel using
+* MatrixFree evaluation technique as prescribed in step-37
+*
+*
+*/
 template <int dim, class FEDatas, class Forms, typename VectorType>
 class MatrixFreeData
 {

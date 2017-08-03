@@ -4,7 +4,15 @@
 namespace CFL
 {
 /**
- * Contract tensors A and B over level dimensions.
+ * Allows to contract input tensors <code>A</code> and <code>B</code>
+ * over <code>level</code> dimensions
+ *
+ * @note Currently unused
+ *
+ * @todo Seems to be incomplete..discuss
+ * 1. Expected result of contraction?
+ * 2. Constraints on inputs?
+ *
  */
 template <class A, class B, int level = A::Traits::rank>
 class Contract

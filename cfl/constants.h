@@ -7,6 +7,18 @@
 
 namespace CFL
 {
+
+/**
+ * Allows to store an object of user defined type <code> T </code> and a
+ * scaling factor to be applied on it. The exact application of scaling factor
+ * is left to user implementation
+ *
+ * @note Currently unused
+ *
+ * @todo "Any" type is allowed as scaling factor. It would be good to validate
+ * and restrict to a subset of numeric types
+ *
+ */
 template <typename number, typename T>
 class ConstantScaled
 {
@@ -29,6 +41,14 @@ public:
   }
 };
 
+/**
+ * \relates ConstantScaled
+ * Utility function to scale an object of type <code>T</code> with a constant
+ * <code>factor</code>.
+ * Returns a new object of type \ref ConstantScaled.
+ * The scaling is not actually performed but factor is retained as part of
+ * \ref ConstantScaled for later (lazy) evaluation
+ */
 template <typename number, class T>
 auto
 scale(number factor, const T& t)

@@ -9,6 +9,40 @@
 template <typename... Types>
 class FEDatas;
 
+/**
+* @brief Class to hold Finite Element and the associated FEEvaluation
+*
+* A MatrixFree implementation requires FiniteElement on reference cell,
+* MatrixFree for collection of needed data and FEEvaluation for actual
+* evaluation. The FEData class is a provision in CFL library which
+* holds the Finite Element and saves the FEEvaluation which is appropriate
+* for this Finite Element.
+* In order to be usable, the \ref FEData object must be part of \ref FEDatas
+* which is a container for such objects.
+* This class has been designed in such a way that the description of shape
+* functions has to be provided at compile time but the decision for which
+* FEEvaluation has to be used for actual evaluation is left to run-time.
+* This has the obvious advantage of using different schemes for evaluation
+* on a mesh while having the same FiniteElement defined on the reference cell.
+* This distinction can be seen in the template parameter
+* <code>FiniteElementType<\code> which implies compile time dependency vs the
+* member variable <code> fe_evaluation <\code> which is initialized at run-time
+* when appropriate.
+* It is important to note that every finite element which is added to \ref
+* FEDatas should be uniquely identifiable. For this reason the class
+* definition of \FEData requires <code>fe_no<\code>
+*
+* For more on usage of this class, refer \ref FEDatas
+*
+* <h3> Usage example </h3>
+* <code>
+* 	  const auto fe_shared = std::make_shared<FE_Q<2>>(2);
+      FEData<FE_Q, 2, 1, 2, 0, 2, double> fedata_e_system(fe_shared);
+      FEData<FE_Q, 2, 1, 2, 1, 2, double> fedata_u_system(fe_shared);
+* </code>
+*
+*
+*/
 template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_fe_degree, typename Number = double>
 class FEData final
@@ -22,11 +56,24 @@ public:
   static constexpr unsigned int max_degree = max_fe_degree;
   const std::shared_ptr<const FiniteElementType<dim, dim>> fe;
 
+  /**
+   * Explicit constructor for providing the shape function description
+   * which is a reference to an object of any class derived from
+   * \ref FiniteElement
+   * \note The caller should ensure that the provided object is not
+   * destroyed till the life-time of FEData, typically throughout the
+   * life time of the program.
+   */
   explicit FEData(const FiniteElementType<dim, dim>& fe_)
     : FEData(std::make_shared<const FiniteElementType<dim, dim>>(fe_))
   {
   }
 
+  /**
+   * Explicit constructor for providing the shape function description
+   * which is an object of any class derived from \ref FiniteElement.
+   * For efficiency reasons, shared_pointer to such an object can be provided
+   */
   explicit FEData(std::shared_ptr<const FiniteElementType<dim, dim>> fe_)
     : fe(std::move(fe_))
   {
@@ -37,6 +84,11 @@ public:
                 dealii::ExcDimensionMismatch(fe->n_components(), n_components));
   }
 
+  /**
+   * Returns True if the FEData object has been initialized with FEEvaluation
+   * object. This function is public for it to be accessible to FEDatas which
+   * is a container for FEData
+   */
   bool
   evaluation_is_initialized() const
   {
@@ -50,6 +102,11 @@ private:
   friend class FEDatas;
 };
 
+
+/**
+ * Similar in design to \ref FEData class. This class however is designed for
+ * evaluation over faces - whether interior faces or exterior (boundary) faces
+ */
 template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_fe_degree, typename Number = double>
 class FEDataFace final
@@ -63,11 +120,17 @@ public:
   static constexpr unsigned int max_degree = max_fe_degree;
   const std::shared_ptr<const FiniteElementType<dim, dim>> fe;
 
+  /**
+   * Similar in design to \ref FEData
+   */
   explicit FEDataFace(const FiniteElementType<dim, dim>& fe_)
     : FEDataFace(std::make_shared<const FiniteElementType<dim, dim>>(fe_))
   {
   }
 
+  /**
+   * Similar in design to \ref FEData
+   */
   explicit FEDataFace(const std::shared_ptr<const FiniteElementType<dim, dim>> fe_)
     : fe(std::move(fe_))
   {
@@ -77,6 +140,10 @@ public:
                 dealii::ExcDimensionMismatch(fe->n_components(), n_components));
   }
 
+  /**
+   * Similar in design to \ref FEData. However, in here we check if
+   * initialization has been done for both interior and exterior faces
+   */
   template <bool interior = true, bool exterior = true>
   bool
   evaluation_is_initialized() const
@@ -95,23 +162,97 @@ private:
 
 namespace CFL::Traits
 {
-template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
+	/**
+	* @brief Trait to determine if a given type is CFL FEData
+	* @todo Should be moved to dealii_matrixfree.h?
+	*
+	*/
+	template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_degree, typename Number>
-struct is_fe_data<
-  FEData<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
-{
-  static const bool value = true;
-};
+	struct is_fe_data<
+	FEData<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
+	{
+		static const bool value = true;
+	};
 
-template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
+	/**
+		* @brief Trait to determine if a given type is CFL FEDataFace
+		* @todo Should be moved to dealii_matrixfree.h?
+		*
+		*/
+	template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_degree, typename Number>
-struct is_fe_data_face<
-  FEDataFace<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
-{
-  static const bool value = true;
-};
+	struct is_fe_data_face<
+	FEDataFace<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
+	{
+		static const bool value = true;
+	};
 } // namespace CFL::Traits
 
+
+/**
+* @brief Class to provide FEEvaluation services in the scope of CFL
+*
+* Also refer to \ref FEData class.
+* FEDatas is a static container class which allows to build collection of
+* \ref FEData and/or \ref FEDataFace objects at compile time.
+* Further, it provides member functions which are a wrapper around the
+* services of \ref FEEvaluation class.
+* These member functions are themselves template functions and are
+* templatized with unique <code> fe_no <\code> which is a necessity
+* for storing these items in the collection
+*
+* <h3> What is static container </h3>
+* First of all, this is not a standard terminology!
+* We define static container to be a collection object whose length
+* and the objects which it contains are defined at compile time. The contents
+* of the objects can be modified at runtime, but new objects can not be
+* added nor old objects be deleted during runtime. Think of it as a mid way
+* between array and a vector - like an array its memory requirements are fixed
+* at compile time; like a vector it can grow, but unlike a vector which grows
+* dynamically the growth of a static container is only possible at compile time
+*
+* <h3> Usage example </h3>
+* The items can be added to container using comma operation which is an
+* overloaded operator in this class
+*
+* <code>
+* 	  const auto fe_shared = std::make_shared<FE_Q<2>>(2);
+      FEData<FE_Q, 2, 1, 2, 0, 2, double> fedata_e_system(fe_shared);
+      FEData<FE_Q, 2, 1, 2, 1, 2, double> fedata_u_system(fe_shared);
+
+       FEData<FE_Q, 2, 1, 2, 2, 2, double> fedata_x_system(fe_shared)
+      auto fedatas_1 = (fedata_e_system, fedata_u_system);
+      auto fedatas_2 = (fedatas_1, fedata_x_system);
+* </code>
+*
+* <h3>Implementation</h3>
+* The static container concept is implemented using C++ variadic templates.
+* When the first time an FEDatas object is created using two FEDatas objects
+* appended using comma, a heirarchy of base-derived classes is created as:
+* <li> fedatas_1:
+*  *   @verbatim
+ *		FEDatas<FEData>  --> holds fedata_e_system
+ *		     ^
+ *		     |
+ *		     |
+ *		FEDatas<FEData,FEData> --> holds fedata_u_system
+ *   @endverbatim
+* Next time, when a new FEData object is added to existing FEDatas, the
+* new heirarchy will look like:
+** <li> fedatas_2:
+*  *   @verbatim
+ *		FEDatas<FEData>  --> holds fedata_e_system
+ *		     ^
+ *		     |
+ *		     |
+ *		FEDatas<FEData,FEData> --> holds fedata_u_system
+ *		     ^
+ *		     |
+ *		     |
+ *		FEDatas<FEData,FEData,FEData> --> holds fedata_x_system
+ *   @endverbatim
+*/
 template <class FEData>
 class FEDatas<FEData>
 {
@@ -124,11 +265,18 @@ public:
   static constexpr unsigned int max_degree = FEData::max_degree;
   static constexpr unsigned int n = 1;
 
-  // Note: This constructor is deliberately not marked as explicit to allow initializations like:
-  // .......
-  // FEData<....> fedata_obj;
-  // FEDatas<decltype(fedata_obj)> fedatas_obj = fedata_obj;
-  // .......
+  /**
+   * Constructor for storing the provided FEData object
+   *
+
+   * \note This constructor is deliberately not marked as explicit to allow initializations like:
+  	  <code>
+   	   .......
+   	   FEData<....> fedata_obj;
+   	   FEDatas<decltype(fedata_obj)> fedatas_obj = fedata_obj;
+   	   .......
+  	  <\code>
+  */
   FEDatas(const FEData fe_data_)
     : fe_data(std::move(fe_data_))
   {
@@ -138,6 +286,10 @@ public:
                   "You need to construct this with a FEData object!");
   }
 
+  /**
+     * Returns the rank of the FEData object stored in this collection
+     *
+  */
   template <unsigned int fe_number_extern>
   static constexpr bool
   rank()
@@ -146,6 +298,11 @@ public:
     return TensorTraits::rank;
   }
 
+  /**
+     * Comma operator to append another item to this collection in a
+     * static manner
+     *
+  */
   template <class NewFEData>
   FEDatas<NewFEData, FEData>
   operator,(const NewFEData& new_fe_data) const
@@ -158,6 +315,10 @@ public:
     return FEDatas<NewFEData, FEData>(new_fe_data, fe_data);
   }
 
+  /**
+     * Wrapper around reinit function of FEEvaluation used for cell
+     *
+  */
   template <typename Cell>
   void
   reinit(const Cell& cell)
@@ -172,6 +333,10 @@ public:
       }
   }
 
+  /**
+     * Wrapper around reinit function of FEEvaluation used for faces
+     *
+  */
   template <typename Face>
   void
   reinit_face(const Face& face)
@@ -187,6 +352,10 @@ public:
       }
   }
 
+  /**
+     * Wrapper around reinit function of FEEvaluation used for exterior face
+     *
+  */
   template <typename Face>
   void
   reinit_boundary(const Face& face)
@@ -203,6 +372,10 @@ public:
       }
   }
 
+  /**
+     * Wrapper around read_dof_values function of FEEvaluation used for cell
+     *
+  */
   template <typename VectorType>
   void
   read_dof_values(const VectorType& vector)
@@ -221,6 +394,10 @@ public:
       }
   }
 
+  /**
+     * Wrapper around read_dof_values function of FEEvaluation used for face
+     *
+  */
   template <typename VectorType, bool interior = true, bool exterior = true>
   void
   read_dof_values_face(const VectorType& vector)
@@ -250,6 +427,10 @@ public:
       }
   }
 
+  /**
+     * Saves the integration flags on cell used later for MatrixFree evaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   void
   set_integration_flags(bool integrate_value, bool integrate_gradient)
@@ -266,6 +447,10 @@ public:
 #endif
   }
 
+  /**
+     * Clears the integration flags
+     *
+  */
   void
   reset_integration_flags_face_and_boundary()
   {
@@ -278,6 +463,10 @@ public:
       }
   }
 
+  /**
+     * Saves the integration flags on faces used later for MatrixFree evaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   void
   set_integration_flags_face_and_boundary(bool integrate_value, bool integrate_value_exterior,
@@ -301,6 +490,10 @@ public:
 #endif
   }
 
+  /**
+     * Saves the integration flags on cell used later for MatrixFree evaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   void
   set_evaluation_flags(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
@@ -320,6 +513,10 @@ public:
 #endif
   }
 
+  /**
+     * Saves the integration flags on faces used later for MatrixFree evaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   void
   set_evaluation_flags_face(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
@@ -339,6 +536,10 @@ public:
 #endif
   }
 
+  /**
+     * Wrapper around distribute_local_to_global function of FEEvaluation used for cell
+     *
+  */
   template <typename VectorType>
   void
   distribute_local_to_global(VectorType& vector)
@@ -356,6 +557,10 @@ public:
       }
   }
 
+  /**
+     * Wrapper around distribute_local_to_global function of FEEvaluation used for faces
+     *
+  */
   template <typename VectorType, bool interior = true, bool exterior = true>
   void
   distribute_local_to_global_face(VectorType& vector)
@@ -386,6 +591,10 @@ public:
       }
   }
 
+  /**
+     * Initializes the FEData object with appropriate FEEvaluation object
+     *
+  */
   template <int dim, typename OtherNumber>
   void
   initialize(const dealii::MatrixFree<dim, OtherNumber>& mf)
@@ -414,6 +623,10 @@ public:
     initialized = true;
   }
 
+  /**
+     * Wrapper around evaluate function of FEEvaluation used for cell
+     *
+  */
   void
   evaluate()
   {
@@ -429,6 +642,10 @@ public:
       }
   }
 
+  /**
+     * Wrapper around evaluate function of FEEvaluation used for faces
+     *
+  */
   template <bool interior = true, bool exterior = true>
   void
   evaluate_face()
@@ -449,6 +666,10 @@ public:
       }
   }
 
+  /**
+     * Wrapper around static_n_q_points of FEEvaluation used for cell
+     *
+  */
   template <unsigned int fe_number_extern = fe_number>
   static constexpr unsigned int
   get_n_q_points()
@@ -458,6 +679,10 @@ public:
     return 0;
   }
 
+  /**
+     * Wrapper around static_n_q_points of FEEvaluation used for faces
+     *
+  */
   template <unsigned int fe_number_extern = fe_number>
   static constexpr unsigned int
   get_n_q_points_face()
@@ -467,6 +692,10 @@ public:
     return 0;
   }
 
+  /**
+     * Wrapper around get_gradient function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   auto
   get_gradient(unsigned int q) const
@@ -478,6 +707,10 @@ public:
     return fe_data.fe_evaluation->get_gradient(q);
   }
 
+  /**
+     * Wrapper around get_normal_gradient function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern, bool interior>
   auto
   get_normal_gradient(unsigned int q) const
@@ -491,6 +724,10 @@ public:
       return -(fe_data.fe_evaluation_exterior->get_normal_gradient(q));
   }
 
+  /**
+     * Wrapper around get_symmetric_gradient function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   auto
   get_symmetric_gradient(unsigned int q) const
@@ -502,6 +739,10 @@ public:
     return fe_data.fe_evaluation->get_symmetric_gradient(q);
   }
 
+  /**
+     * Wrapper around get_divergence function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   auto
   get_divergence(unsigned int q) const
@@ -513,6 +754,10 @@ public:
     return fe_data.fe_evaluation->get_divergence(q);
   }
 
+  /**
+     * Wrapper around get_laplacian function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   auto
   get_laplacian(unsigned int q) const
@@ -524,6 +769,10 @@ public:
     return fe_data.fe_evaluation->get_laplacian(q);
   }
 
+  /**
+     * Wrapper around get_hessian_diagonal function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   auto
   get_hessian_diagonal(unsigned int q) const
@@ -535,6 +784,10 @@ public:
     return fe_data.fe_evaluation->get_hessian_diagonal(q);
   }
 
+  /**
+     * Wrapper around get_hessian function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   auto
   get_hessian(unsigned int q) const
@@ -546,6 +799,10 @@ public:
     return fe_data.fe_evaluation->get_hessian(q);
   }
 
+  /**
+     * Wrapper around get_value function of FEEvaluation used for cell
+     *
+  */
   template <unsigned int fe_number_extern>
   auto
   get_value(unsigned int q) const
@@ -561,6 +818,10 @@ public:
     return fe_data.fe_evaluation->get_value(q);
   }
 
+  /**
+     * Wrapper around get_value function of FEEvaluation used for faces
+     *
+  */
   template <unsigned int fe_number_extern, bool interior>
   auto
   get_face_value(unsigned int q) const
@@ -589,6 +850,10 @@ public:
     }
   }
 
+  /**
+     * Wrapper around submit_gradient function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_gradient(const ValueType& value, unsigned int q)
@@ -602,6 +867,10 @@ public:
     fe_data.fe_evaluation->submit_gradient(value, q);
   }
 
+  /**
+     * Wrapper around submit_curl function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_curl(const ValueType& value, unsigned int q)
@@ -618,6 +887,10 @@ public:
     fe_data.fe_evaluation->submit_curl(value, q);
   }
 
+  /**
+     * Wrapper around submit_divergence function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_divergence(const ValueType& value, unsigned int q)
@@ -634,6 +907,10 @@ public:
     fe_data.fe_evaluation->submit_divergence(value, q);
   }
 
+  /**
+     * Wrapper around submit_symmetric_gradient function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_symmetric_gradient(const ValueType& value, unsigned int q)
@@ -650,6 +927,10 @@ public:
     fe_data.fe_evaluation->submit_symmetric_gradient(value, q);
   }
 
+  /**
+     * Wrapper around submit_value function of FEEvaluation used for cell
+     *
+  */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_value(const ValueType& value, unsigned int q)
@@ -663,6 +944,10 @@ public:
     fe_data.fe_evaluation->submit_value(value, q);
   }
 
+  /**
+     * Wrapper around submit_value function of FEEvaluation used for faces
+     *
+  */
   template <unsigned int fe_number_extern, bool interior, typename ValueType>
   void
   submit_face_value(const ValueType& value, unsigned int q)
@@ -678,6 +963,10 @@ public:
       fe_data.fe_evaluation_exterior->submit_value(value, q);
   }
 
+  /**
+     * Wrapper around submit_normal_gradient function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern, bool interior, typename ValueType>
   void
   submit_normal_gradient(const ValueType& value, unsigned int q)
@@ -693,6 +982,10 @@ public:
       fe_data.fe_evaluation_exterior->submit_normal_gradient(-value, q);
   }
 
+  /**
+     * Wrapper around integrate function of FEEvaluation used for cell
+     *
+  */
   void
   integrate()
   {
@@ -709,6 +1002,10 @@ public:
       }
   }
 
+  /**
+     * Wrapper around integrate function of FEEvaluation used for faces
+     *
+  */
   void
   integrate_face()
   {
@@ -735,6 +1032,10 @@ public:
       }
   }
 
+  /**
+     * Returns the FEData object with given fe_number
+     *
+  */
   template <unsigned int fe_number_extern>
   const auto&
   get_fe_data() const
@@ -745,6 +1046,10 @@ public:
     return fe_data;
   }
 
+  /**
+     * Returns the FEData object with given fe_number
+     *
+  */
   template <unsigned int fe_number_extern>
   const auto&
   get_fe_data_face() const
@@ -755,12 +1060,21 @@ public:
     return fe_data;
   }
 
+  /**
+     * Returns the FEData object held with this class
+     *
+  */
   auto
   get_fe_datas() const
   {
     return fe_data;
   }
 
+
+  /**
+     * Wrapper around dofs_per_cell function of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   unsigned int
   dofs_per_cell() const
@@ -769,6 +1083,10 @@ public:
     return fe_data.fe_evaluation->dofs_per_cell;
   }
 
+  /**
+     * Wrapper around tensor_dofs_per_cell of FEEvaluation
+     *
+  */
   template <unsigned int fe_number_extern>
   static constexpr unsigned int
   tensor_dofs_per_cell()
@@ -777,6 +1095,10 @@ public:
     return FEData::FEEvaluationType::tensor_dofs_per_cell;
   }
 
+  /**
+      * Wrapper around begin_dof_values function of FEEvaluation
+      *
+   */
   template <unsigned int fe_number_extern>
   auto
   begin_dof_values() const
@@ -788,6 +1110,10 @@ public:
 protected:
   FEData fe_data;
 
+  /**
+      * Ensures uniqueness of FEData objects added to the container
+      *
+   */
   template <unsigned int fe_number_extern>
   void
   check_uniqueness()
@@ -796,6 +1122,10 @@ protected:
                   "The fe_numbers have to be unique!");
   }
 
+  /**
+      * Ensures uniqueness of FEData objects added to the container
+      *
+   */
   template <unsigned int fe_number_extern>
   void
   check_uniqueness_face()
@@ -815,6 +1145,11 @@ private:
   bool initialized = false;
 };
 
+/**
+* @brief Class to provide FEEvaluation services in the scope of CFL
+* This is for variadic template definition of the FEDatas class.
+* Please refer to the documentation of the previous class
+*/
 template <class FEData, typename... Types>
 class FEDatas<FEData, Types...> : public FEDatas<Types...>
 {
@@ -1650,6 +1985,10 @@ private:
   bool initialized = false;
 };
 
+/**
+* Operator overloading function to allow appending FEData to FEDatas
+* \relates FEDatas
+*/
 template <class FEData, typename... Types>
 typename std::enable_if_t<CFL::Traits::is_fe_data<FEData>::value ||
                             CFL::Traits::is_fe_data_face<FEData>::value,
@@ -1659,6 +1998,11 @@ operator,(const FEData& new_fe_data, const FEDatas<Types...>& old_fe_data)
   return old_fe_data.operator,(new_fe_data);
 }
 
+/**
+* Operator overloading function to allow appending two FEData to form
+* a new container FEDatas
+* \relates FEDatas
+*/
 template <class FEData1, class FEData2>
 std::enable_if_t<CFL::Traits::is_fe_data<FEData1>::value ||
                    CFL::Traits::is_fe_data_face<FEData1>::value,
