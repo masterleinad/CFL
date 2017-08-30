@@ -1254,6 +1254,12 @@ namespace dealii
       {
       }
 
+      const FEFunctionType&
+      get_fefunction()
+      {
+          return fefunction;
+      }
+
       template <class FEDatas>
       auto
       value(const FEDatas& phi, unsigned int q) const
