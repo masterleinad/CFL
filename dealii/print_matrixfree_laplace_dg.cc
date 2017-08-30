@@ -28,132 +28,10 @@
 #include <fstream>
 
 #include <latex/fefunctions.h>
+#include <latex/forms.h>
+#include <latex/evaluator.h>
 
 using namespace CFL;
-
-template <class LatexTest, class LatexExpr, FormKind kind_of_form>
-class LatexForm
-{
-public:
-
-    template <class Test, class Expr, typename NumberType>
-    LatexForm(const Form<Test, Expr, kind_of_form, NumberType> f):
-    expr(Latex::transform(f.expr)), test(f.test)
-    {}
-
-  std::string
-  print(const std::vector<std::string>& function_names,
-        const std::vector<std::string>& expression_names) const
-  {
-    const std::string domain = []() {
-      switch (kind_of_form)
-      {
-        case FormKind::cell:
-          return R"(_\Omega)";
-          break;
-        case FormKind::face:
-          return R"(_F)";
-          break;
-        case FormKind::boundary:
-          return R"(_{\partial \Omega})";
-          break;
-        default:
-          Assert(false, ::dealii::ExcInternalError());
-      }
-    }();
-    return "(" + expr.value(function_names) + "," + test.print(expression_names) + ")" + domain;
-  }
-
-private:
-  const LatexExpr expr;
-  const LatexTest test;
-};
-
-template <typename... Types>
-class LatexForms;
-
-template <typename FormType, typename... FormTypes>
-class LatexForms<FormType, FormTypes...> : public LatexForms<FormTypes...>
-{
-public:
-  template <class OtherType, class... OtherTypes,
-            typename std::enable_if<sizeof...(OtherTypes)==sizeof...(FormTypes)>::type* = nullptr>
-  LatexForms(const Forms<OtherType, OtherTypes...>&f)
-    :LatexForms<FormTypes...>(static_cast<Forms<OtherTypes...>>(f)),
-     form(f.get_form())
-  {}
-
-  std::string
-  print(const std::vector<std::string>& function_names,
-        const std::vector<std::string>& expression_names) const
-  {
-    return form.print(function_names, expression_names) + "+" +
-           LatexForms<FormTypes...>::print(function_names, expression_names);
-  }
-
-private:
-  const FormType form;
-};
-
-template <class Test, class Expr, FormKind kind_of_form>
-class LatexForms<LatexForm<Test, Expr, kind_of_form>>
-{
-public:  
-template<class OtherExpr, typename NumberType>
-    LatexForms(const Forms<Form<Test, OtherExpr, kind_of_form, NumberType>>&f):form(f.get_form()){}
-
-  template <typename NumberType>
-  void initialize (const Form<Test, Expr, kind_of_form, NumberType>) {}
-
-  std::string
-  print(const std::vector<std::string>& function_names,
-        const std::vector<std::string>& expression_names) const
-  {
-    return form.print(function_names, expression_names);
-  }
-
-private:
-  const LatexForm<Test, Expr, kind_of_form> form;
-};
-
-template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
-auto
-transform_latex(const Form<Test, Expr, kind_of_form, NumberType>& f)
-{
-  return LatexForm<Test,decltype(Latex::transform(std::declval<Expr>())), kind_of_form> (f);
-}
-
-template <typename... Types>
-auto
-transform_latex(const Forms<Types...>& f)
-{
-  return LatexForms<decltype(transform_latex(std::declval<Types>()))...>(f);
-}
-
-
-template<class FormContainer>
-class LatexEvaluator
-{
-public:
-  LatexEvaluator (const FormContainer& form_container,
-                  const std::vector<std::string> & function_names,
-                  const std::vector<std::string> & test_names)
-    : _form_container(form_container),
-      _function_names(function_names),
-      _test_names(test_names)
-  {}
-
-  void print()
-  {
-    std::cout << _form_container.print(_function_names, _test_names) << std::endl;
-  }
-
-private:
-  const FormContainer& _form_container;
-  const std::vector<std::string>& _function_names;
-  const std::vector<std::string>& _test_names;
-};
-
 
 void
 test()
@@ -188,8 +66,8 @@ test()
 
   std::vector<std::string> function_names(1, "u");
   std::vector<std::string> test_names(1, "v");
-  const auto latex_forms = transform_latex(f);
-  LatexEvaluator<decltype(latex_forms)> evaluator(latex_forms, function_names, test_names);
+  const auto latex_forms = Latex::transform(f);
+  Latex::Evaluator<decltype(latex_forms)> evaluator(latex_forms, function_names, test_names);
   evaluator.print();
 }
 
