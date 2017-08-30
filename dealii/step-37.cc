@@ -164,8 +164,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
   VectorTools::interpolate_boundary_values(dof_handler, 0, ZeroFunction<dim>(), constraints);
   constraints.close();
   setup_time += time.wall_time();
-  time_details << "Distribute DoFs & B.C.     (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s" << std::endl;
+  time_details << "Distribute DoFs & B.C.     (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s" << std::endl;
   time.restart();
   {
     typename MatrixFree<dim, double>::AdditionalData additional_data;
@@ -185,8 +185,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
   system_matrix.initialize_dof_vector(system_rhs);
 
   setup_time += time.wall_time();
-  time_details << "Setup matrix-free system   (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s" << std::endl;
+  time_details << "Setup matrix-free system   (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s" << std::endl;
   time.restart();
 
   const unsigned int nlevels = triangulation.n_global_levels();
@@ -224,8 +224,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
     // mg_matrices[level].evaluate_coefficient(Coefficient<dim>());
   }
   setup_time += time.wall_time();
-  time_details << "Setup matrix-free levels   (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s" << std::endl;
+  time_details << "Setup matrix-free levels   (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s" << std::endl;
 }
 
 template <int dim, class FEDatasSystem, class FEDatasLevel, class Form>
@@ -247,8 +247,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::assemble_rhs()
   system_rhs.compress(VectorOperation::add);
 
   setup_time += time.wall_time();
-  time_details << "Assemble right hand side   (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s" << std::endl;
+  time_details << "Assemble right hand side   (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s" << std::endl;
 }
 
 template <int dim, class FEDatasSystem, class FEDatasLevel, class Form>
@@ -259,8 +259,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::solve()
   MGTransferMatrixFree<dim, float> mg_transfer(mg_constrained_dofs);
   mg_transfer.build(dof_handler);
   setup_time += time.wall_time();
-  time_details << "MG build transfer time     (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s\n";
+  time_details << "MG build transfer time     (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s\n";
   time.restart();
 
   typedef PreconditionChebyshev<LevelMatrixType, LinearAlgebra::distributed::Vector<float>>
@@ -308,8 +308,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::solve()
   SolverControl solver_control(100, 1e-12 * system_rhs.l2_norm());
   SolverCG<LinearAlgebra::distributed::Vector<double>> cg(solver_control);
   setup_time += time.wall_time();
-  time_details << "MG build smoother time     (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s\n";
+  time_details << "MG build smoother time     (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s\n";
   pcout << "Total setup time               (wall) " << setup_time << "s\n";
 
   time.reset();
@@ -318,8 +318,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::solve()
 
   constraints.distribute(solution);
 
-  pcout << "Time solve (" << solver_control.last_step() << " iterations)  (CPU/wall) " << time()
-        << "s/" << time.wall_time() << "s\n";
+  pcout << "Time solve (" << solver_control.last_step() << " iterations)  (CPU/wall) "
+        << time.cpu_time() << "s/" << time.wall_time() << "s\n";
 }
 
 template <int dim, class FEDatasSystem, class FEDatasLevel, class Form>

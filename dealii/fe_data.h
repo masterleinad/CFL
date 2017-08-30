@@ -102,7 +102,6 @@ private:
   friend class FEDatas;
 };
 
-
 /**
  * Similar in design to \ref FEData class. This class however is designed for
  * evaluation over faces - whether interior faces or exterior (boundary) faces
@@ -162,33 +161,32 @@ private:
 
 namespace CFL::Traits
 {
-	/**
-	* @brief Trait to determine if a given type is CFL FEData
-	* @todo Should be moved to dealii_matrixfree.h?
-	*
-	*/
-	template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
+/**
+* @brief Trait to determine if a given type is CFL FEData
+* @todo Should be moved to dealii_matrixfree.h?
+*
+*/
+template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_degree, typename Number>
-	struct is_fe_data<
-	FEData<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
-	{
-		static const bool value = true;
-	};
+struct is_fe_data<
+  FEData<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
+{
+  static const bool value = true;
+};
 
-	/**
-		* @brief Trait to determine if a given type is CFL FEDataFace
-		* @todo Should be moved to dealii_matrixfree.h?
-		*
-		*/
-	template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
+/**
+        * @brief Trait to determine if a given type is CFL FEDataFace
+        * @todo Should be moved to dealii_matrixfree.h?
+        *
+        */
+template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_degree, typename Number>
-	struct is_fe_data_face<
-	FEDataFace<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
-	{
-		static const bool value = true;
-	};
+struct is_fe_data_face<
+  FEDataFace<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
+{
+  static const bool value = true;
+};
 } // namespace CFL::Traits
-
 
 /**
 * @brief Class to provide FEEvaluation services in the scope of CFL
@@ -270,12 +268,12 @@ public:
    *
 
    * \note This constructor is deliberately not marked as explicit to allow initializations like:
-  	  <code>
-   	   .......
-   	   FEData<....> fedata_obj;
-   	   FEDatas<decltype(fedata_obj)> fedatas_obj = fedata_obj;
-   	   .......
-  	  <\code>
+          <code>
+           .......
+           FEData<....> fedata_obj;
+           FEDatas<decltype(fedata_obj)> fedatas_obj = fedata_obj;
+           .......
+          <\code>
   */
   FEDatas(const FEData fe_data_)
     : fe_data(std::move(fe_data_))
@@ -1069,7 +1067,6 @@ public:
   {
     return fe_data;
   }
-
 
   /**
      * Wrapper around dofs_per_cell function of FEEvaluation

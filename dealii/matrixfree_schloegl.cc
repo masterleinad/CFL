@@ -244,8 +244,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   pcout << "n_constraints: " << constraints[0].n_constraints() << std::endl;
 
   setup_time += time.wall_time();
-  time_details << "Distribute DoFs & B.C.     (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s" << std::endl;
+  time_details << "Distribute DoFs & B.C.     (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s" << std::endl;
   time.restart();
   {
     typename MatrixFree<dim, double>::AdditionalData additional_data;
@@ -285,8 +285,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   constraints[0].distribute(solution);
 
   setup_time += time.wall_time();
-  time_details << "Setup matrix-free system   (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s" << std::endl;
+  time_details << "Setup matrix-free system   (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s" << std::endl;
   time.restart();
 
   const unsigned int nlevels = triangulation.n_global_levels();
@@ -335,8 +335,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
                                   std::make_shared<FEDatasLevel>(mf_cfl_data_level));
   }
   setup_time += time.wall_time();
-  time_details << "Setup matrix-free levels   (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s" << std::endl;
+  time_details << "Setup matrix-free levels   (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s" << std::endl;
 }
 
 template <int dim, class FEDatasSystem, class FEDatasLevel, class FormSystem, class FormRHS>
@@ -400,8 +400,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::assemble_
   Assert(system_rhs_new.l2_norm() < 1.e-10 * system_rhs.l2_norm(), ExcInternalError());
 
   setup_time += time.wall_time();
-  time_details << "Assemble right hand side   (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s" << std::endl;
+  time_details << "Assemble right hand side   (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s" << std::endl;
 }
 
 template <int dim, class FEDatasSystem, class FEDatasLevel, class FormSystem, class FormRHS>
@@ -465,8 +465,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
   SolverControl solver_control(dof_handler.n_dofs(), 1e-12 * system_rhs.l2_norm(), false, false);
   SolverCG<LinearAlgebra::distributed::BlockVector<double>> cg(solver_control);
   setup_time += time.wall_time();
-  time_details << "MG build smoother time     (CPU/wall) " << time() << "s/" << time.wall_time()
-               << "s\n";
+  time_details << "MG build smoother time     (CPU/wall) " << time.cpu_time() << "s/"
+               << time.wall_time() << "s\n";
   pcout << "Total setup time               (wall) " << setup_time << "s\n";
 
   time.reset();
@@ -488,8 +488,8 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::solve()
   pcout << "update: " << solution_update.l2_norm() << std::endl;
   pcout << "solution: " << solution.l2_norm() << std::endl;
 
-  pcout << "Time solve (" << solver_control.last_step() << " iterations)  (CPU/wall) " << time()
-        << "s/" << time.wall_time() << "s\n";
+  pcout << "Time solve (" << solver_control.last_step() << " iterations)  (CPU/wall) "
+        << time.cpu_time() << "s/" << time.wall_time() << "s\n";
   return solution_update.l2_norm();
 }
 

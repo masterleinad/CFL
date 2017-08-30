@@ -364,10 +364,9 @@ public:
     return newform;
   }
 
-  auto
-  operator*(const double scalar) const
+  auto operator*(const double scalar) const
   {
-    const typename std::remove_reference<decltype(*this)>::type newform(test, expr*scalar);
+    const typename std::remove_reference<decltype(*this)>::type newform(test, expr * scalar);
     return newform;
   }
 };
@@ -858,17 +857,17 @@ public:
     return form;
   }
 
-  auto
-  operator*(const double scalar) const
+  auto operator*(const double scalar) const
   {
-    const typename std::remove_reference<decltype(*this)>::type newform(form*scalar, Forms<Types...>::get_form()*scalar);
+    const typename std::remove_reference<decltype(*this)>::type newform(
+      form * scalar, Forms<Types...>::get_form() * scalar);
     return newform;
   }
 
   auto
   operator-() const
   {
-    return (*this)*-1.;
+    return (*this) * -1.;
   }
 
 protected:
@@ -901,31 +900,28 @@ private:
 };
 
 template <class... Args>
-  struct CFL::Traits::is_multiplicable<Forms<Args...>, double>
-  {
-    static const bool value = true;
-  };
+struct CFL::Traits::is_multiplicable<Forms<Args...>, double>
+{
+  static const bool value = true;
+};
 
 template <class... Args>
-auto
-operator *(double scalar, const Forms<Args...> &forms)
+auto operator*(double scalar, const Forms<Args...>& forms)
 {
-  return forms*scalar;
+  return forms * scalar;
 }
 
 template <class... Args>
-  struct CFL::Traits::is_multiplicable<Form<Args...>, double>
-  {
-    static const bool value = true;
-  };
+struct CFL::Traits::is_multiplicable<Form<Args...>, double>
+{
+  static const bool value = true;
+};
 
 template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
-auto
-operator *(double scalar, const Form<Test, Expr, kind_of_form, NumberType> &form)
+auto operator*(double scalar, const Form<Test, Expr, kind_of_form, NumberType>& form)
 {
-  return form*scalar;
+  return form * scalar;
 }
-
 
 } // namespace CFL
 

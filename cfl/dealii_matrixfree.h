@@ -49,13 +49,13 @@ namespace dealii
 
 namespace Traits
 {
- /**
- * @brief Indicator for type of Block Vector
- *
- * This trait is used to determine if the given type is dealII's parallel
- * distributed vector
- *
- */
+  /**
+  * @brief Indicator for type of Block Vector
+  *
+  * This trait is used to determine if the given type is dealII's parallel
+  * distributed vector
+  *
+  */
   template <typename Number>
   struct is_block_vector<::dealii::LinearAlgebra::distributed::BlockVector<Number>>
   {
@@ -220,7 +220,6 @@ namespace Traits
   {
     static const bool value = true;
   };
-
 
   /**
   * @brief Trait to store measure region as cell for a test function
@@ -409,7 +408,6 @@ namespace dealii
       TestFunctionBaseBase() = delete;
     };
 
-
     /**
      * Top level base class for Test Functions
      * See \ref TestFunctionBase for more details
@@ -470,6 +468,12 @@ namespace dealii
       using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
       static constexpr const IntegrationFlags integration_flags{ true, false, false, false };
 
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return function_names[idx] + "^+";
+      }
+
       /**
        * Wrapper around submit_face_value function of FEEvaluation
        *
@@ -503,6 +507,12 @@ namespace dealii
     public:
       using Base = TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>;
       static constexpr IntegrationFlags integration_flags{ false, true, false, false };
+
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return function_names[idx] + "^-";
+      }
 
       /**
        * Wrapper around submit_face_value function of FEEvaluation
@@ -538,6 +548,12 @@ namespace dealii
       using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
       static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return R"(\boldsymbol{n}^+\cdot\nabla )" + function_names[idx] + "^+";
+      }
+
       /**
        * Wrapper around submit_normal_gradient function of FEEvaluation
        *
@@ -572,6 +588,12 @@ namespace dealii
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>;
       static constexpr IntegrationFlags integration_flags{ false, false, false, true };
+
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return R"(\boldsymbol{n}^-\cdot\nabla )" + function_names[idx] + "^-";
+      }
 
       /**
        * Wrapper around submit_normal_gradient function of FEEvaluation
@@ -734,6 +756,12 @@ namespace dealii
     public:
       using Base = TestFunctionBase<TestGradient<rank, dim, idx>>;
       static constexpr IntegrationFlags integration_flags{ false, false, true, false };
+
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return R"(\nabla )" + function_names[idx];
+      }
 
       /**
        * Wrapper around submit_gradient function of FEEvaluation
@@ -953,6 +981,12 @@ namespace dealii
       // inherit constructors
       using Base::Base;
 
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return function_names[idx] + "^+";
+      }
+
       template <class FEDatas>
       auto
       value(const FEDatas& phi, unsigned int q) const
@@ -994,6 +1028,12 @@ namespace dealii
       // inherit constructors
       using Base::Base;
 
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return function_names[idx] + "^-";
+      }
+
       template <class FEDatas>
       auto
       value(const FEDatas& phi, unsigned int q) const
@@ -1016,7 +1056,7 @@ namespace dealii
                       "Either the proposed FiniteElement is scalar valued "
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
-					  "the FiniteElement is vector valued!");
+                      "the FiniteElement is vector valued!");
         phi.template set_evaluation_flags_face<Base::index>(true, false, false);
       }
     };
@@ -1034,6 +1074,12 @@ namespace dealii
       using Base = FEFunctionFaceBase<FENormalGradientInteriorFace<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
+
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return R"(\boldsymbol{n}^+\cdot\nabla )" + function_names[idx] + "^+";
+      }
 
       template <class FEDatas>
       auto
@@ -1059,7 +1105,7 @@ namespace dealii
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
-         phi.template set_evaluation_flags_face<Base::index>(false, true, false);
+        phi.template set_evaluation_flags_face<Base::index>(false, true, false);
       }
     };
 
@@ -1076,6 +1122,12 @@ namespace dealii
       using Base = FEFunctionFaceBase<FENormalGradientExteriorFace<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
+
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return R"(\boldsymbol{n}^-\cdot\nabla )" + function_names[idx] + "^-";
+      }
 
       template <class FEDatas>
       auto
@@ -1101,7 +1153,7 @@ namespace dealii
                       "and the FEFunction is vector valued or "
                       "the FEFunction is scalar valued and "
                       "the FiniteElement is vector valued!");
-         phi.template set_evaluation_flags_face<Base::index>(false, true, false);
+        phi.template set_evaluation_flags_face<Base::index>(false, true, false);
       }
     };
 
@@ -1339,6 +1391,12 @@ namespace dealii
       // inherit constructors
       using Base::Base;
 
+      static std::string
+      print(const std::vector<std::string>& function_names)
+      {
+        return R"(\nabla )" + function_names[idx];
+      }
+
       explicit FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
         : FEGradient(fefunction.name(), fefunction.scalar_factor)
       {
@@ -1561,6 +1619,25 @@ namespace dealii
       return a * scalar_factor;
     }
 
+    template <class A, class B>
+    inline
+    auto
+    sum(const A &a, const B &b)
+    {
+        return a+b;
+    }
+
+    template<>
+    inline
+    auto
+    sum<std::string, std::string> (const std::string &a, const std::string &b)
+    {
+
+       if (b[0]=='-')
+         return a+b;
+       return a+"+"+b;
+    }
+
     template <typename... Types>
     class SumFEFunctions;
 
@@ -1576,7 +1653,7 @@ namespace dealii
      * maintains a static container (also see \ref FEDatas) of the FE Functions
      * An example would be:
      * <code>
-  	  	  auto sum3 = fe_function1 + fe_function1 + fe_function3;
+                  auto sum3 = fe_function1 + fe_function1 + fe_function3;
      * </code>
      * This will be stored as:
      * *   @verbatim
@@ -1598,11 +1675,22 @@ namespace dealii
       using TensorTraits =
         Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
 
+       template <class OtherType>
+       SumFEFunctions(const SumFEFunctions<OtherType>& f)
+           : summand(f.get_summand().scalar_factor)
+        {}
+
       explicit SumFEFunctions(const FEFunction summand_)
         : summand(std::move(summand_))
       {
         static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                       "You need to construct this with a FEFunction object!");
+      }
+
+      static std::string
+      print(const std::vector<std::string>& function_names, bool)
+      {
+        return FEFunction::print(function_names) + ")";
       }
 
       /**
@@ -1629,7 +1717,8 @@ namespace dealii
        *
        */
       template <class NewFEFunction>
-      auto operator-(const NewFEFunction& new_summand) const
+      auto
+      operator-(const NewFEFunction& new_summand) const
       {
         return operator+(-new_summand);
       }
@@ -1638,11 +1727,11 @@ namespace dealii
        * Wrapper around set_evaluation_flags function of FEFunction
        *
        */
-      template <class FEEvaluation>
+      template <class... ParameterTypes>
       auto
-      value(const FEEvaluation& phi, unsigned int q) const
+      value(const ParameterTypes&... parameters) const
       {
-        return summand.value(phi, q);
+        return summand.value(parameters...);
       }
 
       /**
@@ -1720,19 +1809,35 @@ namespace dealii
         Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
       using Base = SumFEFunctions<Types...>;
 
+      template <class OtherType, typename... OtherTypes,
+                typename std::enable_if<sizeof...(OtherTypes)==sizeof...(Types)>::type* = nullptr>
+      SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
+          : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f)),
+            summand(f.get_summand().scalar_factor)
+      {
+      }
+
+      /*static std::string
+      print(const std::vector<std::string>& function_names, bool first = true)
+      {
+        std::string prefix = first ? "(" : "";
+        return prefix + FEFunction::print(function_names) + "+" +
+               Base::print(function_names, false);
+      }*/
+
       /**
        * Actual evaluation of sum of the FE Function values in a Matrix Free
        * context
        *
        */
-      template <class FEEvaluation>
+      template <class... ParameterTypes>
       auto
-      value(const FEEvaluation& phi, unsigned int q) const
+      value(const ParameterTypes&... parameters) const
       {
-        const auto own_value = summand.value(phi, q);
-        const auto other_value = Base::value(phi, q);
+        const auto own_value = summand.value(parameters...);
+        const auto other_value = Base::value(parameters...);
         assert_is_compatible(own_value, other_value);
-        return own_value + other_value;
+        return sum(own_value, other_value);
       }
 
       /**
@@ -1819,16 +1924,17 @@ namespace dealii
         return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this);
       }
 
-
       /**
        * Operator overloading to subtract a FEFunction from a SumFEFunction
        *
        */
-      template <class NewFEFunction, typename std::enable_if<
-               Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-               Traits::fe_function_set_type<NewFEFunction>::value ==
-               Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto operator-(const NewFEFunction& new_summand) const
+      template <class NewFEFunction,
+                typename std::enable_if<
+                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
+                  Traits::fe_function_set_type<NewFEFunction>::value ==
+                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
+      auto
+      operator-(const NewFEFunction& new_summand) const
       {
         return operator+(-new_summand);
       }
@@ -1837,7 +1943,8 @@ namespace dealii
        * Unary minus operator overloading to get -SumFEFunction
        *
        */
-      auto operator-() const
+      auto
+      operator-() const
       {
         // create a copy
         SumFEFunctions<FEFunction, Types...> copy_this(*this);
@@ -1875,11 +1982,13 @@ namespace dealii
        * Operator overloading to subtract a SumFEFuction from a SumFEFunction
        *
        */
-      template <class NewFEFunction, typename... NewTypes,typename std::enable_if<
-          Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-          Traits::fe_function_set_type<NewFEFunction>::value ==
-          Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
+      template <class NewFEFunction, typename... NewTypes,
+                typename std::enable_if<
+                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
+                  Traits::fe_function_set_type<NewFEFunction>::value ==
+                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
+      auto
+      operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
       {
         return operator+(-new_sum);
       }
@@ -1888,11 +1997,13 @@ namespace dealii
        * Operator overloading to subtract a SumFEFuction from a SumFEFunction
        *
        */
-      template <class NewFEFunction, typename std::enable_if<
-          Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-          Traits::fe_function_set_type<NewFEFunction>::value ==
-          Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
+      template <class NewFEFunction,
+                typename std::enable_if<
+                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
+                  Traits::fe_function_set_type<NewFEFunction>::value ==
+                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
+      auto
+      operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
       {
         return operator+(-new_sum);
       }
@@ -1906,7 +2017,6 @@ namespace dealii
     private:
       FEFunction summand;
     };
-
 
     /**
      * Operator overloading to add two FEFunction objects to form a SumFEFuction object
@@ -1948,13 +2058,15 @@ namespace dealii
      * Operator overloading to subtract two FEFunction objects to form a SumFEFuction object
      *
      */
-    template <class FEFunction1, class FEFunction2, typename std::enable_if<
-        Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
-        Traits::fe_function_set_type<FEFunction1>::value ==
-        Traits::fe_function_set_type<FEFunction2>::value &&
-        !Traits::is_fe_function_sum<FEFunction1>::value && 
-        !Traits::is_fe_function_sum<FEFunction2>::value>::type* unused = nullptr>
-    auto operator-(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+    template <class FEFunction1, class FEFunction2,
+              typename std::enable_if<
+                Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
+                Traits::fe_function_set_type<FEFunction1>::value ==
+                  Traits::fe_function_set_type<FEFunction2>::value &&
+                !Traits::is_fe_function_sum<FEFunction1>::value &&
+                !Traits::is_fe_function_sum<FEFunction2>::value>::type* unused = nullptr>
+    auto
+    operator-(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
     {
       return old_fe_function + (-new_fe_function);
     }
@@ -1963,14 +2075,15 @@ namespace dealii
      * Operator overloading to subtract an FEFunction object from a SumFEFuction object
      *
      */
-    template <class FEFunction, typename... Types, typename std::enable_if<
-        Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
-        !Traits::is_fe_function_sum<FEFunction>::value>::type* unused = nullptr>
-    auto operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
+    template <class FEFunction, typename... Types,
+              typename std::enable_if<
+                Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
+                !Traits::is_fe_function_sum<FEFunction>::value>::type* unused = nullptr>
+    auto
+    operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
       return -(old_fe_function - new_fe_function);
     }
-
 
     /**
      * See \ref SumFEFunctions.
@@ -1982,7 +2095,7 @@ namespace dealii
      * maintains a static container (also see \ref FEDatas) of the FE Functions
      * An example would be:
      * <code>
-  	  	  auto prod1 = fe_function1 * fe_function1 * fe_function3;
+                  auto prod1 = fe_function1 * fe_function1 * fe_function3;
      * </code>
      * This will be stored as:
      * *   @verbatim
@@ -2166,7 +2279,6 @@ namespace dealii
         return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_factor, *this);
       }
 
-
       /**
        * Unary minus operator overloading to negate a ProductFEFunctions
        *
@@ -2185,8 +2297,8 @@ namespace dealii
        * Multiply all components of ProductFEFunctions with a scalar factor
        *
        */
-      template <typename Number, typename std::enable_if<
-	  	  std::is_arithmetic<Number>::value>::type* = nullptr>
+      template <typename Number,
+                typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr>
       auto operator*(const Number scalar_factor) const
       {
         ProductFEFunctions<FEFunction, Types...> tmp = *this;
