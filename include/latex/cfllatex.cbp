@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+   <FileVersion major="1" minor="6" />
+   <Project>
+      <Option title="cfllatex" />
+      <Option makefile_is_custom="1" />
+      <Option compiler="gcc" />
+      <Option virtualFolders="CMake Files\;" />
+      <Build>
+      <Target title="all">
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v all" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="arithmetic">
+         <Option output="/export/home/darndt/cfl/latex/arithmetic" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/export/home/darndt/cfl/latex/.." />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v arithmetic" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="arithmetic/fast">
+         <Option output="/export/home/darndt/cfl/latex/arithmetic" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/export/home/darndt/cfl/latex/.." />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v arithmetic/fast" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="derivatives">
+         <Option output="/export/home/darndt/cfl/latex/derivatives" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/export/home/darndt/cfl/latex/.." />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v derivatives" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="derivatives/fast">
+         <Option output="/export/home/darndt/cfl/latex/derivatives" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/export/home/darndt/cfl/latex/.." />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v derivatives/fast" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="forms">
+         <Option output="/export/home/darndt/cfl/latex/forms" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/export/home/darndt/cfl/latex/.." />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v forms" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="forms/fast">
+         <Option output="/export/home/darndt/cfl/latex/forms" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/export/home/darndt/cfl/latex/.." />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v forms/fast" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="rebuild_cache">
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option type="4" />
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v rebuild_cache" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="terminals">
+         <Option output="/export/home/darndt/cfl/latex/terminals" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/export/home/darndt/cfl/latex/.." />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v terminals" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      <Target title="terminals/fast">
+         <Option output="/export/home/darndt/cfl/latex/terminals" prefix_auto="0" extension_auto="0" />
+         <Option working_dir="/export/home/darndt/cfl/latex" />
+         <Option object_output="./" />
+         <Option type="1" />
+         <Option compiler="gcc" />
+         <Compiler>
+            <Add directory="/export/home/darndt/cfl/latex/.." />
+         </Compiler>
+         <MakeCommands>
+            <Build command="/export/home/darndt/.linuxbrew/bin/ninja -v terminals/fast" />
+            <CompileFile command="/export/home/darndt/.linuxbrew/bin/ninja -v &quot;$file&quot;" />
+            <Clean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+            <DistClean command="/export/home/darndt/.linuxbrew/bin/ninja -v clean" />
+         </MakeCommands>
+      </Target>
+      </Build>
+      <Unit filename="/export/home/darndt/cfl/latex/arithmetic.cc">
+      </Unit>
+      <Unit filename="/export/home/darndt/cfl/latex/derivatives.cc">
+      </Unit>
+      <Unit filename="/export/home/darndt/cfl/latex/forms.cc">
+      </Unit>
+      <Unit filename="/export/home/darndt/cfl/latex/terminals.cc">
+      </Unit>
+      <Unit filename="/export/home/darndt/cfl/latex/CMakeLists.txt">
+          <Option virtualFolder="CMake Files\" />
+      </Unit>
+   </Project>
+</CodeBlocks_project_file>

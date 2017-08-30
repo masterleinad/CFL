@@ -1,0 +1,384 @@
+www.viva64.com/en/w:1:1: error: Help: The documentation for all analyzer warnings is available here: http://www.viva64.com/en/w/.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-unknown-linux-gnu/bits/c++config.h:196:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/x86_64-unknown-linux-gnu/bits/c++config.h:197:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/cpp_type_traits.h:98:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/cpp_type_traits.h:228:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/cpp_type_traits.h:235:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/type_traits.h:89:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/type_traits.h:90:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/type_traits.h:132:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/type_traits.h:133:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:233:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:237:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:1683:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:1684:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:1742:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:1786:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:1787:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/type_traits:1854:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator.h:97:1: note: V690 The 'reverse_iterator' class implements a copy constructor, but lacks the '=' operator. It is dangerous to use such a class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator.h:419:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator.h:510:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator.h:604:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_iterator.h:699:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h:123:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h:144:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h:169:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h:234:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h:255:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h:276:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/predefined_ops.h:296:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1013:1: warning: V110 Implicit type conversion of return value from memsize type to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1017:1: warning: V110 Implicit type conversion of return value from memsize type to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1094:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1190:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1019:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1020:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1021:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1023:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1024:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_algobase.h:1025:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/lib/gcc/x86_64-unknown-linux-gnu/5.3.0/include/stddef.h:216:1: warning: V677 Custom declaration of a standard 'size_t' type. The declaration from system header files should be used instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/lib/gcc/x86_64-unknown-linux-gnu/5.3.0/include/stddef.h:216:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/lib/gcc/x86_64-unknown-linux-gnu/5.3.0/include/stddef.h:357:1: warning: V677 Custom declaration of a standard 'wint_t' type. The declaration from system header files should be used instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/postypes.h:115:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/postypes.h:217:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/postypes.h:222:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/postypes.h:88:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h:60:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h:394:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h:398:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h:504:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h:508:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h:601:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/char_traits.h:605:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/exception_ptr.h:77:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/new_allocator.h:114:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/new_allocator.h:120:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:822:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:848:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:951:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:969:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:987:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:1005:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:1023:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:1041:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:1059:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/stl_function.h:1077:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/initializer_list:58:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/initializer_list:59:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:98:1: warning: V111 Call of function '_S_pointer_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:107:1: warning: V111 Call of function '_S_const_pointer_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:118:1: warning: V111 Call of function '_S_void_pointer_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:129:1: warning: V111 Call of function '_S_const_void_pointer_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:140:1: warning: V111 Call of function '_S_difference_type_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:151:1: warning: V111 Call of function '_S_size_type_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:162:1: warning: V111 Call of function '_S_propagate_on_container_copy_assignment_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:174:1: warning: V111 Call of function '_S_propagate_on_container_move_assignment_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:186:1: warning: V111 Call of function '_S_propagate_on_container_swap_helper' with variable number of arguments. First argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:256:1: error: V591 Non-void function should return a value.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:263:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:263:1: error: V591 Non-void function should return a value.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:285:1: error: V591 Non-void function should return a value.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/alloc_traits.h:290:1: error: V591 Non-void function should return a value.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:111:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:122:1: warning: V117 Memsize type is used in the union.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:115:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:261:1: note: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Second argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:261:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Third argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:261:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Fourth argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:352:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:359:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:359:1: note: V202 Explicit conversion from memsize type to 32-bit integer type: int (__d)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:457:1: error: V769 The '__s' pointer in the '__s + npos' expression equals nullptr. The resulting value is senseless and it should not be used.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:482:1: warning: V106 Implicit type conversion third argument '_S_local_capacity + 1' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:768:1: note: V565 An empty exception handler. Silent suppression of exceptions can hide the presence of bugs in source code during testing.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:781:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:781:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: size_type(_S_local_capacity)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:873:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Second argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:873:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Third argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:894:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Second argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:894:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Third argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1015:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1029:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1043:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1083:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1133:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1151:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1167:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1182:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1329:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1353:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1375:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1396:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1419:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1439:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1480:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:849:1: note: V659 Declarations of functions with 'operator []' name differ in the 'const' keyword only, but the bodies of these functions have different composition. This is suspicious and can possibly be an error. Check lines: 832, 849.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:891:1: note: V659 Declarations of functions with 'at' name differ in the 'const' keyword only, but the bodies of these functions have different composition. This is suspicious and can possibly be an error. Check lines: 870, 891.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:71:1: note: V553 The length of 'basic_string' class's declaration is more than 2000 lines long. You should consider refactoring the code.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:352:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:781:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:781:1: note: V201 Instantiate basic_string < _CharT, _Traits, _Alloc >: Explicit conversion from 32-bit integer type to memsize type: size_type(_S_local_capacity)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1015:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1029:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1043:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1083:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1133:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1151:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1167:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1182:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1329:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1353:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1375:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1396:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1419:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1439:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:1480:1: warning: V2005 Instantiate basic_string < _CharT, _Traits, _Alloc >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:4843:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdlib:165:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdlib:166:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/cstdlib:169:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ext/string_conversions.h:99:1: warning: V104 Implicit conversion of '__len' to memsize type in an arithmetic expression: __s + __len
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5313:1: warning: V111 Call of function '__to_xstring' with variable number of arguments. Fourth argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5318:1: warning: V111 Call of function '__to_xstring' with variable number of arguments. Fourth argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5339:1: warning: V106 Implicit type conversion second argument '__n' of function '__to_xstring' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5348:1: warning: V106 Implicit type conversion second argument '__n' of function '__to_xstring' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5357:1: warning: V106 Implicit type conversion second argument '__n' of function '__to_xstring' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5415:1: warning: V111 Call of function '__to_xstring' with variable number of arguments. Fourth argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5420:1: warning: V111 Call of function '__to_xstring' with variable number of arguments. Fourth argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5441:1: warning: V106 Implicit type conversion second argument '__n' of function '__to_xstring' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5450:1: warning: V106 Implicit type conversion second argument '__n' of function '__to_xstring' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5459:1: warning: V106 Implicit type conversion second argument '__n' of function '__to_xstring' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5261:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5264:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5269:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5312:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5313:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5317:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5319:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5364:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5367:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5372:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5414:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5415:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5419:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:5421:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functional_hash.h:104:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: static_cast<size_t> (__val)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functional_hash.h:116:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: static_cast<size_t> (__val)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functional_hash.h:170:1: note: V550 An odd precise comparison: __val != 0.0f. It's probably better to use a comparison with defined precision: fabs(A - B) > Epsilon.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functional_hash.h:182:1: note: V550 An odd precise comparison: __val != 0.0. It's probably better to use a comparison with defined precision: fabs(A - B) > Epsilon.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functional_hash.h:107:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/functional_hash.h:119:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:76:1: warning: V106 Implicit type conversion third argument '_S_local_capacity + 1' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:78:1: warning: V106 Implicit type conversion third argument '_S_local_capacity + 1' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:80:1: warning: V106 Implicit type conversion third argument '_S_local_capacity + 1' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:85:1: warning: V106 Implicit type conversion third argument '_S_local_capacity + 1' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:93:1: warning: V106 Implicit type conversion third argument '_S_local_capacity + 1' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:103:1: warning: V106 Implicit type conversion third argument '_S_local_capacity + 1' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:114:1: warning: V106 Implicit type conversion third argument '_S_local_capacity + 1' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:172:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:172:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: size_type(_S_local_capacity)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:221:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:221:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: size_type(_S_local_capacity)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:223:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:244:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:244:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: size_type(_S_local_capacity)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:246:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:295:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:295:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: size_type(_S_local_capacity)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:374:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:1174:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:1229:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.tcc:1533:1: note: V807 Decreased performance. Consider creating a pointer to avoid using the '__in.rdbuf()' expression repeatedly.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/stdexcept:51:1: warning: V117 Memsize type is used in the union.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:122:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:126:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:130:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:134:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:154:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:158:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:191:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Second argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:191:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Third argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:203:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Second argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:203:1: warning: V111 Call of function '__throw_out_of_range_fmt' with variable number of arguments. Third argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:198:1: note: V659 Declarations of functions with 'at' name differ in the 'const' keyword only, but the bodies of these functions have different composition. This is suspicious and can possibly be an error. Check lines: 188, 198.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:214:1: note: V659 Declarations of functions with 'front' name differ in the 'const' keyword only, but the bodies of these functions have different composition. This is suspicious and can possibly be an error. Check lines: 210, 214.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:222:1: note: V659 Declarations of functions with 'back' name differ in the 'const' keyword only, but the bodies of these functions have different composition. This is suspicious and can possibly be an error. Check lines: 218, 222.
+/export/home/darndt/cfl/cfl/derivatives.h:77:1: warning: V108 Incorrect index type: derivatives[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:122:1: warning: V2005 Instantiate std::array < int, TensorTraits::dim >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:126:1: warning: V2005 Instantiate std::array < int, TensorTraits::dim >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:130:1: warning: V2005 Instantiate std::array < int, TensorTraits::dim >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:134:1: warning: V2005 Instantiate std::array < int, TensorTraits::dim >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:154:1: warning: V2005 Instantiate std::array < int, TensorTraits::dim >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/array:158:1: warning: V2005 Instantiate std::array < int, TensorTraits::dim >: C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/cfl/cfl/derivatives.h:86:1: warning: V108 Incorrect index type: derivatives[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:309:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:447:1: note: V565 An empty exception handler. Silent suppression of exceptions can hide the presence of bugs in source code during testing.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:491:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:534:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:535:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:536:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:537:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:561:1: note: V565 An empty exception handler. Silent suppression of exceptions can hide the presence of bugs in source code during testing.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:646:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:723:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:779:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.tcc:254:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.tcc:258:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.tcc:262:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.tcc:264:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/system_error:191:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/system_error:265:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:84:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:88:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:92:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:96:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:126:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:130:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:134:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:138:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:166:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:170:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:174:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:178:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:531:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:532:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:569:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:570:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:520:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:521:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:558:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:584:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:812:1: warning: V108 Incorrect index type: _M_word[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:833:1: warning: V108 Incorrect index type: _M_word[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:570:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ios_base.h:808:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:184:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:185:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:186:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:187:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:188:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:189:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:498:1: warning: V102 Usage of non memsize type for pointer arithmetic.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:545:1: warning: V102 Usage of non memsize type for pointer arithmetic.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/streambuf_iterator.h:97:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/streambuf_iterator.h:236:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:121:1: warning: V106 Implicit type conversion second argument '__len' of function '_M_put' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:132:1: warning: V108 Incorrect index type: __ws[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:690:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:692:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:693:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:694:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1191:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1200:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1593:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1594:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1596:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1597:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1598:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1599:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:1678:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2185:1: warning: V103 Implicit type conversion from memsize to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2033:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2048:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2212:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2227:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2370:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2375:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2509:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.h:2514:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:211:1: warning: V112 Dangerous magic number 32 used: ...ing.reserve(32);.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:462:1: warning: V101 Implicit assignment type conversion to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:468:1: warning: V112 Dangerous magic number 32 used: ...ing.reserve(32);.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:532:1: warning: V103 Implicit type conversion from memsize to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:606:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:695:1: warning: V112 Dangerous magic number 32 used: __xtrc.reserve(32);.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:710:1: warning: V112 Dangerous magic number 32 used: __xtrc.reserve(32);.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:742:1: warning: V112 Dangerous magic number 32 used: __xtrc.reserve(32);.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:785:1: warning: V106 Implicit type conversion sixth argument '__len' of function '_S_pad' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:787:1: note: V202 Explicit conversion from memsize type to 32-bit integer type: static_cast<int> (__w)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:831:1: warning: V110 Implicit type conversion of return value '__bufend - __buf' from memsize type to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:843:1: warning: V104 Implicit conversion of '__len' to memsize type in an arithmetic expression: __cs + __len
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:844:1: warning: V103 Implicit type conversion from memsize to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:864:1: warning: V103 Implicit type conversion from memsize to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:865:1: warning: V104 Implicit conversion of '__ilen' to memsize type in an arithmetic expression: sizeof (_CharT) * __ilen
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:876:1: warning: V104 Implicit conversion of '__ilen' to memsize type in an arithmetic expression: __cs + __ilen
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:877:1: warning: V102 Usage of non memsize type for pointer arithmetic.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:884:1: warning: V104 Implicit conversion of '(__len + 1)' to memsize type in an arithmetic expression: sizeof (_CharT) * (__len + 1)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:898:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:905:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:922:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: static_cast< streamsize > (__len)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:946:1: warning: V105 Third operand of '?:' operation: implicit type conversion to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:946:1: warning: V103 Implicit type conversion from memsize to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:949:1: warning: V104 Implicit conversion of '__declen' to memsize type in an arithmetic expression: __cs + __declen
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:952:1: warning: V103 Implicit type conversion from memsize to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:955:1: warning: V106 Implicit type conversion third argument '__len - __declen' of function 'copy' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1003:1: warning: V106 Implicit type conversion first argument '__cs_size' of function '__builtin_alloca' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1005:1: warning: V111 Call of function '__convert_from_v' with variable number of arguments. Fifth argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1015:1: warning: V106 Implicit type conversion first argument '__cs_size' of function '__builtin_alloca' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1017:1: warning: V111 Call of function '__convert_from_v' with variable number of arguments. Fifth argument has memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1046:1: warning: V104 Implicit conversion of '__len' to memsize type in an arithmetic expression: sizeof (_CharT) * __len
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1048:1: warning: V104 Implicit conversion of '__len' to memsize type in an arithmetic expression: __cs + __len
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1052:1: warning: V106 Implicit type conversion second argument '__len' of function 'find' to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1068:1: warning: V104 Implicit conversion of '__len' to memsize type in an arithmetic expression: sizeof (_CharT) * __len
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1082:1: warning: V103 Implicit type conversion from memsize to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1089:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: static_cast< streamsize > (__len)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1123:1: warning: V103 Implicit type conversion from memsize to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1127:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: static_cast< streamsize > (__len)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1129:1: warning: V104 Implicit conversion of '__len' to memsize type in an arithmetic expression: __w - __len
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1140:1: warning: V107 Implicit type conversion third argument '__plen' of function '__write' to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1144:1: warning: V107 Implicit type conversion third argument '__plen' of function '__write' to 32-bit type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:603:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:762:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:763:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1111:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1188:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_facets.tcc:1189:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.h:96:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.h:99:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.h:102:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.h:104:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.h:106:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.h:170:1: note: V667 The 'throw' operator does not possess any arguments and is not situated within the 'catch' block.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.tcc:74:1: warning: V121 Implicit conversion of the type of 'new' operator's argument to size_t type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.tcc:91:1: warning: V108 Incorrect index type: __words[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_ios.tcc:91:1: warning: V108 Incorrect index type: __rhs._M_word[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ostream:196:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: static_cast<unsigned long> (__n)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ostream:457:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ostream:166:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ostream:170:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ostream:185:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/ostream:196:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:112:1: note: V201 Explicit conversion from 32-bit integer type to memsize type.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:114:1: note: V201 Explicit conversion from 32-bit integer type to memsize type: static_cast<long> (__n)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:334:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:98:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:100:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:112:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:114:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:370:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:371:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:391:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/ostream.tcc:392:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/istream:82:1: note: V122 Memsize type is used in the struct/class.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/istream:104:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/istream:186:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/istream:190:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:54:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:141:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:186:1: warning: V2005 C-style explicit type casting is utilized. Consider using: static_cast/const_cast/reinterpret_cast.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:186:1: note: V202 Explicit conversion from memsize type to 32-bit integer type: int (__l)
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:124:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:169:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:1051:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:1052:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:1073:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/istream.tcc:1074:1: note: V126 Be advised that the size of the type 'long' varies between LLP64/LP64 data models.
+/export/home/darndt/cfl/cfl/sums.h:55:1: warning: V560 A part of conditional expression is always false: is_terminal_string < U >::value.
+/export/home/darndt/cfl/cfl/terminal_strings.h:86:1: warning: V108 Incorrect index type: derivatives[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/cfl/cfl/terminal_strings.h:89:1: warning: V108 Incorrect index type: derivatives[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/cfl/cfl/terminal_strings.h:90:1: warning: V108 Incorrect index type: derivatives[not a memsize-type]. Use memsize type instead.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/streambuf:768:1: note: V524 It is odd that the body of 'overflow' function is fully equivalent to the body of 'pbackfail' function.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/basic_string.h:504:1: warning: V730 It is possible that not all members of a class are initialized inside the constructor. Consider inspecting: _M_string_length.
+/export/home/darndt/.linuxbrew/Cellar/gcc/5.3.0/include/c++/5.3.0/bits/locale_classes.h:505:1: warning: V730 Not all members of a class are initialized inside the constructor. Consider inspecting: _M_index.
