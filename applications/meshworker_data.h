@@ -14,14 +14,14 @@
 #include <deal.II/meshworker/output.h>
 #include <deal.II/meshworker/simple.h>
 
-#include <cfl/dealii.h>
+#include <meshworker/fefunctions.h>
+#include <meshworker/forms.h>
 #include <cfl/forms.h>
 
 #include <string>
 
-using namespace dealii;
-using namespace CFL::dealii::MeshWorker;
-
+namespace CFL::dealiiMeshWorker
+{
 template <int dim, class FORM>
 class MeshWorkerIntegrator : public ::dealii::MeshWorker::LocalIntegrator<dim>
 {
@@ -38,7 +38,7 @@ public:
   }
 
   void
-  cell(MeshWorker::DoFInfo<dim>& dinfo, MeshWorker::IntegrationInfo<dim>& info) const override
+  cell(dealii::MeshWorker::DoFInfo<dim>& /*dinfo*/, dealii::MeshWorker::IntegrationInfo<dim>& info) const override
   {
     anchor(form, info, *this);
     reinit(form, info);
@@ -47,8 +47,8 @@ public:
       // std::cerr << '<' << &info
       //    << ',' << info.gradients[0][0][k]
       // << '>';
-      for (unsigned int i = 0; i < info.fe_values(0).dofs_per_cell; ++i)
-        dinfo.vector(0).block(0)[i] += form.evaluate(k, i) * info.fe_values(0).JxW(k);
+      /*for (unsigned int i = 0; i < info.fe_values(0).dofs_per_cell; ++i)
+        dinfo.vector(0).block(0)[i] += form.evaluate(k, i) * info.fe_values(0).JxW(k);*/
     }
   }
 };
@@ -56,20 +56,20 @@ public:
 template <int dim>
 class MeshworkerData
 {
-  MappingQ1<dim> mapping;
-  SphericalManifold<dim> sphere;
-  Triangulation<dim> tr;
-  DoFHandler<dim> dof;
+    dealii::MappingQ1<dim> mapping;
+    dealii::SphericalManifold<dim> sphere;
+    dealii::Triangulation<dim> tr;
+    dealii::DoFHandler<dim> dof;
 
 public:
-  MeshworkerData(unsigned int grid_index, unsigned int refine, const FiniteElement<dim>& fe)
+  MeshworkerData(unsigned int grid_index, unsigned int refine, const dealii::FiniteElement<dim>& fe)
     : dof(tr)
   {
     if (grid_index == 0)
-      GridGenerator::hyper_cube(tr);
+      dealii::GridGenerator::hyper_cube(tr);
     else if (grid_index == 1)
     {
-      GridGenerator::hyper_ball(tr);
+        dealii::GridGenerator::hyper_ball(tr);
       tr.set_manifold(0, sphere);
       tr.set_all_manifold_ids(0);
     }
@@ -80,54 +80,55 @@ public:
     dof.distribute_dofs(fe);
     dof.initialize_local_block_info();
 
-    deallog << "Grid type " << grid_index << " Cells " << tr.n_active_cells() << " DoFs "
+    dealii::deallog << "Grid type " << grid_index << " Cells " << tr.n_active_cells() << " DoFs "
             << dof.n_dofs() << std::endl;
   }
 
   void
-  resize_vector(Vector<double>& v) const
+  resize_vector(dealii::Vector<double>& v) const
   {
     v.reinit(dof.n_dofs());
   }
 
   template <class Form>
   void
-  vmult(Vector<double>& dst, const Vector<double>& src, Form& form) const
+  vmult(dealii::Vector<double>& dst, const dealii::Vector<double>& src, Form& form) const
   {
-    AnyData in;
-    in.add<const Vector<double>*>(&src, "u");
-    AnyData out;
-    out.add<Vector<double>*>(&dst, "result");
+    dealii::AnyData in;
+    in.add<const dealii::Vector<double>*>(&src, "u");
+    dealii::AnyData out;
+    out.add<dealii::Vector<double>*>(&dst, "result");
 
     MeshWorkerIntegrator<dim, Form> integrator(form);
 
-    UpdateFlags update_flags =
-      update_values | update_gradients | update_hessians | update_JxW_values;
+    dealii::UpdateFlags update_flags =
+      dealii::update_values | dealii::update_gradients | dealii::update_hessians | dealii::update_JxW_values;
 
-    MeshWorker::IntegrationInfoBox<dim> info_box;
+    dealii::MeshWorker::IntegrationInfoBox<dim> info_box;
     // Determine degree of form and adjust
     for (auto i = integrator.input_vector_names.begin(); i != integrator.input_vector_names.end();
          ++i)
     {
-      // std::cerr << "Vector " << *i << std::endl;
+      // std::cerr << "dealii::Vector " << *i << std::endl;
       info_box.cell_selector.add(*i, true, true, false);
       info_box.boundary_selector.add(*i, true, true, false);
       info_box.face_selector.add(*i, true, true, false);
     }
 
     info_box.add_update_flags_all(update_flags);
-    info_box.initialize(dof.get_fe(), this->mapping, in, Vector<double>(), &dof.block_info());
+    info_box.initialize(dof.get_fe(), this->mapping, in, dealii::Vector<double>(), &dof.block_info());
 
-    MeshWorker::DoFInfo<dim> dof_info(dof.block_info());
+    dealii::MeshWorker::DoFInfo<dim> dof_info(dof.block_info());
 
-    MeshWorker::Assembler::ResidualSimple<Vector<double>> assembler;
+    dealii::MeshWorker::Assembler::ResidualSimple<dealii::Vector<double>> assembler;
     //    assembler.initialize(this->constraints());
     assembler.initialize(out);
 
     // Loop call
-    MeshWorker::integration_loop(
+    dealii::MeshWorker::integration_loop(
       dof.begin_active(), dof.end(), dof_info, info_box, integrator, assembler);
   }
 };
+}
 
 #endif // _MESHWORKER_DATA_H

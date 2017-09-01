@@ -14,13 +14,13 @@
 #include <deal.II/meshworker/output.h>
 #include <deal.II/meshworker/simple.h>
 
-#include <cfl/dealii.h>
+#include <meshworker/fefunctions.h>
 #include <cfl/forms.h>
 
 #include <string>
 
 using namespace dealii;
-using namespace CFL::dealii::MeshWorker;
+using namespace CFL::dealiiMeshWorker;
 
 template <int dim, class FORM>
 class MeshWorkerIntegrator : public ::dealii::MeshWorker::LocalIntegrator<dim>

@@ -1,6 +1,8 @@
 #ifndef cfl_traits_h
 #define cfl_traits_h
 
+#include <type_traits>
+
 namespace CFL
 {
 

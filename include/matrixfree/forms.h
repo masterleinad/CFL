@@ -1,5 +1,5 @@
-#ifndef cfl_forms_h
-#define cfl_forms_h
+#ifndef cfl_dealii_matrixfree_forms_h
+#define cfl_dealii_matrixfree_forms_h
 
 #include <array>
 #include <iostream>
@@ -11,47 +11,12 @@
 #include <deal.II/base/exceptions.h>
 
 #include <cfl/traits.h>
+#include <cfl/forms.h>
 
 namespace CFL
 {
-namespace
+namespace dealii::MatrixFree
 {
-  enum class FormKind
-  {
-    cell,
-    face,
-    boundary
-  };
-}
-
-template <FormKind, ObjectType>
-constexpr bool
-formkind_matches_objecttype()
-{
-  return false;
-}
-
-template <>
-constexpr bool
-formkind_matches_objecttype<FormKind::cell, ObjectType::cell>()
-{
-  return true;
-}
-
-template <>
-constexpr bool
-formkind_matches_objecttype<FormKind::face, ObjectType::face>()
-{
-  return true;
-}
-
-template <>
-constexpr bool
-formkind_matches_objecttype<FormKind::boundary, ObjectType::face>()
-{
-  return true;
-}
-
 template <typename... Types>
 class Forms;
 
@@ -265,52 +230,47 @@ public:
     return newform;
   }
 };
+}
 
 namespace Traits
 {
   template <class Test, class Expr, FormKind kind_of_form>
-  struct is_form<Form<Test, Expr, kind_of_form>>
+  struct is_form<dealii::MatrixFree::Form<Test, Expr, kind_of_form>>
   {
     const static bool value = true;
   };
 
   template <class Test, class Expr, FormKind kind_of_form>
-  struct is_cfl_object<Form<Test, Expr, kind_of_form>>
+  struct is_cfl_object<dealii::MatrixFree::Form<Test, Expr, kind_of_form>>
   {
     const static bool value = true;
   };
 
   template <class Test1, class Expr1, FormKind kind1, class Test2, class Expr2, FormKind kind2>
-  struct is_summable<Form<Test1, Expr1, kind1>, Form<Test2, Expr2, kind2>>
+  struct is_summable<dealii::MatrixFree::Form<Test1, Expr1, kind1>, dealii::MatrixFree::Form<Test2, Expr2, kind2>>
   {
     const static bool value = true;
   };
 
   template <class Test, class Expr, FormKind kind_of_form, typename... Types>
-  struct is_summable<Form<Test, Expr, kind_of_form>, Forms<Types...>>
+  struct is_summable<dealii::MatrixFree::Form<Test, Expr, kind_of_form>, dealii::MatrixFree::Forms<Types...>>
   {
     const static bool value = true;
   };
 
   template <class Test, class Expr, FormKind kind_of_form, typename... Types>
-  struct is_summable<Forms<Types...>, Form<Test, Expr, kind_of_form>>
+  struct is_summable<dealii::MatrixFree::Forms<Types...>, dealii::MatrixFree::Form<Test, Expr, kind_of_form>>
   {
     const static bool value = true;
   };
 } // namespace Traits
 
+namespace dealii::MatrixFree
+{
 template <class Test, class Expr>
 typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
                         Form<Test, Expr, FormKind::cell>>::type
 form(const Test& t, const Expr& e)
-{
-  return Form<Test, Expr, FormKind::cell>(t, e);
-}
-
-template <class Test, class Expr>
-typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                        Form<Test, Expr, FormKind::cell>>::type
-form(const Expr& e, const Test& t)
 {
   return Form<Test, Expr, FormKind::cell>(t, e);
 }
@@ -371,7 +331,7 @@ public:
   {
     AssertThrow(
       (check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>()),
-      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
+      ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -555,7 +515,7 @@ public:
   {
     AssertThrow(
       valid,
-      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
+      ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -566,7 +526,7 @@ public:
   {
     AssertThrow(
       valid,
-      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
+      ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -793,24 +753,31 @@ private:
     check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>();
   const FormType form;
 };
+}
 
+namespace Traits
+{
 template <class... Args>
-struct CFL::Traits::is_multiplicable<Forms<Args...>, double>
+struct is_multiplicable<dealii::MatrixFree::Forms<Args...>, double>
 {
   static const bool value = true;
 };
 
+ template <class... Args>
+  struct is_multiplicable<dealii::MatrixFree::Form<Args...>, double>
+   {
+          static const bool value = true;
+           };
+}
+
+
+namespace dealii::MatrixFree
+{
 template <class... Args>
 auto operator*(double scalar, const Forms<Args...>& forms)
 {
   return forms * scalar;
 }
-
-template <class... Args>
-struct CFL::Traits::is_multiplicable<Form<Args...>, double>
-{
-  static const bool value = true;
-};
 
 template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
 auto operator*(double scalar, const Form<Test, Expr, kind_of_form, NumberType>& form)
@@ -818,6 +785,7 @@ auto operator*(double scalar, const Form<Test, Expr, kind_of_form, NumberType>& 
   return form * scalar;
 }
 
+}
 } // namespace CFL
 
 #endif

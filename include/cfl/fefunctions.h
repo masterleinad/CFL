@@ -1,5 +1,5 @@
-#ifndef cfl_dealii_matrix_free_h
-#define cfl_dealii_matrix_free_h
+#ifndef cfl_fefunctions_h
+#define cfl_fefunctions_h
 
 #include <deal.II/base/vectorization.h>
 #include <deal.II/lac/la_parallel_block_vector.h>
@@ -12,18 +12,8 @@
 #define AssertIndexInRange(index, range)                                                           \
   Assert((index) < (range), ::dealii::ExcIndexRange((index), 0, (range)))
 
-namespace CFL
+namespace CFL::Base
 {
-/**
- * @brief Interface to the deal.II library
- */
-namespace dealii
-{
-  /**
-   * @brief The terminal objects based on dealii::MatrixFree classes.
-   */
-  namespace MatrixFree
-  {
     template <class Derived>
     class TestFunctionBaseBase;
     template <class Derived>
@@ -44,75 +34,16 @@ namespace dealii
     class ProductFEFunctions;
     template <class FEFunctionType>
     class FELiftDivergence;
-  } // namespace MatrixFree
-} // namespace dealii
+}
 
-namespace Traits
+namespace CFL::Traits
 {
-  /**
-  * @brief Indicator for type of Block Vector
-  *
-  * This trait is used to determine if the given type is dealII's parallel
-  * distributed vector
-  *
-  */
-  template <typename Number>
-  struct is_block_vector<::dealii::LinearAlgebra::distributed::BlockVector<Number>>
-  {
-    static const bool value = true;
-  };
-
-  /**
-  * @brief Indicator for type of Block Vector
-  * This trait is used to determine if the given type is block vector based on
-  * dealII's block vector
-  *
-  */
-  template <typename Number>
-  struct is_block_vector<::dealii::BlockVector<Number>>
-  {
-    static const bool value = true;
-  };
-
-  /**
-  * @brief Indicator for compatibility of objects of Tensor and SymmetricTensor
-  *
-  * A trait to determine that a general dealii Tensor and dealii
-  * symmetric tensor are of equal dimension, rank and Number so that
-  * they can be compatibly used in an expression
-  *
-  * @note Currently unused
-  *
-  */
-  template <int dim, int rank, typename Number>
-  struct is_compatible<::dealii::Tensor<rank, dim, Number>,
-                       ::dealii::SymmetricTensor<rank, dim, Number>>
-  {
-    static const bool value = true;
-  };
-
-  /**
-  * @brief Indicator for compatibility of objects of Tensor and SymmetricTensor
-  * A trait to determine that a general dealii Tensor and dealii
-  * symmetric tensor are of equal dimension, rank and Number so that
-  * they can be compatibly used in an expression
-  *
-  * @note Currently unused
-  *
-  */
-  template <int dim, int rank, typename Number>
-  struct is_compatible<::dealii::SymmetricTensor<rank, dim, Number>,
-                       ::dealii::Tensor<rank, dim, Number>>
-  {
-    static const bool value = true;
-  };
-
   /**
   * @brief Trait to determine if a given type is CFL SumFEFunctions
   *
   */
   template <typename... Types>
-  struct is_cfl_object<dealii::MatrixFree::SumFEFunctions<Types...>>
+  struct is_cfl_object<Base::SumFEFunctions<Types...>>
   {
     static const bool value = true;
   };
@@ -126,7 +57,7 @@ namespace Traits
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct is_cfl_object<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of<dealii::MatrixFree::TestFunctionBaseBase<T<rank, dim, idx>>,
+    std::enable_if_t<std::is_base_of<Base::TestFunctionBaseBase<T<rank, dim, idx>>,
                                      T<rank, dim, idx>>::value>>
   {
     static const bool value = true;
@@ -139,7 +70,7 @@ namespace Traits
    *
    */
   template <class FEFunctionType>
-  struct is_cfl_object<dealii::MatrixFree::FELiftDivergence<FEFunctionType>>
+  struct is_cfl_object<Base::FELiftDivergence<FEFunctionType>>
   {
     static const bool value = true;
   };
@@ -153,7 +84,7 @@ namespace Traits
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct is_cfl_object<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionBaseBase<T<rank, dim, idx>>,
+    std::enable_if_t<std::is_base_of<Base::FEFunctionBaseBase<T<rank, dim, idx>>,
                                      T<rank, dim, idx>>::value>>
   {
     static const bool value = true;
@@ -231,7 +162,7 @@ namespace Traits
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct test_function_set_type<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of<dealii::MatrixFree::TestFunctionBase<T<rank, dim, idx>>,
+    std::enable_if_t<std::is_base_of<Base::TestFunctionBase<T<rank, dim, idx>>,
                                      T<rank, dim, idx>>::value>>
   {
     static const ObjectType value = ObjectType::cell;
@@ -247,7 +178,7 @@ namespace Traits
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct test_function_set_type<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of<dealii::MatrixFree::TestFunctionFaceBase<T<rank, dim, idx>>,
+    std::enable_if_t<std::is_base_of<Base::TestFunctionFaceBase<T<rank, dim, idx>>,
                                      T<rank, dim, idx>>::value>>
   {
     static const ObjectType value = ObjectType::face;
@@ -261,7 +192,7 @@ namespace Traits
   *
   */
   template <class FEFunctionType>
-  struct fe_function_set_type<dealii::MatrixFree::FELiftDivergence<FEFunctionType>>
+  struct fe_function_set_type<Base::FELiftDivergence<FEFunctionType>>
   {
     static const ObjectType value = ObjectType::cell;
   };
@@ -276,7 +207,7 @@ namespace Traits
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct fe_function_set_type<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionBase<T<rank, dim, idx>>,
+    std::enable_if_t<std::is_base_of<Base::FEFunctionBase<T<rank, dim, idx>>,
                                      T<rank, dim, idx>>::value>>
   {
     static const ObjectType value = ObjectType::cell;
@@ -292,7 +223,7 @@ namespace Traits
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct fe_function_set_type<
     T<rank, dim, idx>,
-    std::enable_if_t<std::is_base_of<dealii::MatrixFree::FEFunctionFaceBase<T<rank, dim, idx>>,
+    std::enable_if_t<std::is_base_of<Base::FEFunctionFaceBase<T<rank, dim, idx>>,
                                      T<rank, dim, idx>>::value>>
   {
     static const ObjectType value = ObjectType::face;
@@ -306,7 +237,7 @@ namespace Traits
   *
   */
   template <class FirstType, typename... Types>
-  struct fe_function_set_type<dealii::MatrixFree::SumFEFunctions<FirstType, Types...>>
+  struct fe_function_set_type<Base::SumFEFunctions<FirstType, Types...>>
   {
     static const ObjectType value = fe_function_set_type<FirstType>::value;
   };
@@ -319,7 +250,7 @@ namespace Traits
   *
   */
   template <class FirstType, typename... Types>
-  struct fe_function_set_type<dealii::MatrixFree::ProductFEFunctions<FirstType, Types...>>
+  struct fe_function_set_type<Base::ProductFEFunctions<FirstType, Types...>>
   {
     static const ObjectType value = fe_function_set_type<FirstType>::value;
   };
@@ -341,7 +272,7 @@ namespace Traits
   *
   */
   template <typename... Types>
-  struct is_fe_function_product<dealii::MatrixFree::ProductFEFunctions<Types...>>
+  struct is_fe_function_product<Base::ProductFEFunctions<Types...>>
   {
     static const bool value = true;
   };
@@ -363,15 +294,13 @@ namespace Traits
   *
   */
   template <typename... Types>
-  struct is_fe_function_sum<dealii::MatrixFree::SumFEFunctions<Types...>>
+  struct is_fe_function_sum<Base::SumFEFunctions<Types...>>
   {
     static const bool value = true;
   };
 } // namespace Traits
 
-namespace dealii
-{
-  namespace MatrixFree
+namespace CFL::Base
   {
     /**
     * @brief TBD
@@ -2410,9 +2339,7 @@ namespace dealii
                    const ProductFEFunctions<Types...>& old_fe_function)
     {
       return old_fe_function * new_fe_function;
-    }
-  } // namespace MatrixFree
-} // namespace dealii
+    }  
 } // namespace CFL
 
-#endif // CFL_DEALII_MATRIXFREE_H
+#endif

@@ -1,33 +1,15 @@
-#ifndef cfl_dealii_h
-#define cfl_dealii_h
+#ifndef MESHWORKER_FEFUNCTIONS_H
+#define MESHWORKER_FEFUNCTIONS_H
 
-#include <cfl/forms.h>
 #include <cfl/traits.h>
 
-#include <deal.II/meshworker/dof_info.h>
-#include <deal.II/meshworker/integration_info.h>
-#include <deal.II/meshworker/loop.h>
-#include <deal.II/meshworker/output.h>
-#include <deal.II/meshworker/simple.h>
-
-// This is an ugly workaround to be able to use AssertIndexRange
-// because we are always in the wrong namespace.
-#undef AssertIndexRange
-#define AssertIndexRange(index, range)                                                             \
-  Assert((index) < (range), ::dealii::ExcIndexRange((index), 0, (range)))
-
+/**
+ * \brief The terminal objects based on dealii::Meshworker classes.
+ */
 namespace CFL
 {
-/**
- * \brief Interface to the deal.II library
- */
-namespace dealii
+namespace dealiiMeshWorker
 {
-  /**
-   * \brief The terminal objects based on dealii::Meshworker classes.
-   */
-  namespace MeshWorker
-  {
     template <int dim>
     class ScalarTestFunction;
     template <int dim>
@@ -41,52 +23,49 @@ namespace dealii
     class FEGradient;
     template <int rank, int dim>
     class FEHessian;
-  }
 }
 
-namespace Traits
+    namespace Traits
+    {
+      template <int dim>
+      struct test_function_set_type<dealiiMeshWorker::ScalarTestFunction<dim>>
+      {
+        static const ObjectType value = ObjectType::cell;
+      };
+
+      template <int dim>
+      struct test_function_set_type<dealiiMeshWorker::ScalarTestGradient<dim>>
+      {
+        static const ObjectType value = ObjectType::cell;
+      };
+
+      template <int dim>
+      struct test_function_set_type<dealiiMeshWorker::ScalarTestHessian<dim>>
+      {
+        static const ObjectType value = ObjectType::cell;
+      };
+
+      template <int rank, int dim>
+      struct fe_function_set_type<dealiiMeshWorker::FEFunction<rank, dim>>
+      {
+        static const ObjectType value = ObjectType::cell;
+      };
+
+      template <int rank, int dim>
+      struct fe_function_set_type<dealiiMeshWorker::FEGradient<rank, dim>>
+      {
+        static const ObjectType value = ObjectType::cell;
+      };
+
+      template <int rank, int dim>
+      struct fe_function_set_type<dealiiMeshWorker::FEHessian<rank, dim>>
+      {
+        static const ObjectType value = ObjectType::cell;
+      };
+    }
+
+namespace dealiiMeshWorker
 {
-  template <int dim>
-  struct test_function_set_type<dealii::MeshWorker::ScalarTestFunction<dim>>
-  {
-    static const ObjectType value = ObjectType::cell;
-  };
-
-  template <int dim>
-  struct test_function_set_type<dealii::MeshWorker::ScalarTestGradient<dim>>
-  {
-    static const ObjectType value = ObjectType::cell;
-  };
-
-  template <int dim>
-  struct test_function_set_type<dealii::MeshWorker::ScalarTestHessian<dim>>
-  {
-    static const ObjectType value = ObjectType::cell;
-  };
-
-  template <int rank, int dim>
-  struct fe_function_set_type<dealii::MeshWorker::FEFunction<rank, dim>>
-  {
-    static const ObjectType value = ObjectType::cell;
-  };
-
-  template <int rank, int dim>
-  struct fe_function_set_type<dealii::MeshWorker::FEGradient<rank, dim>>
-  {
-    static const ObjectType value = ObjectType::cell;
-  };
-
-  template <int rank, int dim>
-  struct fe_function_set_type<dealii::MeshWorker::FEHessian<rank, dim>>
-  {
-    static const ObjectType value = ObjectType::cell;
-  };
-}
-
-namespace dealii
-{
-  namespace MeshWorker
-  {
     template <int dim>
     class ScalarTestFunction
     {
@@ -337,43 +316,7 @@ namespace dealii
     {
       return FEHessian<rank, dim>(f);
     }
-
-    template <class TEST, class EXPR, FormKind kind_of_form>
-    void
-    anchor(const Form<TEST, EXPR, kind_of_form>& form,
-           const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim,
-                                                       TEST::TensorTraits::dim>& ii,
-           const ::dealii::MeshWorker::LocalIntegrator<TEST::TensorTraits::dim>& li)
-    {
-      form.expr.anchor(ii, li);
-    }
-
-    template <class TEST, class EXPR, FormKind kind_of_form>
-    void
-    reinit(const Form<TEST, EXPR, kind_of_form>& form,
-           const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim,
-                                                       TEST::TensorTraits::dim>& ii)
-    {
-      form.test.reinit(ii);
-    }
-
-    template <class T, int dim = T::TensorTraits::dim>
-    std::enable_if<Traits::needs_anchor<T>::type>
-    anchor(const T& t, const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
-           const ::dealii::MeshWorker::LocalIntegrator<dim>& li)
-    {
-      t.anchor(ii, li);
-    }
-
-    template <class T, int dim = T::TensorTraits::dim>
-    std::enable_if<Traits::is_unary_operator<T>::type>
-    anchor(const T& t, const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
-           const ::dealii::MeshWorker::LocalIntegrator<dim>& li)
-    {
-      anchor(t.base, ii, li);
-    }
-  }
 }
 }
 
-#endif
+#endif // FEFUNCTIONS_H

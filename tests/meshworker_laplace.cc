@@ -7,8 +7,8 @@
 #include <deal.II/lac/vector.h>
 #include "meshworker_data.h"
 
-#include <cfl/cfl.h>
-#include <cfl/dealii.h>
+
+#include <meshworker/fefunctions.h>
 
 using namespace CFL;
 

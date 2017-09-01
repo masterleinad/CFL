@@ -1,7 +1,7 @@
-#ifndef FE_DATA_H
-#define FE_DATA_H
+#ifndef DEALII_MATRIXFREE_FE_DATA_H
+#define DEALII_MATRIXFREE_FE_DATA_H
 
-#include <cfl/dealii_matrixfree.h>
+#include <cfl/fefunctions.h>
 #include <cfl/traits.h>
 #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/matrix_free.h>
@@ -2012,4 +2012,4 @@ operator,(const FEData1& fe_data1, const FEData2& fe_data2)
   return FEDatas<FEData1, FEData2>(fe_data1, fe_data2);
 }
 
-#endif // FE_DATA_H
+#endif // DEALII_MATRIXFREE_FE_DATA_H

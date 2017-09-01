@@ -1,5 +1,0 @@
-[0/1] Re-running CMake...
-/bin/sh: 1: /export/home/darndt/.linuxbrew/Cellar/cmake/3.7.2/bin/cmake: not found
-FAILED: build.ninja 
-/export/home/darndt/.linuxbrew/Cellar/cmake/3.7.2/bin/cmake -H/export/home/darndt/cfl/latex -B/export/home/darndt/cfl/latex
-ninja: error: rebuilding 'build.ninja': subcommand failed

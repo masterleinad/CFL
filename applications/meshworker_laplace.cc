@@ -5,10 +5,12 @@
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/lac/vector.h>
 
-#include <cfl/cfl.h>
-#include <cfl/dealii.h>
+
+#include <meshworker/fefunctions.h>
 
 using namespace CFL;
+using namespace CFL::dealiiMeshWorker;
+using namespace dealii;
 
 template <int dim>
 void

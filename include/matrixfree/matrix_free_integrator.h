@@ -3,8 +3,7 @@
 
 #include <deal.II/matrix_free/operators.h>
 
-#include <cfl/dealii_matrixfree.h> //for BlockVectors
-#include <cfl/static_for.h>
+#include <cfl/fefunctions.h> //for BlockVectors
 #include <cfl/traits.h>
 #include <deal.II/lac/la_parallel_block_vector.h>
 

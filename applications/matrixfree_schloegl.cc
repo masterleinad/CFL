@@ -60,7 +60,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <cfl/dealii_matrixfree.h>
+#include <matrixfree/fefunctions.h>
 #include <cfl/forms.h>
 #include <matrixfree/fe_data.h>
 #include <matrixfree/matrix_free_integrator.h>

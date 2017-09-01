@@ -3,8 +3,7 @@
 
 #define DEBUG_OUTPUT
 
-#include <cfl/cfl.h>
-#include <cfl/dealii_matrixfree.h>
+#include <cfl/fefunctions.h>
 #include <cfl/forms.h>
 
 //#include <fstream>
@@ -18,19 +17,19 @@ using namespace CFL;
 void
 test()
 {
-  CFL::dealii::MatrixFree::TestFunction<0, 1, 0> v;
+  Base::TestFunction<0, 1, 0> v;
   auto Dv = grad(v);
-  CFL::dealii::MatrixFree::TestFunctionInteriorFace<0, 1, 0> v_p;
-  CFL::dealii::MatrixFree::TestFunctionExteriorFace<0, 1, 0> v_m;
-  CFL::dealii::MatrixFree::TestNormalGradientInteriorFace<0, 1, 0> Dnv_p;
-  CFL::dealii::MatrixFree::TestNormalGradientExteriorFace<0, 1, 0> Dnv_m;
+  Base::TestFunctionInteriorFace<0, 1, 0> v_p;
+  Base::TestFunctionExteriorFace<0, 1, 0> v_m;
+  Base::TestNormalGradientInteriorFace<0, 1, 0> Dnv_p;
+  Base::TestNormalGradientExteriorFace<0, 1, 0> Dnv_m;
 
-  CFL::dealii::MatrixFree::FEFunction<0, 1, 0> u("u");
+  Base::FEFunction<0, 1, 0> u("u");
   auto Du = grad(u);
-  CFL::dealii::MatrixFree::FEFunctionInteriorFace<0, 1, 0> u_p("u+");
-  CFL::dealii::MatrixFree::FEFunctionExteriorFace<0, 1, 0> u_m("u-");
-  CFL::dealii::MatrixFree::FENormalGradientInteriorFace<0, 1, 0> Dnu_p("u+");
-  CFL::dealii::MatrixFree::FENormalGradientExteriorFace<0, 1, 0> Dnu_m("u-");
+  Base::FEFunctionInteriorFace<0, 1, 0> u_p("u+");
+  Base::FEFunctionExteriorFace<0, 1, 0> u_m("u-");
+  Base::FENormalGradientInteriorFace<0, 1, 0> Dnu_p("u+");
+  Base::FENormalGradientExteriorFace<0, 1, 0> Dnu_m("u-");
 
   auto cell = form(Du, Dv);
 
@@ -50,7 +49,7 @@ test()
   std::vector<std::string> test_names(1, "v");
   const auto latex_forms = Latex::transform(f);
   Latex::Evaluator<decltype(latex_forms)> evaluator(latex_forms, function_names, test_names);
-  evaluator.print();
+  evaluator.print(std::cout);
 }
 
 int

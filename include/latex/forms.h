@@ -1,5 +1,10 @@
-#ifndef FORMS_H
-#define FORMS_H
+#ifndef LATEX_FORMS_H
+#define LATEX_FORMS_H
+
+#include <cfl/forms.h>
+#include <latex/fefunctions.h>
+
+#include <vector>
 
 namespace CFL::Latex
 {
@@ -104,4 +109,4 @@ transform(const Forms<Types...>& f)
 }
 
 
-#endif // FORMS_H
+#endif // LATEX_FORMS_H

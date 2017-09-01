@@ -1,6 +1,0 @@
-/export/home/darndt/cfl/latex/CMakeFiles/rebuild_cache.dir
-/export/home/darndt/cfl/latex/CMakeFiles/edit_cache.dir
-/export/home/darndt/cfl/latex/CMakeFiles/terminals.dir
-/export/home/darndt/cfl/latex/CMakeFiles/forms.dir
-/export/home/darndt/cfl/latex/CMakeFiles/derivatives.dir
-/export/home/darndt/cfl/latex/CMakeFiles/arithmetic.dir

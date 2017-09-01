@@ -5,7 +5,7 @@
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/manifold_lib.h>
 
-#include <cfl/dealii_matrixfree.h>
+#include <cfl/fefunctions.h>
 
 #include <matrixfree/fe_data.h>
 #include <matrixfree/matrix_free_integrator.h>

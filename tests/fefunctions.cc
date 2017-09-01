@@ -1,4 +1,4 @@
-#include <cfl/dealii_matrixfree.h>
+#include <cfl/fefunctions.h>
 
 int
 main()

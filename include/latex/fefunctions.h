@@ -1,7 +1,7 @@
-#ifndef FEFUNCTIONS_H
-#define FEFUNCTIONS_H
+#ifndef LATEX_FEFUNCTIONS_H
+#define LATEX_FEFUNCTIONS_H
 
-#include <cfl/dealii_matrixfree.h>
+#include <cfl/fefunctions.h>
 
 #include <string>
 
@@ -364,89 +364,97 @@ public:
 
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FEFunctionInteriorFace<ints...>& f)
+transform(const Base::FEFunctionInteriorFace<ints...>& f)
 {
   return FEFunctionInteriorFace<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FEFunctionExteriorFace<ints...>& f)
+transform(const Base::FEFunctionExteriorFace<ints...>& f)
 {
   return FEFunctionExteriorFace<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FENormalGradientInteriorFace<ints...>& f)
+transform(const Base::FENormalGradientInteriorFace<ints...>& f)
 {
   return FENormalGradientInteriorFace<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FENormalGradientExteriorFace<ints...>& f)
+transform(const Base::FENormalGradientExteriorFace<ints...>& f)
 {
   return FENormalGradientExteriorFace<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FEFunction<ints...>& f)
+transform(const Base::FEFunction<ints...>& f)
 {
   return FEFunction<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FEDivergence<ints...>& f)
+transform(const Base::FEDivergence<ints...>& f)
 {
   return FEDivergence<ints...>(f.scalar_factor);
 }
 template <class Type>
 auto
-transform(const dealii::MatrixFree::FELiftDivergence<Type>&f)
+transform(const Base::FELiftDivergence<Type>&f)
 {
   return FELiftDivergence<decltype(transform(std::declval<Type>()))>(transform(f.get_fefunction()));
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FESymmetricGradient<ints...>& f)
+transform(const Base::FESymmetricGradient<ints...>& f)
 {
   return FESymmetricGradient<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FECurl<ints...>& f)
+transform(const Base::FECurl<ints...>& f)
 {
   return FECurl<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FEGradient<ints...>& f)
+transform(const Base::FEGradient<ints...>& f)
 {
   return FEGradient<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FEDiagonalHessian<ints...>& f)
+transform(const Base::FEDiagonalHessian<ints...>& f)
 {
   return FEDiagonalHessian<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FEHessian<ints...>& f)
+transform(const Base::FEHessian<ints...>& f)
 {
   return FEHessian<ints...>(f.scalar_factor);
 }
 template <auto... ints>
 auto
-transform(const dealii::MatrixFree::FELaplacian<ints...>& f)
+transform(const Base::FELaplacian<ints...>& f)
 {
   return FEFunction<ints...>(f.scalar_factor);
 }
 
 template <class... Types>
 auto
-transform(const dealii::MatrixFree::SumFEFunctions<Types...>& f)
+transform(const Base::SumFEFunctions<Types...>& f)
 {
-  return dealii::MatrixFree::SumFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
-}
+  return Base::SumFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
 }
 
-#endif // FEFUNCTIONS_H
+ template <class... Types>
+  auto
+   transform(const Base::ProductFEFunctions<Types...>& f)
+     {
+            return Base::ProductFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
+             }
+
+}
+
+#endif // LATEX_FEFUNCTIONS_H

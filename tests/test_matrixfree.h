@@ -7,7 +7,7 @@
 
 #include "test_utils.h"
 
-#include <cfl/dealii_matrixfree.h>
+#include <matrixfree/fefunctions.h>
 
 #include <deal.II/fe/fe_q.h>
 #include <matrixfree/fe_data.h>

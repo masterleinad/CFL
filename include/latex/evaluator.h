@@ -1,5 +1,10 @@
-#ifndef EVALUATOR_H
-#define EVALUATOR_H
+#ifndef LATEX_EVALUATOR_H
+#define LATEX_EVALUATOR_H
+
+#include <vector>
+#include <string>
+
+#include <ostream>
 
 namespace CFL::Latex
 {
@@ -16,9 +21,9 @@ public:
       _test_names(test_names)
   {}
 
-  void print()
+  void print(std::ostream& out)
   {
-    std::cout << _form_container.print(_function_names, _test_names) << std::endl;
+    out << _form_container.print(_function_names, _test_names) << std::endl;
   }
 
 private:
@@ -28,4 +33,4 @@ private:
 };
 }
 
-#endif // EVALUATOR_H
+#endif // LATEX_EVALUATOR_H
