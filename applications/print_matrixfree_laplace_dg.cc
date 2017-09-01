@@ -24,12 +24,12 @@ test()
   Base::TestNormalGradientInteriorFace<0, 1, 0> Dnv_p;
   Base::TestNormalGradientExteriorFace<0, 1, 0> Dnv_m;
 
-  Base::FEFunction<0, 1, 0> u("u");
+  Base::FEFunction<0, 1, 0> u;
   auto Du = grad(u);
-  Base::FEFunctionInteriorFace<0, 1, 0> u_p("u+");
-  Base::FEFunctionExteriorFace<0, 1, 0> u_m("u-");
-  Base::FENormalGradientInteriorFace<0, 1, 0> Dnu_p("u+");
-  Base::FENormalGradientExteriorFace<0, 1, 0> Dnu_m("u-");
+  Base::FEFunctionInteriorFace<0, 1, 0> u_p;
+  Base::FEFunctionExteriorFace<0, 1, 0> u_m;
+  Base::FENormalGradientInteriorFace<0, 1, 0> Dnu_p;
+  Base::FENormalGradientExteriorFace<0, 1, 0> Dnu_m;
 
   auto cell = form(Du, Dv);
 

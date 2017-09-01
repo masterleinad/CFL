@@ -11,9 +11,9 @@ using namespace CFL;
 int
 main()
 {
-  Base::FEFunction<0, 2, 0> p("p");
+  Base::FEFunction<0, 2, 0> p;
   Base::TestFunction<0, 2, 0> q;
-  Base::FEFunction<1, 2, 1> u("u");
+  Base::FEFunction<1, 2, 1> u;
   Base::TestFunction<1, 2, 1> v;
 
   std::vector<std::string> function_names{ "p", "u" };

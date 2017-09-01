@@ -32,17 +32,17 @@ ADD_LIBRARY(cfl
     )
 DEAL_II_SETUP_TARGET(cfl)
 #SET_PROPERTY(
+    #    TARGET cfl
+    #    PROPERTY CXX_CLANG_TIDY "clang-tidy;-warnings-as-errors=*;-checks=performance*;-header-filter=${CMAKE_SOURCE_DIR}/include/*/*.h")
+#SET_PROPERTY(
 #    TARGET cfl
-#    PROPERTY CXX_CLANG_TIDY clang-tidy;-checks=*)
-SET_PROPERTY(
-    TARGET cfl
-    PROPERTY CXX_INCLUDE_WHAT_YOU_USE)
+#    PROPERTY CXX_INCLUDE_WHAT_YOU_USE)
 SET_PROPERTY(
     TARGET cfl
     PROPERTY LINK_WHAT_YOU_USE)
-SET_PROPERTY(
-    TARGET cfl
-    PROPERTY CXX_CPPLINT)
+#SET_PROPERTY(
+#    TARGET cfl
+#    PROPERTY CXX_CPPLINT cpplint.py)
 
 ADD_SUBDIRECTORY(applications)
 

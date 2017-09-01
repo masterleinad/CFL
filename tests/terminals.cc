@@ -49,8 +49,8 @@ check_string(const std::string& str, const std::string& check)
 int
 main()
 {
-  Base::FEFunction<0, 3, 0> u("u");
-  Base::FEFunctionInteriorFace<1, 2, 1> p("p");
+  Base::FEFunction<0, 3, 0> u;
+  Base::FEFunctionInteriorFace<1, 2, 1> p;
   std::vector<std::string> function_names{ "u", "p" };
   Base::TestFunction<2, 3, 0> v;
   Base::TestFunctionInteriorFace<2, 3, 1> q;

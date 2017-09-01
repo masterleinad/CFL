@@ -385,33 +385,7 @@ class TestFunctionInteriorFace final
 {
 public:
   using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
-  static constexpr const IntegrationFlags integration_flags{ true, false, false, false };
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return function_names[idx] + "^+";
-  }
-
-  /**
-   * Wrapper around submit_face_value function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestFunction is vector valued or "
-                  "the TestFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestFunctionInteriorFace " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_face_value<Base::index, true>(value, q);
-  }
+  static constexpr const IntegrationFlags integration_flags{ true, false, false, false };  
 };
 
 /**
@@ -426,32 +400,6 @@ class TestFunctionExteriorFace final
 public:
   using Base = TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ false, true, false, false };
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return function_names[idx] + "^-";
-  }
-
-  /**
-   * Wrapper around submit_face_value function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestFunction is vector valued or "
-                  "the TestFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestFunctionExteriorFace " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_face_value<Base::index, false>(value, q);
-  }
 };
 
 /**
@@ -466,32 +414,6 @@ class TestNormalGradientInteriorFace final
 public:
   using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ false, false, true, false };
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return R"(\boldsymbol{n}^+\cdot\nabla )" + function_names[idx] + "^+";
-  }
-
-  /**
-   * Wrapper around submit_normal_gradient function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestFunction is vector valued or "
-                  "the TestFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestNormalGradientInteriorFace " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_normal_gradient<Base::index, true>(value, q);
-  }
 };
 
 /**
@@ -506,32 +428,6 @@ class TestNormalGradientExteriorFace final
 public:
   using Base = TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ false, false, false, true };
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return R"(\boldsymbol{n}^-\cdot\nabla )" + function_names[idx] + "^-";
-  }
-
-  /**
-   * Wrapper around submit_normal_gradient function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestFunction is vector valued or "
-                  "the TestFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestNormalGradientExteriorFace " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_normal_gradient<Base::index, false>(value, q);
-  }
 };
 
 /**
@@ -544,26 +440,6 @@ class TestFunction final : public TestFunctionBase<TestFunction<rank, dim, idx>>
 public:
   using Base = TestFunctionBase<TestFunction<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ true, false, false, false };
-
-  /**
-   * Wrapper around submit_value function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestFunction is vector valued or "
-                  "the TestFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestFunction " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_value<Base::index>(value, q);
-  }
 };
 
 /**
@@ -577,23 +453,6 @@ class TestDivergence final : public TestFunctionBase<TestDivergence<rank, dim, i
 public:
   using Base = TestFunctionBase<TestDivergence<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ false, false, true, false };
-
-  /**
-   * Wrapper around submit_divergence function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert(FEEvaluation::template rank<Base::index>() > 0,
-                  "The proposed FiniteElement has to be "
-                  "vector valued for using TestDivergence!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestDivergence " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_divergence<Base::index>(value, q);
-  }
 };
 
 /**
@@ -607,25 +466,6 @@ class TestSymmetricGradient final : public TestFunctionBase<TestSymmetricGradien
 public:
   using Base = TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ false, false, true, false };
-
-  /**
-   * Wrapper around submit_symmetric_gradient function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert((FEEvaluation::template rank<index>() > 0) == (Base::TensorTraits::rank > 1),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestGradient is vector valued or "
-                  "the TestGradient is scalar valued and "
-                  "the FiniteElement is vector valued!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestSymmetricGradient " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_symmetric_gradient<Base::index>(value, q);
-  }
 };
 
 /**
@@ -639,26 +479,6 @@ class TestCurl final : public TestFunctionBase<TestCurl<rank, dim, idx>>
 public:
   using Base = TestFunctionBase<TestCurl<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ false, false, true, false };
-
-  /**
-   * Wrapper around submit_curl function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 1),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestCurl is vector valued or "
-                  "the TestCurl is scalar valued and "
-                  "the FiniteElement is vector valued!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestCurl " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_curl<Base::index>(value, q);
-  }
 };
 
 /**
@@ -672,32 +492,6 @@ class TestGradient final : public TestFunctionBase<TestGradient<rank, dim, idx>>
 public:
   using Base = TestFunctionBase<TestGradient<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ false, false, true, false };
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return R"(\nabla )" + function_names[idx];
-  }
-
-  /**
-   * Wrapper around submit_gradient function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 1),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestGradient is vector valued or "
-                  "the TestGradient is scalar valued and "
-                  "the FiniteElement is vector valued!");
-#ifdef DEBUG_OUTPUT
-    std::cout << "submit TestGradient " << Base::index << " " << q << std::endl;
-#endif
-    phi.template submit_gradient<Base::index>(value, q);
-  }
 };
 
 /**
@@ -711,23 +505,6 @@ class TestHessian final : public TestFunctionBase<TestHessian<rank, dim, idx>>
 public:
   using Base = TestFunctionBase<TestHessian<rank, dim, idx>>;
   static constexpr IntegrationFlags integration_flags{ false, false, false, false };
-
-  /**
-   * @todo: Not implemented function
-   *
-   */
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& /*phi*/, unsigned int /*q*/, const ValueType& /*value*/)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 2),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the TestHessian is vector valued or "
-                  "the TestHessian is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    AssertThrow(false, "Not implemented yet!");
-  }
 };
 
 /**
@@ -789,25 +566,10 @@ public:
 template <template <int, int, unsigned int> class Derived, int rank, int dim, unsigned int idx>
 class FEFunctionBaseBase<Derived<rank, dim, idx>>
 {
-protected:
-  const std::string data_name;
-
 public:
   using TensorTraits = Traits::Tensor<rank, dim>;
   static constexpr unsigned int index = idx;
   double scalar_factor = 1.;
-
-  FEFunctionBaseBase() = delete;
-
-  /**
-   * Constructor to optionally allow a string name for FE function
-   *
-   */
-  explicit FEFunctionBaseBase(const std::string name, double new_factor = 1.)
-    : data_name(std::move(name))
-    , scalar_factor(new_factor)
-  {
-  }
 
   /**
    * Default constructor
@@ -819,16 +581,6 @@ public:
   }
 
   /**
-   * Returns the name for FE function given during construction
-   *
-   */
-  const std::string&
-  name() const
-  {
-    return data_name;
-  }
-
-  /**
    * Allows to scale an FE function with a arithmetic value
    *
    */
@@ -836,7 +588,7 @@ public:
   typename std::enable_if_t<std::is_arithmetic<Number>::value, Derived<rank, dim, idx>> operator*(
     const Number scalar_factor_) const
   {
-    return Derived<rank, dim, idx>(data_name, scalar_factor * scalar_factor_);
+    return Derived<rank, dim, idx>(scalar_factor * scalar_factor_);
   }
 
   /**
@@ -896,38 +648,6 @@ public:
   using Base = FEFunctionFaceBase<FEFunctionInteriorFace<rank, dim, idx>>;
   // inherit constructors
   using Base::Base;
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return function_names[idx] + "^+";
-  }
-
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    const auto value = Base::scalar_factor * phi.template get_face_value<Base::index, true>(q);
-    std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
-    return value;
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags_face function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEFunction is vector valued or "
-                  "the FEFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags_face<Base::index>(true, false, false);
-  }
 };
 
 /**
@@ -943,38 +663,6 @@ public:
   using Base = FEFunctionFaceBase<FEFunctionExteriorFace<rank, dim, idx>>;
   // inherit constructors
   using Base::Base;
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return function_names[idx] + "^-";
-  }
-
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    const auto value = Base::scalar_factor * phi.template get_face_value<Base::index, false>(q);
-    std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
-    return value;
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags_face function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEFunction is vector valued or "
-                  "the FEFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags_face<Base::index>(true, false, false);
-  }
 };
 
 /**
@@ -990,38 +678,6 @@ public:
   using Base = FEFunctionFaceBase<FENormalGradientInteriorFace<rank, dim, idx>>;
   // inherit constructors
   using Base::Base;
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return R"(\boldsymbol{n}^+\cdot\nabla )" + function_names[idx] + "^+";
-  }
-
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    const auto value = Base::scalar_factor * phi.template get_normal_gradient<Base::index, true>(q);
-    std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
-    return value;
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEFunction is vector valued or "
-                  "the FEFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags_face<Base::index>(false, true, false);
-  }
 };
 
 /**
@@ -1037,39 +693,6 @@ public:
   using Base = FEFunctionFaceBase<FENormalGradientExteriorFace<rank, dim, idx>>;
   // inherit constructors
   using Base::Base;
-
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return R"(\boldsymbol{n}^-\cdot\nabla )" + function_names[idx] + "^-";
-  }
-
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    const auto value =
-      Base::scalar_factor * phi.template get_normal_gradient<Base::index, false>(q);
-    std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
-    return value;
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEFunction is vector valued or "
-                  "the FEFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags_face<Base::index>(false, true, false);
-  }
 };
 
 /**
@@ -1083,30 +706,6 @@ public:
   using Base = FEFunctionBase<FEFunction<rank, dim, idx>>;
   // inherit constructors
   using Base::Base;
-
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    return Base::scalar_factor * phi.template get_value<Base::index>(q);
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 0),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEFunction is vector valued or "
-                  "the FEFunction is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags<Base::index>(true, false, false);
-  }
 };
 
 /**
@@ -1123,29 +722,8 @@ public:
   using Base::Base;
 
   explicit FEDivergence(const FEFunction<rank + 1, dim, idx>& fefunction)
-    : FEDivergence(fefunction.name(), fefunction.scalar_factor)
+    : FEDivergence(fefunction.scalar_factor)
   {
-  }
-
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    return Base::scalar_factor * phi.template get_divergence<Base::index>(q);
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert(FEEvaluation::template rank<Base::index>() > 0,
-                  "The proposed FiniteElement has to be "
-                  "vector valued for using FEDivergence!");
-    phi.template set_evaluation_flags<Base::index>(false, true, false);
   }
 };
 
@@ -1175,19 +753,6 @@ public:
     return fefunction;
   }
 
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    auto value = fefunction.value(phi, q);
-    ::dealii::Tensor<TensorTraits::rank, TensorTraits::dim, decltype(value)> lifted_tensor;
-    for (unsigned int i = 0; i < TensorTraits::dim; ++i)
-    {
-      lifted_tensor[i][i] = value;
-    }
-    return lifted_tensor;
-  }
-
   auto
   operator-() const
   {
@@ -1200,14 +765,7 @@ public:
   {
     return FELiftDivergence<FEFunctionType>(
       FEFunctionType(fefunction.name(), fefunction.scalar_factor * scalar_factor_));
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    FEFunctionType::set_evaluation_flags(phi);
-  }
+  }  
 };
 
 /**
@@ -1222,34 +780,6 @@ public:
   using Base = FEFunctionBase<FESymmetricGradient<rank, dim, idx>>;
   // inherit constructors
   using Base::Base;
-
-  /**
-   * Wrapper around get_symmetric_gradient function of FEEvaluation
-   *
-   */
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    return Base::scalar_factor * phi.template get_symmetric_gradient<Base::index>(q);
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 1),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEGradient is vector valued or "
-                  "the FEGradient is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags<Base::index>(false, true, false);
-  }
 };
 
 /**
@@ -1269,34 +799,6 @@ public:
     : FECurl(fefunction.name(), fefunction.scalar_factor)
   {
   }
-
-  /**
-   * Wrapper around get_curl function of FEEvaluation
-   *
-   */
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    return Base::scalar_factor * phi.template get_curl<Base::index>(q);
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 1),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEGradient is vector valued or "
-                  "the FEGradient is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags<Base::index>(false, true, false);
-  }
 };
 
 /**
@@ -1312,44 +814,10 @@ public:
   // inherit constructors
   using Base::Base;
 
-  static std::string
-  print(const std::vector<std::string>& function_names)
-  {
-    return R"(\nabla )" + function_names[idx];
-  }
-
-  explicit FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
-    : FEGradient(fefunction.name(), fefunction.scalar_factor)
-  {
-  }
-
-  /**
-   * Wrapper around get_gradient function of FEEvaluation
-   *
-   */
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    return Base::scalar_factor * phi.template get_gradient<Base::index>(q);
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 1),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEGradient is vector valued or "
-                  "the FEGradient is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags<Base::index>(false, true, false);
-  }
+    explicit FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
+      : FEGradient(fefunction.scalar_factor)
+    {
+    }
 };
 
 /**
@@ -1366,36 +834,8 @@ public:
   using Base::Base;
 
   explicit FELaplacian(const FEGradient<rank + 1, dim, idx>& fe_function)
-    : FELaplacian(fe_function.name(), fe_function.scalar_factor)
+    : FELaplacian(fe_function.scalar_factor)
   {
-  }
-
-  /**
-   * Wrapper around get_laplacian function of FEEvaluation
-   *
-   */
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    return Base::scalar_factor * phi.template get_laplacian<Base::index>(q);
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 2),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEHessian is vector valued or "
-                  "the FEHessian is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags<Base::index>(false, false, true);
   }
 };
 
@@ -1410,26 +850,6 @@ public:
   using Base = FEFunctionBase<FEDiagonalHessian<rank, dim, idx>>;
   // inherit constructors
   using Base::Base;
-
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    return Base::scalar_factor * phi.template get_hessian_diagonal<Base::index>(q);
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 2),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEHessian is vector valued or "
-                  "the FEHessian is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags<Base::index>(false, false, true);
-  }
 };
 
 /**
@@ -1446,37 +866,9 @@ public:
   using Base::Base;
 
   explicit FEHessian(const FEGradient<rank - 1, dim, idx>& fefunction)
-    : FEHessian(fefunction.name(), fefunction.scalar_factor)
+    : FEHessian(fefunction.scalar_factor)
   {
-  }
-
-  /**
-   * Wrapper around get_hessian function of FEEvaluation
-   *
-   */
-  template <class FEDatas>
-  auto
-  value(const FEDatas& phi, unsigned int q) const
-  {
-    return Base::scalar_factor * phi.template get_hessian<Base::index>(q);
-  }
-
-  /**
-   * Wrapper around set_evaluation_flags function of FEEvaluation
-   *
-   */
-  template <class FEEvaluation>
-  static void
-  set_evaluation_flags(FEEvaluation& phi)
-  {
-    static_assert((FEEvaluation::template rank<Base::index>() > 0) ==
-                    (Base::TensorTraits::rank > 2),
-                  "Either the proposed FiniteElement is scalar valued "
-                  "and the FEHessian is vector valued or "
-                  "the FEHessian is scalar valued and "
-                  "the FiniteElement is vector valued!");
-    phi.template set_evaluation_flags<Base::index>(false, false, true);
-  }
+  }  
 };
 
 /**

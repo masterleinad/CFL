@@ -9,17 +9,17 @@ using namespace CFL;
 int
 main()
 {
-  Base::FEFunction<0, 2, 0> fe_function_scalar("f_s");
-  Base::FEFunction<1, 2, 1> fe_function_vector("f_v");
+  Base::FEFunction<0, 2, 0> fe_function_scalar;
+  Base::FEFunction<1, 2, 1> fe_function_vector;
   Base::FEGradient<1, 2, 0> fe_gradient_scalar = grad(fe_function_scalar);
   Base::FEGradient<2, 2, 1> fe_gradient_vector = grad(fe_function_vector);
   Base::FEDivergence<0, 2, 1> fe_divergence = div(fe_function_vector);
   Base::FELiftDivergence<decltype(fe_divergence)> lifted_divergence(fe_divergence);
-  Base::FESymmetricGradient<1, 2, 0> fe_symmetric_gradient("f_s_g_s");
-  Base::FECurl<1, 2, 0> fe_curl("f_c_s");
+  Base::FESymmetricGradient<1, 2, 0> fe_symmetric_gradient;
+  Base::FECurl<1, 2, 0> fe_curl;
   Base::FELaplacian<0, 2, 0> fe_laplacian = div(fe_gradient_scalar);
-  Base::FEDiagonalHessian<2, 2, 0> fe_diagonal_hessian("fe_d_h_s");
-  Base::FEHessian<2, 2, 0> fe_hessian("f_h_s");
+  Base::FEDiagonalHessian<2, 2, 0> fe_diagonal_hessian;
+  Base::FEHessian<2, 2, 0> fe_hessian;
 
   std::vector<std::string> function_names{ "s", "v" };
 

@@ -11,9 +11,9 @@ using namespace CFL;
 int
 main()
 {
-  CFL::Base::FEFunction<0, 2, 0> p("p");
-  CFL::Base::FEFunction<0, 2, 1> q("q");
-  CFL::Base::FEFunction<1, 2, 2> u("u");
+  CFL::Base::FEFunction<0, 2, 0> p;
+  CFL::Base::FEFunction<0, 2, 1> q;
+  CFL::Base::FEFunction<1, 2, 2> u;
 
   CFL::Base::TestFunction<0, 2, 0> phi;
 
@@ -24,7 +24,6 @@ main()
 
   Latex::Evaluator(Latex::transform(form(phi, p + q)), function_names, test_names).print(std::cout);
   Latex::Evaluator(Latex::transform(form(phi, p * q)), function_names, test_names).print(std::cout);
-  ;
   Latex::Evaluator(Latex::transform(form(phi, 4 * p * q)), function_names, test_names)
     .print(std::cout);
   Latex::Evaluator(Latex::transform(form(grad(phi), grad(p) + grad(q))), function_names, test_names)

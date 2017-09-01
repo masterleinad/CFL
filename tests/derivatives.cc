@@ -19,7 +19,7 @@ int
 main()
 {
   {
-    Base::FEFunction<0, 3, 0> u("u");
+    Base::FEFunction<0, 3, 0> u;
     auto Du = grad(u);
     auto DDu = grad(Du);
 
