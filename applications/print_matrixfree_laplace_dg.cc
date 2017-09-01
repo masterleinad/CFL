@@ -8,9 +8,9 @@
 
 //#include <fstream>
 
+#include <latex/evaluator.h>
 #include <latex/fefunctions.h>
 #include <latex/forms.h>
-#include <latex/evaluator.h>
 
 using namespace CFL;
 
@@ -57,7 +57,7 @@ main(int /*argc*/, char** /*argv*/)
 {
   ::dealii::deallog.depth_console(10);
   try
-  {    
+  {
     test();
   }
   catch (std::exception& exc)

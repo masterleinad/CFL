@@ -1,0 +1,9 @@
+(p,q)_\Omega
+(p,q)_\Omega
+(u,v)_\Omega
+(u,\nabla q)_\Omega
+(\nabla p,v)_\Omega
+(\nabla u,\nabla v)_\Omega
+(\nabla u,\nabla \nabla q)_\Omega
+(\nabla \nabla p,\nabla v)_\Omega
+(\nabla \nabla p,\nabla \nabla q)_\Omega

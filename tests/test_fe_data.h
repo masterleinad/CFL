@@ -4,8 +4,8 @@
 #include "test_utils.h"
 #include <boost/test/unit_test.hpp>
 #include <deal.II/fe/fe_q.h>
-#include <matrixfree/fe_data.h>
 #include <iostream>
+#include <matrixfree/fe_data.h>
 
 using namespace dealii;
 using namespace std;

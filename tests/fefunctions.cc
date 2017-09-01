@@ -1,32 +1,39 @@
+// This is an open source non-commercial project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #include <cfl/fefunctions.h>
+#include <latex/fefunctions.h>
+
+using namespace CFL;
 
 int
 main()
 {
-  CFL::dealii::MatrixFree::FEFunction<0, 2, 0> fe_function_scalar("f_s");
-  CFL::dealii::MatrixFree::FEFunction<1, 2, 0> fe_function_vector("f_v");
-  CFL::dealii::MatrixFree::FEGradient<1, 2, 0> fe_gradient_scalar = grad(fe_function_scalar);
-  CFL::dealii::MatrixFree::FEGradient<2, 2, 0> fe_gradient_vector = grad(fe_function_vector);
-  CFL::dealii::MatrixFree::FEDivergence<0, 2, 0> fe_divergence = div(fe_function_vector);
-  CFL::dealii::MatrixFree::FELiftDivergence<decltype(fe_divergence)> lifted_divergence(
-    fe_divergence);
-  CFL::dealii::MatrixFree::FESymmetricGradient<1, 2, 0> fe_symmetric_gradient("f_s_g_s");
-  CFL::dealii::MatrixFree::FECurl<1, 2, 0> fe_curl("f_c_s");
-  CFL::dealii::MatrixFree::FELaplacian<0, 2, 0> fe_laplacian = div(fe_gradient_scalar);
-  CFL::dealii::MatrixFree::FEDiagonalHessian<2, 2, 0> fe_diagonal_hessian("fe_d_h_s");
-  CFL::dealii::MatrixFree::FEHessian<2, 2, 0> fe_hessian("f_h_s");
+  Base::FEFunction<0, 2, 0> fe_function_scalar("f_s");
+  Base::FEFunction<1, 2, 1> fe_function_vector("f_v");
+  Base::FEGradient<1, 2, 0> fe_gradient_scalar = grad(fe_function_scalar);
+  Base::FEGradient<2, 2, 1> fe_gradient_vector = grad(fe_function_vector);
+  Base::FEDivergence<0, 2, 1> fe_divergence = div(fe_function_vector);
+  Base::FELiftDivergence<decltype(fe_divergence)> lifted_divergence(fe_divergence);
+  Base::FESymmetricGradient<1, 2, 0> fe_symmetric_gradient("f_s_g_s");
+  Base::FECurl<1, 2, 0> fe_curl("f_c_s");
+  Base::FELaplacian<0, 2, 0> fe_laplacian = div(fe_gradient_scalar);
+  Base::FEDiagonalHessian<2, 2, 0> fe_diagonal_hessian("fe_d_h_s");
+  Base::FEHessian<2, 2, 0> fe_hessian("f_h_s");
+
+  std::vector<std::string> function_names{ "s", "v" };
 
   static_assert(CFL::Traits::is_cfl_object<decltype(fe_function_scalar)>::value);
 
-  std::cout << fe_function_scalar.name() << std::endl;
-  std::cout << fe_function_vector.name() << std::endl;
-  std::cout << fe_gradient_scalar.name() << std::endl;
-  std::cout << fe_gradient_vector.name() << std::endl;
-  std::cout << fe_divergence.name() << std::endl;
-  //  std::cout << lifted_divergence.name() << std::endl;
-  std::cout << fe_symmetric_gradient.name() << std::endl;
-  std::cout << fe_curl.name() << std::endl;
-  std::cout << fe_laplacian.name() << std::endl;
-  std::cout << fe_diagonal_hessian.name() << std::endl;
-  std::cout << fe_hessian.name() << std::endl;
+  std::cout << Latex::transform(fe_function_scalar).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_function_vector).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_gradient_scalar).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_gradient_vector).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_divergence).value(function_names) << std::endl;
+  std::cout << Latex::transform(lifted_divergence).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_symmetric_gradient).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_curl).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_laplacian).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_diagonal_hessian).value(function_names) << std::endl;
+  std::cout << Latex::transform(fe_hessian).value(function_names) << std::endl;
 }

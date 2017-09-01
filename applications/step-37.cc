@@ -57,9 +57,9 @@
 #include <iostream>
 #include <sstream>
 
+#include <matrixfree/fe_data.h>
 #include <matrixfree/fefunctions.h>
 #include <matrixfree/forms.h>
-#include <matrixfree/fe_data.h>
 #include <matrixfree/matrix_free_integrator.h>
 
 const unsigned int degree_finite_element = 2;

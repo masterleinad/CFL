@@ -1,21 +1,40 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <cfl/terminal_strings.h>
+#include <cfl/traits.h>
 #include <iostream>
+#include <latex/fefunctions.h>
 #include <stdexcept>
 
 using namespace CFL;
 
 template <typename T>
 void
-print_test(const T& t, bool check)
+print_test(const T&, const ObjectType& check)
 {
-  std::cout << "Test function? " << Traits::is_test_function_set<T>::value << std::endl;
-  if (Traits::is_test_function_set<T>::value != check)
-    throw std::logic_error(std::string("Wrong value for test function set: ") +
-                           std::to_string(Traits::is_test_function_set<T>::value) + " should be " +
-                           std::to_string(check));
+  auto to_string = [](const ObjectType& obj) {
+    switch (obj)
+    {
+      case ObjectType::none:
+        return "none";
+        break;
+      case ObjectType::cell:
+        return "cell";
+        break;
+      case ObjectType::face:
+        return "face";
+        break;
+      default:
+        assert(false);
+        return "";
+    }
+  };
+  const std::string set_type_string = to_string(Traits::test_function_set_type<T>::value);
+  const std::string check_string = to_string(check);
+  std::cout << "Test function? " << set_type_string << std::endl;
+  if (set_type_string != check_string)
+    throw std::logic_error(std::string("Wrong value for test function set: ") + set_type_string +
+                           " should be " + check_string);
 }
 
 void
@@ -30,28 +49,22 @@ check_string(const std::string& str, const std::string& check)
 int
 main()
 {
-  TerminalString<0, 3> u("u");
-  print_test(u, false);
-  check_string(u.latex(), "u");
-  check_string(u.latex(std::array<int, 3>({ 0, 0, 0 })), "u");
-  check_string(u.latex(std::array<int, 3>({ 0, 1, 0 })), "\\partial_{1}u");
-  check_string(u.latex(std::array<int, 3>({ 1, 1, 0 })), "\\partial_{0}\\partial_{1}u");
-  check_string(u.latex(std::array<int, 3>({ 1, 2, 3 })),
-               "\\partial_{0}\\partial_{1}^{2}\\partial_{2}^{3}u");
+  Base::FEFunction<0, 3, 0> u("u");
+  Base::FEFunctionInteriorFace<1, 2, 1> p("p");
+  std::vector<std::string> function_names{ "u", "p" };
+  Base::TestFunction<2, 3, 0> v;
+  Base::TestFunctionInteriorFace<2, 3, 1> q;
+  std::vector<std::string> test_names{ "v", "q" };
 
-  TerminalString<1, 2> w("w");
-  check_string(w.latex(0), "w_{0}");
-  check_string(w.latex(1), "w_{1}");
+  print_test(u, ObjectType::none);
+  check_string(Latex::transform(u).value(function_names), "u");
+  print_test(p, ObjectType::none);
+  check_string(Latex::transform(p).value(function_names), "p^+");
 
-  TerminalString<2, 3, true> v("v");
-  print_test(v, true);
-  check_string(v.latex(std::array<int, 3>({ 0, 0, 0 }), 0, 1), "v_{10}");
-  check_string(v.latex(0, 1), "v_{10}");
-
-  check_string(v.latex(std::array<int, 3>({ 0, 1, 0 }), 2, 2), "\\partial_{1}v_{22}");
-  check_string(v.latex(std::array<int, 3>({ 1, 1, 0 }), 0, 0), "\\partial_{0}\\partial_{1}v_{00}");
-  check_string(v.latex(std::array<int, 3>({ 1, 2, 3 }), 2, 1),
-               "\\partial_{0}\\partial_{1}^{2}\\partial_{2}^{3}v_{12}");
+  print_test(v, ObjectType::cell);
+  check_string(Latex::transform(v).submit(test_names), "v");
+  print_test(q, ObjectType::face);
+  check_string(Latex::transform(q).submit(test_names), "q^+");
 
   return 0;
 }

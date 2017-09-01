@@ -40,7 +40,7 @@ template <template <int, int, unsigned int> class Derived, int rank, int dim, un
 class FEFunctionBaseBase<Derived<rank, dim, idx>>
 {
 public:
-    using TensorTraits = Traits::Tensor<rank, dim>;
+  using TensorTraits = Traits::Tensor<rank, dim>;
   static constexpr unsigned int index = idx;
   double scalar_factor = 1.;
 
@@ -253,8 +253,8 @@ public:
   std::string
   value(const std::vector<std::string>& function_names) const
   {
-    return double_to_string(Base::scalar_factor / 2.) + R"((\nabla )" + function_names[idx] + "+" +
-           R"((\nabla )" + function_names[idx] + ")^T)";
+    return double_to_string(Base::scalar_factor / 2.) + R"(((\nabla )" + function_names[idx] + "+" +
+           R"((\nabla )" + function_names[idx] + ")^T))";
   }
 };
 
@@ -271,15 +271,10 @@ public:
   // inherit constructors
   using Base::Base;
 
-  explicit FECurl(const FEFunction<rank - 1, dim, idx>& fefunction)
-    : FECurl(fefunction.name(), fefunction.scalar_factor)
-  {
-  }
-
   std::string
   value(const std::vector<std::string>& function_names) const
   {
-    return double_to_string(Base::scalar_factor / 2.) + R"((\nabla\times )" + function_names[idx];
+    return double_to_string(Base::scalar_factor) + R"(\nabla\times )" + function_names[idx];
   }
 };
 
@@ -319,7 +314,7 @@ public:
   std::string
   value(const std::vector<std::string>& function_names) const
   {
-    return double_to_string(Base::scalar_factor / 2.) + R"(\Delta )" + function_names[idx];
+    return double_to_string(Base::scalar_factor) + R"(\Delta )" + function_names[idx];
   }
 };
 
@@ -338,7 +333,7 @@ public:
   std::string
   value(const std::vector<std::string>& function_names) const
   {
-    return double_to_string(Base::scalar_factor / 2.) + R"(I.\nabla \nabla )" + function_names[idx];
+    return double_to_string(Base::scalar_factor) + R"(I.\nabla \nabla )" + function_names[idx];
   }
 };
 
@@ -358,7 +353,7 @@ public:
   std::string
   value(const std::vector<std::string>& function_names) const
   {
-    return double_to_string(Base::scalar_factor / 2.) + R"(\nabla \nabla )" + function_names[idx];
+    return double_to_string(Base::scalar_factor) + R"(\nabla \nabla )" + function_names[idx];
   }
 };
 
@@ -400,7 +395,7 @@ transform(const Base::FEDivergence<ints...>& f)
 }
 template <class Type>
 auto
-transform(const Base::FELiftDivergence<Type>&f)
+transform(const Base::FELiftDivergence<Type>& f)
 {
   return FELiftDivergence<decltype(transform(std::declval<Type>()))>(transform(f.get_fefunction()));
 }
@@ -438,7 +433,7 @@ template <auto... ints>
 auto
 transform(const Base::FELaplacian<ints...>& f)
 {
-  return FEFunction<ints...>(f.scalar_factor);
+  return FELaplacian<ints...>(f.scalar_factor);
 }
 
 template <class... Types>
@@ -448,13 +443,325 @@ transform(const Base::SumFEFunctions<Types...>& f)
   return Base::SumFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
 }
 
- template <class... Types>
-  auto
-   transform(const Base::ProductFEFunctions<Types...>& f)
-     {
-            return Base::ProductFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
-             }
+template <class... Types>
+auto
+transform(const Base::ProductFEFunctions<Types...>& f)
+{
+  return Base::ProductFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
+}
 
+/**
+ * Top level base class for Test Functions, should never be constructed
+ * Defined for safety reasons
+ *
+ */
+template <class T>
+class TestFunctionBaseBase
+{
+public:
+  // This class should never be constructed
+  TestFunctionBaseBase() = delete;
+};
+
+/**
+ * Top level base class for Test Functions
+ * See \ref TestFunctionBase for more details
+ *
+ */
+template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
+class TestFunctionBaseBase<T<rank, dim, idx>>
+{
+public:
+  using TensorTraits = Traits::Tensor<rank, dim>;
+
+  static constexpr unsigned int index = idx;
+  static constexpr bool scalar_valued = (TensorTraits::rank == 0);
+};
+
+/**
+ * Base class for all Test Function classes
+ * @note
+ * <li> See that this is a templatized class, with template parameter
+ * as the actual derived class. This might look like CRTP pattern, but
+ * its not since the base class is not trying to use static polymorphism.
+ * This way of implementation allows us to clearly structure our class
+ * heirarchy and collect the values of <code> index </code>, and Tensor
+ * traits in a single place
+ * <li> Also note that because this is a template class, the actual base
+ * class which is created after template specialization will be different
+ * for each Test Function class. This is different from traditional non-
+ * template base-derived heirarchy where all derived classes have common
+ * base class.
+ */
+template <class Derived>
+class TestFunctionBase : public TestFunctionBaseBase<Derived>
+{
+  using TestFunctionBaseBase<Derived>::TestFunctionBaseBase;
+};
+
+/**
+ * Top level base class for Test Functions on Face
+ * See \ref TestFunctionBase for more details
+ *
+ */
+template <class Derived>
+class TestFunctionFaceBase : public TestFunctionBaseBase<Derived>
+{
+  using TestFunctionBaseBase<Derived>::TestFunctionBaseBase;
+};
+
+/**
+ * Test Function which provides evaluation on interior faces
+ * in Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestFunctionInteriorFace final
+  : public TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
+
+  static std::string
+  submit(const std::vector<std::string>& function_names)
+  {
+    return function_names[idx] + "^+";
+  }
+};
+
+/**
+ * Test Function which provides evaluation on exterior faces (boundary)
+ * in Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestFunctionExteriorFace final
+  : public TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>;
+
+  static std::string
+  submit(const std::vector<std::string>& function_names)
+  {
+    return function_names[idx] + "^-";
+  }
+};
+
+/**
+ * Test Function which provides evaluation of gradients on interior faces
+ * in Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestNormalGradientInteriorFace final
+  : public TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
+
+  static std::string
+  submit(const std::vector<std::string>& function_names)
+  {
+    return R"(\boldsymbol{n}^+\cdot\nabla )" + function_names[idx] + "^+";
+  }
+};
+
+/**
+ * Test Function which provides evaluation of gradients on exterior faces
+ * in Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestNormalGradientExteriorFace final
+  : public TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>;
+
+  static std::string
+  submit(const std::vector<std::string>& function_names)
+  {
+    return R"(\boldsymbol{n}^-\cdot\nabla )" + function_names[idx] + "^-";
+  }
+};
+
+/**
+ * Test Function which provides evaluation on cell in Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestFunction final : public TestFunctionBase<TestFunction<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionBase<TestFunction<rank, dim, idx>>;
+
+  static std::string
+  submit(const std::vector<std::string>& function_names)
+  {
+    return function_names[idx];
+  }
+};
+
+/**
+ * Test Function which provides divergence evaluation on cell in
+ * Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestDivergence final : public TestFunctionBase<TestDivergence<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionBase<TestDivergence<rank, dim, idx>>;
+
+  static std::string
+  submit(const std::vector<std::string>& function_names)
+  {
+    return R"(\nabla \cdot )" + function_names[idx] + "^-";
+  }
+};
+
+/**
+ * Test Function which provides Symmetric Gradient evaluation on cell in
+ * Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestSymmetricGradient final : public TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionBase<TestSymmetricGradient<rank, dim, idx>>;
+
+  std::string
+  submit(const std::vector<std::string>& function_names) const
+  {
+    return R"(0.5*((\nabla )" + function_names[idx] + "+" +
+           R"((\nabla )" + function_names[idx] + ")^T))";
+  }
+};
+
+/**
+ * Test Function which provides curl evaluation on cell in
+ * Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestCurl final : public TestFunctionBase<TestCurl<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionBase<TestCurl<rank, dim, idx>>;
+
+  std::string
+  submit(const std::vector<std::string>& function_names) const
+  {
+    return R"(\nabla\times )" + function_names[idx];
+  }
+};
+
+/**
+ * Test Function which provides gradient evaluation on cell in
+ * Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestGradient final : public TestFunctionBase<TestGradient<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionBase<TestGradient<rank, dim, idx>>;
+
+  static std::string
+  submit(const std::vector<std::string>& function_names)
+  {
+    return R"(\nabla )" + function_names[idx];
+  }
+};
+
+/**
+ * Test Function which provides hessian evaluation on cell in
+ * Matrix Free context
+ *
+ */
+template <int rank, int dim, unsigned int idx>
+class TestHessian final : public TestFunctionBase<TestHessian<rank, dim, idx>>
+{
+public:
+  using Base = TestFunctionBase<TestHessian<rank, dim, idx>>;
+
+  std::string
+  submit(const std::vector<std::string>& function_names) const
+  {
+    return R"(\nabla \nabla )" + function_names[idx];
+  }
+};
+
+template <auto... ints>
+auto
+transform(const Base::TestFunctionInteriorFace<ints...>&)
+{
+  return TestFunctionInteriorFace<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestFunctionExteriorFace<ints...>&)
+{
+  return TestFunctionExteriorFace<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestNormalGradientInteriorFace<ints...>&)
+{
+  return TestNormalGradientInteriorFace<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestNormalGradientExteriorFace<ints...>&)
+{
+  return TestNormalGradientExteriorFace<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestFunction<ints...>&)
+{
+  return TestFunction<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestDivergence<ints...>&)
+{
+  return TestDivergence<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestSymmetricGradient<ints...>&)
+{
+  return TestSymmetricGradient<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestCurl<ints...>&)
+{
+  return TestCurl<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestGradient<ints...>&)
+{
+  return TestGradient<ints...>();
+}
+template <auto... ints>
+auto
+transform(const Base::TestHessian<ints...>&)
+{
+  return TestHessian<ints...>();
+}
+
+// don't transform things that have not been specified
+/*template <class Type>
+auto
+transform(Type &&f)
+{
+  return std::forward<Type>(f);
+}*/
 }
 
 #endif // LATEX_FEFUNCTIONS_H

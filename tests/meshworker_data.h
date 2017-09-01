@@ -14,8 +14,8 @@
 #include <deal.II/meshworker/output.h>
 #include <deal.II/meshworker/simple.h>
 
-#include <meshworker/fefunctions.h>
 #include <cfl/forms.h>
+#include <meshworker/fefunctions.h>
 
 #include <string>
 

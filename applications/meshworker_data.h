@@ -14,9 +14,9 @@
 #include <deal.II/meshworker/output.h>
 #include <deal.II/meshworker/simple.h>
 
+#include <cfl/forms.h>
 #include <meshworker/fefunctions.h>
 #include <meshworker/forms.h>
-#include <cfl/forms.h>
 
 #include <string>
 
@@ -38,7 +38,8 @@ public:
   }
 
   void
-  cell(dealii::MeshWorker::DoFInfo<dim>& /*dinfo*/, dealii::MeshWorker::IntegrationInfo<dim>& info) const override
+  cell(dealii::MeshWorker::DoFInfo<dim>& /*dinfo*/,
+       dealii::MeshWorker::IntegrationInfo<dim>& info) const override
   {
     anchor(form, info, *this);
     reinit(form, info);
@@ -56,10 +57,10 @@ public:
 template <int dim>
 class MeshworkerData
 {
-    dealii::MappingQ1<dim> mapping;
-    dealii::SphericalManifold<dim> sphere;
-    dealii::Triangulation<dim> tr;
-    dealii::DoFHandler<dim> dof;
+  dealii::MappingQ1<dim> mapping;
+  dealii::SphericalManifold<dim> sphere;
+  dealii::Triangulation<dim> tr;
+  dealii::DoFHandler<dim> dof;
 
 public:
   MeshworkerData(unsigned int grid_index, unsigned int refine, const dealii::FiniteElement<dim>& fe)
@@ -69,7 +70,7 @@ public:
       dealii::GridGenerator::hyper_cube(tr);
     else if (grid_index == 1)
     {
-        dealii::GridGenerator::hyper_ball(tr);
+      dealii::GridGenerator::hyper_ball(tr);
       tr.set_manifold(0, sphere);
       tr.set_all_manifold_ids(0);
     }
@@ -81,7 +82,7 @@ public:
     dof.initialize_local_block_info();
 
     dealii::deallog << "Grid type " << grid_index << " Cells " << tr.n_active_cells() << " DoFs "
-            << dof.n_dofs() << std::endl;
+                    << dof.n_dofs() << std::endl;
   }
 
   void
@@ -101,8 +102,8 @@ public:
 
     MeshWorkerIntegrator<dim, Form> integrator(form);
 
-    dealii::UpdateFlags update_flags =
-      dealii::update_values | dealii::update_gradients | dealii::update_hessians | dealii::update_JxW_values;
+    dealii::UpdateFlags update_flags = dealii::update_values | dealii::update_gradients |
+                                       dealii::update_hessians | dealii::update_JxW_values;
 
     dealii::MeshWorker::IntegrationInfoBox<dim> info_box;
     // Determine degree of form and adjust
@@ -116,7 +117,8 @@ public:
     }
 
     info_box.add_update_flags_all(update_flags);
-    info_box.initialize(dof.get_fe(), this->mapping, in, dealii::Vector<double>(), &dof.block_info());
+    info_box.initialize(
+      dof.get_fe(), this->mapping, in, dealii::Vector<double>(), &dof.block_info());
 
     dealii::MeshWorker::DoFInfo<dim> dof_info(dof.block_info());
 

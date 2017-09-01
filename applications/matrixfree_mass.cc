@@ -12,7 +12,6 @@
 #include <deal.II/lac/block_sparse_matrix.h>
 #include <deal.II/lac/vector.h>
 
-
 #include <matrixfree/fefunctions.h>
 
 using namespace dealii;

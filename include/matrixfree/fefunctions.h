@@ -4,8 +4,8 @@
 #include <deal.II/base/vectorization.h>
 #include <deal.II/lac/la_parallel_block_vector.h>
 
-#include <cfl/forms.h>
 #include <cfl/fefunctions.h>
+#include <cfl/forms.h>
 #include <cfl/traits.h>
 
 #include <utility>
@@ -19,28 +19,28 @@ namespace CFL
  * @brief Interface to the deal.II library
  */
 namespace dealii::MatrixFree
-  {
-    template <class Derived>
-    class TestFunctionBaseBase;
-    template <class Derived>
-    class TestFunctionBase;
-    template <class Derived>
-    class TestFunctionFaceBase;
+{
+  template <class Derived>
+  class TestFunctionBaseBase;
+  template <class Derived>
+  class TestFunctionBase;
+  template <class Derived>
+  class TestFunctionFaceBase;
 
-    template <class Derived>
-    class FEFunctionBaseBase;
-    template <class Derived>
-    class FEFunctionBase;
-    template <class Derived>
-    class FEFunctionFaceBase;
+  template <class Derived>
+  class FEFunctionBaseBase;
+  template <class Derived>
+  class FEFunctionBase;
+  template <class Derived>
+  class FEFunctionFaceBase;
 
-    template <typename... Types>
-    class SumFEFunctions;
-    template <typename... Types>
-    class ProductFEFunctions;
-    template <class FEFunctionType>
-    class FELiftDivergence;
-  } // namespace MatrixFree
+  template <typename... Types>
+  class SumFEFunctions;
+  template <typename... Types>
+  class ProductFEFunctions;
+  template <class FEFunctionType>
+  class FELiftDivergence;
+} // namespace MatrixFree
 
 namespace Traits
 {
@@ -1166,7 +1166,7 @@ namespace dealii
       const FEFunctionType&
       get_fefunction()
       {
-          return fefunction;
+        return fefunction;
       }
 
       template <class FEDatas>
@@ -1535,22 +1535,20 @@ namespace dealii
     }
 
     template <class A, class B>
-    inline
-    auto
-    sum(const A &a, const B &b)
+    inline auto
+    sum(const A& a, const B& b)
     {
-        return a+b;
+      return a + b;
     }
 
-    template<>
-    inline
-    auto
-    sum<std::string, std::string> (const std::string &a, const std::string &b)
+    template <>
+    inline auto
+    sum<std::string, std::string>(const std::string& a, const std::string& b)
     {
 
-       if (b[0]=='-')
-         return a+b;
-       return a+"+"+b;
+      if (b[0] == '-')
+        return a + b;
+      return a + "+" + b;
     }
 
     template <typename... Types>
@@ -1590,10 +1588,11 @@ namespace dealii
       using TensorTraits =
         Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
 
-       template <class OtherType>
-       SumFEFunctions(const SumFEFunctions<OtherType>& f)
-           : summand(f.get_summand().scalar_factor)
-        {}
+      template <class OtherType>
+      SumFEFunctions(const SumFEFunctions<OtherType>& f)
+        : summand(f.get_summand().scalar_factor)
+      {
+      }
 
       explicit SumFEFunctions(const FEFunction summand_)
         : summand(std::move(summand_))
@@ -1725,10 +1724,10 @@ namespace dealii
       using Base = SumFEFunctions<Types...>;
 
       template <class OtherType, typename... OtherTypes,
-                typename std::enable_if<sizeof...(OtherTypes)==sizeof...(Types)>::type* = nullptr>
+                typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
       SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
-          : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f)),
-            summand(f.get_summand().scalar_factor)
+        : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f))
+        , summand(f.get_summand().scalar_factor)
       {
       }
 

@@ -3,9 +3,9 @@
 
 #define DEBUG_OUTPUT
 
+#include "matrixfree_data.h"
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/fe/fe_system.h>
-#include "matrixfree_data.h"
 
 #include <deal.II/dofs/dof_renumbering.h>
 
@@ -14,7 +14,6 @@
 #include <deal.II/lac/block_sparse_matrix.h>
 #include <deal.II/lac/la_parallel_block_vector.h>
 #include <deal.II/lac/vector.h>
-
 
 #include <matrixfree/fefunctions.h>
 

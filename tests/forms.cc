@@ -1,40 +1,37 @@
 // This is an open source non-commercial project. Dear PVS-Studio, please check it.
 // PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
-#include <cfl/derivatives.h>
-#include <cfl/forms.h>
-#include <cfl/terminal_strings.h>
 #include <iostream>
+#include <latex/evaluator.h>
+#include <latex/fefunctions.h>
+#include <latex/forms.h>
 
 using namespace CFL;
-
-template <class T>
-void
-print_form(const T& t)
-{
-  std::cout << "\\begin{gather*}" << std::endl
-            << t.latex() << std::endl
-            << "\\end{gather*}" << std::endl
-            << std::endl;
-}
 
 int
 main()
 {
-  TerminalString<0, 2> p("p");
-  TerminalString<0, 2, true> q("q");
-  TerminalString<1, 2> u("u");
-  TerminalString<1, 2, true> v("v");
+  Base::FEFunction<0, 2, 0> p("p");
+  Base::TestFunction<0, 2, 0> q;
+  Base::FEFunction<1, 2, 1> u("u");
+  Base::TestFunction<1, 2, 1> v;
 
-  print_form(form(q, p));
-  print_form(form(p, q));
-  print_form(form(v, u));
-  print_form(form(grad(q), u));
-  print_form(form(v, grad(p)));
-  print_form(form(grad(v), grad(u)));
-  print_form(form(grad(grad(q)), grad(u)));
-  print_form(form(grad(v), grad(grad(p))));
-  print_form(form(grad(grad(q)), grad(grad(p))));
+  std::vector<std::string> function_names{ "p", "u" };
+  std::vector<std::string> test_names{ "q", "v" };
+
+  Latex::Evaluator(Latex::transform(form(q, p)), function_names, test_names).print(std::cout);
+  Latex::Evaluator(Latex::transform(form(p, q)), function_names, test_names).print(std::cout);
+  Latex::Evaluator(Latex::transform(form(v, u)), function_names, test_names).print(std::cout);
+  Latex::Evaluator(Latex::transform(form(grad(q), u)), function_names, test_names).print(std::cout);
+  Latex::Evaluator(Latex::transform(form(v, grad(p))), function_names, test_names).print(std::cout);
+  Latex::Evaluator(Latex::transform(form(grad(v), grad(u))), function_names, test_names)
+    .print(std::cout);
+  Latex::Evaluator(Latex::transform(form(grad(grad(q)), grad(u))), function_names, test_names)
+    .print(std::cout);
+  Latex::Evaluator(Latex::transform(form(grad(v), grad(grad(p)))), function_names, test_names)
+    .print(std::cout);
+  Latex::Evaluator(Latex::transform(form(grad(grad(q)), grad(grad(p)))), function_names, test_names)
+    .print(std::cout);
 
   return 0;
 }

@@ -1,10 +1,11 @@
-f_s
-f_v
-f_s
-f_v
-f_v
-f_s_g_s
-f_c_s
-f_s
-fe_d_h_s
-f_h_s
+s
+v
+\nabla s
+\nabla v
+\nabla\cdot v^+
+\nabla\cdot v^+
+0.5((\nabla s+(\nabla s)^T))
+\nabla\times s
+\Delta s
+I.\nabla \nabla s
+\nabla \nabla s

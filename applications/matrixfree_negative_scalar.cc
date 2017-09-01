@@ -13,7 +13,6 @@
 #include <deal.II/lac/la_parallel_block_vector.h>
 #include <deal.II/lac/vector.h>
 
-
 #include <matrixfree/fefunctions.h>
 
 using namespace dealii;

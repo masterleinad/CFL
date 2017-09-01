@@ -60,9 +60,9 @@
 #include <iostream>
 #include <sstream>
 
-#include <matrixfree/fefunctions.h>
 #include <cfl/forms.h>
 #include <matrixfree/fe_data.h>
+#include <matrixfree/fefunctions.h>
 #include <matrixfree/matrix_free_integrator.h>
 
 constexpr unsigned int degree_finite_element = 3;

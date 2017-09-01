@@ -3,10 +3,9 @@
 
 #define DEBUG_OUTPUT
 
+#include "meshworker_data.h"
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/lac/vector.h>
-#include "meshworker_data.h"
-
 
 #include <meshworker/fefunctions.h>
 

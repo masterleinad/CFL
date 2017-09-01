@@ -5,7 +5,6 @@
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/lac/vector.h>
 
-
 #include <meshworker/fefunctions.h>
 
 using namespace CFL;
