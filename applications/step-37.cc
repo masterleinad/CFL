@@ -68,6 +68,7 @@ const unsigned int dimension = 3;
 namespace Step37
 {
 using namespace dealii;
+using namespace CFL::dealii::MatrixFree;
 
 template <int dim, class FEDatasSystem, class FEDatasLevel, class Form>
 class LaplaceProblem

@@ -6,6 +6,8 @@
 #include <deal.II/matrix_free/fe_evaluation.h>
 #include <deal.II/matrix_free/matrix_free.h>
 
+namespace CFL::dealii::MatrixFree
+{
 template <typename... Types>
 class FEDatas;
 
@@ -49,7 +51,7 @@ class FEData final
 {
 public:
   using FEEvaluationType =
-    typename dealii::FEEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>;
+    typename ::dealii::FEEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>;
   using NumberType = Number;
   using TensorTraits = CFL::Traits::Tensor<(n_components > 1 ? 1 : 0), dim>;
   static constexpr unsigned int fe_number = fe_no;
@@ -79,9 +81,9 @@ public:
   {
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
     AssertThrow(fe->degree == fe_degree,
-                dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree + 1));
+                ::dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree + 1));
     AssertThrow(fe->n_components() == n_components,
-                dealii::ExcDimensionMismatch(fe->n_components(), n_components));
+                ::dealii::ExcDimensionMismatch(fe->n_components(), n_components));
   }
 
   /**
@@ -112,7 +114,7 @@ class FEDataFace final
 {
 public:
   using FEEvaluationType =
-    typename dealii::FEFaceEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>;
+    typename ::dealii::FEFaceEvaluation<dim, fe_degree, max_fe_degree + 1, n_components, Number>;
   using NumberType = Number;
   using TensorTraits = CFL::Traits::Tensor<(n_components > 1 ? 1 : 0), dim>;
   static constexpr unsigned int fe_number = fe_no;
@@ -134,9 +136,9 @@ public:
     : fe(std::move(fe_))
   {
     static_assert(fe_degree <= max_degree, "fe_degree must not be greater than max_degree!");
-    AssertThrow(fe->degree == fe_degree, dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree));
+    AssertThrow(fe->degree == fe_degree, ::dealii::ExcIndexRange(fe->degree, fe_degree, fe_degree));
     AssertThrow(fe->n_components() == n_components,
-                dealii::ExcDimensionMismatch(fe->n_components(), n_components));
+                ::dealii::ExcDimensionMismatch(fe->n_components(), n_components));
   }
 
   /**
@@ -158,6 +160,7 @@ private:
   template <typename... Types>
   friend class FEDatas;
 };
+}
 
 namespace CFL::Traits
 {
@@ -168,8 +171,8 @@ namespace CFL::Traits
 */
 template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_degree, typename Number>
-struct is_fe_data<
-  FEData<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
+struct is_fe_data<CFL::dealii::MatrixFree::FEData<FiniteElementType, fe_degree, n_components, dim,
+                                                  fe_no, max_degree, Number>>
 {
   static const bool value = true;
 };
@@ -181,13 +184,15 @@ struct is_fe_data<
         */
 template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_degree, typename Number>
-struct is_fe_data_face<
-  FEDataFace<FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
+struct is_fe_data_face<CFL::dealii::MatrixFree::FEDataFace<
+  FiniteElementType, fe_degree, n_components, dim, fe_no, max_degree, Number>>
 {
   static const bool value = true;
 };
 } // namespace CFL::Traits
 
+namespace CFL::dealii::MatrixFree
+{
 /**
 * @brief Class to provide FEEvaluation services in the scope of CFL
 *
@@ -326,7 +331,7 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "Reinit cell FEDatas " << fe_number << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
         fe_data.fe_evaluation->reinit(cell);
       }
   }
@@ -344,7 +349,7 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "Reinit face FEDatas " << fe_number << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
         fe_data.fe_evaluation_interior->reinit(face);
         fe_data.fe_evaluation_exterior->reinit(face);
       }
@@ -365,7 +370,7 @@ public:
 #endif
         // For boundaries we only consider interior faces
         Assert((fe_data.template evaluation_is_initialized<true, false>()),
-               dealii::ExcInternalError());
+               ::dealii::ExcInternalError());
         fe_data.fe_evaluation_interior->reinit(face);
       }
   }
@@ -383,7 +388,7 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "Read cell DoF values " << fe_number << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
 
         if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
             fe_data.fe_evaluation->read_dof_values(vector.block(fe_number));
@@ -403,7 +408,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
         Assert((fe_data.template evaluation_is_initialized<interior, exterior>()),
-               dealii::ExcInternalError());
+               ::dealii::ExcInternalError());
 #ifdef DEBUG_OUTPUT
         std::cout << "Read face DoF values " << fe_number << " " << interior << " " << exterior
                   << std::endl;
@@ -547,7 +552,7 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "Distribute cell DoF values " << fe_number << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
         if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
             fe_data.fe_evaluation->distribute_local_to_global(vector.block(fe_number));
         else
@@ -567,7 +572,7 @@ public:
       {
 
         Assert((fe_data.template evaluation_is_initialized<interior, exterior>()),
-               dealii::ExcInternalError());
+               ::dealii::ExcInternalError());
 #ifdef DEBUG_OUTPUT
         std::cout << "Distribute face DoF values " << fe_number << " " << interior << " "
                   << exterior << std::endl;
@@ -595,7 +600,7 @@ public:
   */
   template <int dim, typename OtherNumber>
   void
-  initialize(const dealii::MatrixFree<dim, OtherNumber>& mf)
+  initialize(const ::dealii::MatrixFree<dim, OtherNumber>& mf)
   {
     static_assert(std::is_same<NumberType, OtherNumber>::value,
                   "Number type of MatrixFree and FEDatas has to match!");
@@ -634,7 +639,7 @@ public:
         std::cout << "Evaluate cell FEDatas " << fe_number << " " << evaluate_values << " "
                   << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
 
         fe_data.fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
       }
@@ -655,7 +660,7 @@ public:
                   << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
         Assert((fe_data.template evaluation_is_initialized<interior, exterior>()),
-               dealii::ExcInternalError());
+               ::dealii::ExcInternalError());
 
         if constexpr(interior == true)
             fe_data.fe_evaluation_interior->evaluate(evaluate_values, evaluate_gradients);
@@ -810,9 +815,9 @@ public:
 #endif
     static_assert(CFL::Traits::is_fe_data<FEData>::value,
                   "This function can only be called for FEData objects!");
-    Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+    Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
     static_assert(fe_number == fe_number_extern, "Component not found!");
-    Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+    Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
     return fe_data.fe_evaluation->get_value(q);
   }
 
@@ -1202,7 +1207,7 @@ public:
 
   template <int dim, typename OtherNumber>
   void
-  initialize(const dealii::MatrixFree<dim, OtherNumber>& mf)
+  initialize(const ::dealii::MatrixFree<dim, OtherNumber>& mf)
   {
     static_assert(std::is_same<NumberType, OtherNumber>::value,
                   "Number type of MatrixFree and FEDatas do not match!");
@@ -1237,7 +1242,7 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "Reinit cell FEDatas " << fe_number << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
         fe_data.fe_evaluation->reinit(cell);
       }
     Base::reinit(cell);
@@ -1252,7 +1257,7 @@ public:
 #ifdef DEBUG_OUTPUT
         std::cout << "Reinit face FEDatas " << fe_number << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
         fe_data.fe_evaluation_interior->reinit(face);
         fe_data.fe_evaluation_exterior->reinit(face);
       }
@@ -1270,7 +1275,7 @@ public:
 #endif
         // For boundaries we only consider the interior faces
         Assert((fe_data.template evaluation_is_initialized<true, false>()),
-               dealii::ExcInternalError());
+               ::dealii::ExcInternalError());
         fe_data.fe_evaluation_interior->reinit(face);
       }
     Base::reinit_boundary(face);
@@ -1287,7 +1292,7 @@ public:
 #ifdef DEBUG_OUTPUT
             std::cout << "Read cell DoF values " << fe_number << std::endl;
 #endif
-            Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+            Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
             fe_data.fe_evaluation->read_dof_values(vector.block(fe_number));
           }
         Base::read_dof_values(vector);
@@ -1295,7 +1300,7 @@ public:
     else
     {
       // TODO(darndt): something tries to instantiate this even for valid code. Find out who!
-      AssertThrow(false, dealii::ExcNotImplemented());
+      AssertThrow(false, ::dealii::ExcNotImplemented());
       /*static_assert(CFL::Traits::is_block_vector<VectorType>::value,
                     "It only makes sense to have multiple FEData objects if "
                     "you provide a block vector.");*/
@@ -1309,7 +1314,7 @@ public:
     if constexpr(CFL::Traits::is_fe_data_face<FEData>::value)
       {
         Assert((fe_data.template evaluation_is_initialized<interior, exterior>()),
-               dealii::ExcInternalError());
+               ::dealii::ExcInternalError());
 #ifdef DEBUG_OUTPUT
         std::cout << "Read face DoF values " << fe_number << " " << interior << " " << exterior
                   << std::endl;
@@ -1343,7 +1348,7 @@ public:
 #ifdef DEBUG_OUTPUT
           std::cout << "Distribute cell DoF values " << fe_number << std::endl;
 #endif
-          Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+          Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
           if constexpr(CFL::Traits::is_fe_data<FEData>::value)
               fe_data.fe_evaluation->distribute_local_to_global(vector.block(fe_number));
         }
@@ -1352,7 +1357,7 @@ public:
     else
     {
       // TODO(darndt): something tries to instantiate this even for valid code. Find out who!
-      AssertThrow(false, dealii::ExcNotImplemented());
+      AssertThrow(false, ::dealii::ExcNotImplemented());
       /*static_assert(CFL::Traits::is_block_vector<VectorType>::value,
                     "It only makes sense to have multiple FEData objects if "
                     "you provide a block vector.");*/
@@ -1367,7 +1372,7 @@ public:
       {
 
         Assert((fe_data.template evaluation_is_initialized<interior, exterior>()),
-               dealii::ExcInternalError());
+               ::dealii::ExcInternalError());
 #ifdef DEBUG_OUTPUT
         std::cout << "Distribute face DoF values " << fe_number << " " << interior << " "
                   << exterior << std::endl;
@@ -1399,7 +1404,7 @@ public:
         std::cout << "Evaluate cell FEDatas " << fe_number << " " << evaluate_values << " "
                   << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
         fe_data.fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
       }
     Base::evaluate();
@@ -1416,7 +1421,7 @@ public:
                   << evaluate_gradients << " " << evaluate_hessians << std::endl;
 #endif
         Assert((fe_data.template evaluation_is_initialized<interior, exterior>()),
-               dealii::ExcInternalError());
+               ::dealii::ExcInternalError());
 
         if constexpr(interior == true)
             fe_data.fe_evaluation_interior->evaluate(evaluate_values, evaluate_gradients);
@@ -2010,6 +2015,7 @@ operator,(const FEData1& fe_data1, const FEData2& fe_data2)
                   CFL::Traits::is_fe_data_face<FEData2>::value,
                 "Only FEData objects can be added!");
   return FEDatas<FEData1, FEData2>(fe_data1, fe_data2);
+}
 }
 
 #endif // DEALII_MATRIXFREE_FE_DATA_H

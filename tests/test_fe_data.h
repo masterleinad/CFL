@@ -9,6 +9,7 @@
 
 using namespace dealii;
 using namespace std;
+using namespace CFL::dealii::MatrixFree;
 
 // Just to avoid writing a U (unsigned) during comparison and prevent warning
 const unsigned int fe_0 = 0, fe_1 = 1, fe_2 = 2, fe_3 = 3, fe_4 = 4;

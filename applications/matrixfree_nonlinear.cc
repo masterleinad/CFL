@@ -18,6 +18,7 @@
 
 using namespace dealii;
 using namespace CFL;
+using namespace CFL::dealii::MatrixFree;
 
 template <int dim>
 void
