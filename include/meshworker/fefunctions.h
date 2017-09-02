@@ -8,7 +8,10 @@
  */
 namespace CFL
 {
-namespace dealiiMeshWorker
+#define AssertIndexRange(index, range)                                                             \
+  Assert((index) < (range), ::dealii::ExcIndexRange((index), 0, (range)))
+
+namespace dealii::MeshWorker
 {
   template <int dim>
   class ScalarTestFunction;
@@ -28,43 +31,43 @@ namespace dealiiMeshWorker
 namespace Traits
 {
   template <int dim>
-  struct test_function_set_type<dealiiMeshWorker::ScalarTestFunction<dim>>
+  struct test_function_set_type<dealii::MeshWorker::ScalarTestFunction<dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
   template <int dim>
-  struct test_function_set_type<dealiiMeshWorker::ScalarTestGradient<dim>>
+  struct test_function_set_type<dealii::MeshWorker::ScalarTestGradient<dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
   template <int dim>
-  struct test_function_set_type<dealiiMeshWorker::ScalarTestHessian<dim>>
+  struct test_function_set_type<dealii::MeshWorker::ScalarTestHessian<dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
   template <int rank, int dim>
-  struct fe_function_set_type<dealiiMeshWorker::FEFunction<rank, dim>>
+  struct fe_function_set_type<dealii::MeshWorker::FEFunction<rank, dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
   template <int rank, int dim>
-  struct fe_function_set_type<dealiiMeshWorker::FEGradient<rank, dim>>
+  struct fe_function_set_type<dealii::MeshWorker::FEGradient<rank, dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
   template <int rank, int dim>
-  struct fe_function_set_type<dealiiMeshWorker::FEHessian<rank, dim>>
+  struct fe_function_set_type<dealii::MeshWorker::FEHessian<rank, dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 }
 
-namespace dealiiMeshWorker
+namespace dealii::MeshWorker
 {
   template <int dim>
   class ScalarTestFunction

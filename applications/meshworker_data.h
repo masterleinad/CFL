@@ -20,7 +20,7 @@
 
 #include <string>
 
-namespace CFL::dealiiMeshWorker
+namespace CFL::dealii::MeshWorker
 {
 template <int dim, class FORM>
 class MeshWorkerIntegrator : public ::dealii::MeshWorker::LocalIntegrator<dim>
@@ -29,7 +29,7 @@ class MeshWorkerIntegrator : public ::dealii::MeshWorker::LocalIntegrator<dim>
 
 public:
   explicit MeshWorkerIntegrator(const FORM& form)
-    : form(form)
+    :  form(form)
   {
     this->use_boundary = false;
     this->use_face = false;
@@ -38,8 +38,8 @@ public:
   }
 
   void
-  cell(dealii::MeshWorker::DoFInfo<dim>& /*dinfo*/,
-       dealii::MeshWorker::IntegrationInfo<dim>& info) const override
+  cell(::dealii::MeshWorker::DoFInfo<dim>& /*dinfo*/,
+       ::dealii::MeshWorker::IntegrationInfo<dim>& info) const override
   {
     anchor(form, info, *this);
     reinit(form, info);
@@ -57,20 +57,20 @@ public:
 template <int dim>
 class MeshworkerData
 {
-  dealii::MappingQ1<dim> mapping;
-  dealii::SphericalManifold<dim> sphere;
-  dealii::Triangulation<dim> tr;
-  dealii::DoFHandler<dim> dof;
+  ::dealii::MappingQ1<dim> mapping;
+  ::dealii::SphericalManifold<dim> sphere;
+  ::dealii::Triangulation<dim> tr;
+  ::dealii::DoFHandler<dim> dof;
 
 public:
-  MeshworkerData(unsigned int grid_index, unsigned int refine, const dealii::FiniteElement<dim>& fe)
+  MeshworkerData(unsigned int grid_index, unsigned int refine, const ::dealii::FiniteElement<dim>& fe)
     : dof(tr)
   {
     if (grid_index == 0)
-      dealii::GridGenerator::hyper_cube(tr);
+      ::dealii::GridGenerator::hyper_cube(tr);
     else if (grid_index == 1)
     {
-      dealii::GridGenerator::hyper_ball(tr);
+      ::dealii::GridGenerator::hyper_ball(tr);
       tr.set_manifold(0, sphere);
       tr.set_all_manifold_ids(0);
     }
@@ -81,31 +81,31 @@ public:
     dof.distribute_dofs(fe);
     dof.initialize_local_block_info();
 
-    dealii::deallog << "Grid type " << grid_index << " Cells " << tr.n_active_cells() << " DoFs "
+    ::dealii::deallog << "Grid type " << grid_index << " Cells " << tr.n_active_cells() << " DoFs "
                     << dof.n_dofs() << std::endl;
   }
 
   void
-  resize_vector(dealii::Vector<double>& v) const
+  resize_vector(::dealii::Vector<double>& v) const
   {
     v.reinit(dof.n_dofs());
   }
 
   template <class Form>
   void
-  vmult(dealii::Vector<double>& dst, const dealii::Vector<double>& src, Form& form) const
+  vmult(::dealii::Vector<double>& dst, const ::dealii::Vector<double>& src, Form& form) const
   {
-    dealii::AnyData in;
-    in.add<const dealii::Vector<double>*>(&src, "u");
-    dealii::AnyData out;
-    out.add<dealii::Vector<double>*>(&dst, "result");
+    ::dealii::AnyData in;
+    in.add<const ::dealii::Vector<double>*>(&src, "u");
+    ::dealii::AnyData out;
+    out.add<::dealii::Vector<double>*>(&dst, "result");
 
     MeshWorkerIntegrator<dim, Form> integrator(form);
 
-    dealii::UpdateFlags update_flags = dealii::update_values | dealii::update_gradients |
-                                       dealii::update_hessians | dealii::update_JxW_values;
+    ::dealii::UpdateFlags update_flags = ::dealii::update_values | ::dealii::update_gradients |
+                                       ::dealii::update_hessians | ::dealii::update_JxW_values;
 
-    dealii::MeshWorker::IntegrationInfoBox<dim> info_box;
+    ::dealii::MeshWorker::IntegrationInfoBox<dim> info_box;
     // Determine degree of form and adjust
     for (auto i = integrator.input_vector_names.begin(); i != integrator.input_vector_names.end();
          ++i)
@@ -118,16 +118,16 @@ public:
 
     info_box.add_update_flags_all(update_flags);
     info_box.initialize(
-      dof.get_fe(), this->mapping, in, dealii::Vector<double>(), &dof.block_info());
+      dof.get_fe(), this->mapping, in, ::dealii::Vector<double>(), &dof.block_info());
 
-    dealii::MeshWorker::DoFInfo<dim> dof_info(dof.block_info());
+    ::dealii::MeshWorker::DoFInfo<dim> dof_info(dof.block_info());
 
-    dealii::MeshWorker::Assembler::ResidualSimple<dealii::Vector<double>> assembler;
+    ::dealii::MeshWorker::Assembler::ResidualSimple<::dealii::Vector<double>> assembler;
     //    assembler.initialize(this->constraints());
     assembler.initialize(out);
 
     // Loop call
-    dealii::MeshWorker::integration_loop(
+    ::dealii::MeshWorker::integration_loop(
       dof.begin_active(), dof.end(), dof_info, info_box, integrator, assembler);
   }
 };

@@ -9,13 +9,13 @@
 namespace CFL::Latex
 {
 template <class LatexTest, class LatexExpr, FormKind kind_of_form>
-class LatexForm
+class Form
 {
 public:
   template <class Test, class Expr, typename NumberType>
-  LatexForm(const Form<Test, Expr, kind_of_form, NumberType> f)
-    : expr(Latex::transform(f.expr))
-    , test(Latex::transform(f.test))
+  Form(const Base::Form<Test, Expr, kind_of_form, NumberType> f)
+    : expr(transform(f.expr))
+    , test(transform(f.test))
   {
   }
 
@@ -48,16 +48,16 @@ private:
 };
 
 template <typename... Types>
-class LatexForms;
+class Forms;
 
 template <typename FormType, typename... FormTypes>
-class LatexForms<FormType, FormTypes...> : public LatexForms<FormTypes...>
+class Forms<FormType, FormTypes...> : public Forms<FormTypes...>
 {
 public:
   template <class OtherType, class... OtherTypes,
             typename std::enable_if<sizeof...(OtherTypes) == sizeof...(FormTypes)>::type* = nullptr>
-  LatexForms(const Forms<OtherType, OtherTypes...>& f)
-    : LatexForms<FormTypes...>(static_cast<Forms<OtherTypes...>>(f))
+  Forms(const Base::Forms<OtherType, OtherTypes...>& f)
+    : Forms<FormTypes...>(static_cast<Base::Forms<OtherTypes...>>(f))
     , form(f.get_form())
   {
   }
@@ -67,7 +67,7 @@ public:
         const std::vector<std::string>& expression_names) const
   {
     return form.print(function_names, expression_names) + "+" +
-           LatexForms<FormTypes...>::print(function_names, expression_names);
+           Forms<FormTypes...>::print(function_names, expression_names);
   }
 
 private:
@@ -75,18 +75,12 @@ private:
 };
 
 template <class Test, class Expr, FormKind kind_of_form>
-class LatexForms<LatexForm<Test, Expr, kind_of_form>>
+class Forms<Form<Test, Expr, kind_of_form>>
 {
 public:
   template <class OtherTest, class OtherExpr, typename NumberType>
-  LatexForms(const Forms<Form<OtherTest, OtherExpr, kind_of_form, NumberType>>& f)
+  Forms(const Base::Forms<Base::Form<OtherTest, OtherExpr, kind_of_form, NumberType>>& f)
     : form(f.get_form())
-  {
-  }
-
-  template <typename NumberType>
-  void
-  initialize(const Form<Test, Expr, kind_of_form, NumberType>)
   {
   }
 
@@ -98,23 +92,23 @@ public:
   }
 
 private:
-  const LatexForm<Test, Expr, kind_of_form> form;
+  const Form<Test, Expr, kind_of_form> form;
 };
 
 template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
 auto
-transform(const Form<Test, Expr, kind_of_form, NumberType>& f)
+transform(const Base::Form<Test, Expr, kind_of_form, NumberType>& f)
 {
-  return LatexForm<decltype(Latex::transform(std::declval<Test>())),
-                   decltype(Latex::transform(std::declval<Expr>())),
-                   kind_of_form>(f);
+  return Form<decltype(transform(std::declval<Test>())),
+              decltype(transform(std::declval<Expr>())),
+              kind_of_form>(f);
 }
 
 template <typename... Types>
 auto
-transform(const Forms<Types...>& f)
+transform(const Base::Forms<Types...>& f)
 {
-  return LatexForms<decltype(transform(std::declval<Types>()))...>(f);
+  return Forms<decltype(transform(std::declval<Types>()))...>(f);
 }
 }
 

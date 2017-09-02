@@ -723,6 +723,75 @@ namespace dealii
       }
     };
 
+    template <auto... ints>
+    auto
+    transform(const Base::TestFunctionInteriorFace<ints...>&)
+    {
+      return TestFunctionInteriorFace<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestFunctionExteriorFace<ints...>&)
+    {
+      return TestFunctionExteriorFace<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestNormalGradientInteriorFace<ints...>&)
+    {
+      return TestNormalGradientInteriorFace<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestNormalGradientExteriorFace<ints...>&)
+    {
+      return TestNormalGradientExteriorFace<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestFunction<ints...>&)
+    {
+      return TestFunction<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestDivergence<ints...>&)
+    {
+      return TestDivergence<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestSymmetricGradient<ints...>&)
+    {
+      return TestSymmetricGradient<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestCurl<ints...>&)
+    {
+      return TestCurl<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestGradient<ints...>&)
+    {
+      return TestGradient<ints...>();
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::TestHessian<ints...>&)
+    {
+      return TestHessian<ints...>();
+    }
+
+    // don't transform things that have not been specified
+    /*template <class Type>
+    auto
+    transform(Type &&f)
+    {
+      return std::forward<Type>(f);
+    }*/
+
     /**
      * Utility function to return a TestDivergence object
      * given a TestFunction
@@ -1144,67 +1213,6 @@ namespace dealii
     };
 
     /**
-     * TBD
-     *
-     */
-    template <class FEFunctionType>
-    class FELiftDivergence final
-    {
-    private:
-      const FEFunctionType fefunction;
-
-    public:
-      using TensorTraits =
-        Traits::Tensor<FEFunctionType::TensorTraits::rank + 2, FEFunctionType::TensorTraits::dim>;
-      static constexpr unsigned int index = FEFunctionType::idx;
-
-      explicit FELiftDivergence(const FEFunctionType fe_function)
-        : fefunction(std::move(fe_function))
-      {
-      }
-
-      const FEFunctionType&
-      get_fefunction()
-      {
-        return fefunction;
-      }
-
-      template <class FEDatas>
-      auto
-      value(const FEDatas& phi, unsigned int q) const
-      {
-        auto value = fefunction.value(phi, q);
-        ::dealii::Tensor<TensorTraits::rank, TensorTraits::dim, decltype(value)> lifted_tensor;
-        for (unsigned int i = 0; i < TensorTraits::dim; ++i)
-        {
-          lifted_tensor[i][i] = value;
-        }
-        return lifted_tensor;
-      }
-
-      auto
-      operator-() const
-      {
-        return FELiftDivergence(-fefunction);
-      }
-
-      template <typename Number>
-      typename std::enable_if_t<std::is_arithmetic<Number>::value, FELiftDivergence<FEFunctionType>>
-      operator*(const Number scalar_factor_) const
-      {
-        return FELiftDivergence<FEFunctionType>(
-          FEFunctionType(fefunction.name(), fefunction.scalar_factor * scalar_factor_));
-      }
-
-      template <class FEEvaluation>
-      static void
-      set_evaluation_flags(FEEvaluation& phi)
-      {
-        FEFunctionType::set_evaluation_flags(phi);
-      }
-    };
-
-    /**
      * FE Function which provides Symmetric Gradient evaluation on cell in
      * Matrix Free context
      *
@@ -1473,6 +1481,173 @@ namespace dealii
       }
     };
 
+    template <auto... ints>
+    auto
+    transform(const Base::FEFunctionInteriorFace<ints...>& f)
+    {
+      return FEFunctionInteriorFace<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FEFunctionExteriorFace<ints...>& f)
+    {
+      return FEFunctionExteriorFace<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FENormalGradientInteriorFace<ints...>& f)
+    {
+      return FENormalGradientInteriorFace<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FENormalGradientExteriorFace<ints...>& f)
+    {
+      return FENormalGradientExteriorFace<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FEFunction<ints...>& f)
+    {
+      return FEFunction<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FEDivergence<ints...>& f)
+    {
+      return FEDivergence<ints...>(f.scalar_factor);
+    }
+    template <class Type>
+    auto
+    transform(const Base::FELiftDivergence<Type>& f)
+    {
+      return FELiftDivergence<decltype(transform(std::declval<Type>()))>(
+        transform(f.get_fefunction()));
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FESymmetricGradient<ints...>& f)
+    {
+      return FESymmetricGradient<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FECurl<ints...>& f)
+    {
+      return FECurl<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FEGradient<ints...>& f)
+    {
+      return FEGradient<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FEDiagonalHessian<ints...>& f)
+    {
+      return FEDiagonalHessian<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FEHessian<ints...>& f)
+    {
+      return FEHessian<ints...>(f.scalar_factor);
+    }
+    template <auto... ints>
+    auto
+    transform(const Base::FELaplacian<ints...>& f)
+    {
+      return FELaplacian<ints...>(f.scalar_factor);
+    }
+
+    template <class... Types>
+    auto transform(const Base::SumFEFunctions<Types...>& f);
+
+    template <class... Types>
+    auto transform(const Base::ProductFEFunctions<Types...>& f);
+
+    template <class... Types>
+    auto
+    transform(const Base::SumFEFunctions<Types...>& f)
+    {
+      return Base::SumFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
+    }
+
+    template <class... Types>
+    auto
+    transform(const Base::ProductFEFunctions<Types...>& f)
+    {
+      return Base::ProductFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
+    }
+
+    /**
+     * TBD
+     *
+     */
+    template <class FEFunctionType>
+    class FELiftDivergence final
+    {
+    private:
+      const FEFunctionType fefunction;
+
+    public:
+      using TensorTraits =
+        Traits::Tensor<FEFunctionType::TensorTraits::rank + 2, FEFunctionType::TensorTraits::dim>;
+      static constexpr unsigned int index = FEFunctionType::idx;
+
+      template <class OtherFEFunctionType>
+      FELiftDivergence(const Base::FELiftDivergence<OtherFEFunctionType>& other_function)
+        : fefunction(transform(other_function.get_fefunction()))
+      {
+      }
+
+      explicit FELiftDivergence(FEFunctionType fe_function)
+        : fefunction(std::move(fe_function))
+      {
+      }
+
+      const FEFunctionType&
+      get_fefunction()
+      {
+        return fefunction;
+      }
+
+      template <class FEDatas>
+      auto
+      value(const FEDatas& phi, unsigned int q) const
+      {
+        auto value = fefunction.value(phi, q);
+        ::dealii::Tensor<TensorTraits::rank, TensorTraits::dim, decltype(value)> lifted_tensor;
+        for (unsigned int i = 0; i < TensorTraits::dim; ++i)
+        {
+          lifted_tensor[i][i] = value;
+        }
+        return lifted_tensor;
+      }
+
+      auto
+      operator-() const
+      {
+        return FELiftDivergence(-fefunction);
+      }
+
+      template <typename Number>
+      typename std::enable_if_t<std::is_arithmetic<Number>::value, FELiftDivergence<FEFunctionType>>
+      operator*(const Number scalar_factor_) const
+      {
+        return FELiftDivergence<FEFunctionType>(
+          FEFunctionType(fefunction.name(), fefunction.scalar_factor * scalar_factor_));
+      }
+
+      template <class FEEvaluation>
+      static void
+      set_evaluation_flags(FEEvaluation& phi)
+      {
+        FEFunctionType::set_evaluation_flags(phi);
+      }
+    };
+
     /**
      * Utility function to return a FEGradient object
      * given a FEFunction
@@ -1519,19 +1694,6 @@ namespace dealii
     div(const FEGradient<rank, dim, idx>& f)
     {
       return FELaplacian<rank - 1, dim, idx>(f);
-    }
-
-    /**
-     * Overloading function to scale an FE function with a scalar factor
-     *
-     */
-    template <typename Number, class A>
-    typename std::enable_if_t<Traits::fe_function_set_type<A>::value != ObjectType::none &&
-                                std::is_arithmetic<Number>::value,
-                              A>
-    operator*(const Number scalar_factor, const A& a)
-    {
-      return a * scalar_factor;
     }
 
     template <class A, class B>
@@ -1933,28 +2095,6 @@ namespace dealii
     };
 
     /**
-     * Operator overloading to add two FEFunction objects to form a SumFEFuction object
-     *
-     */
-    template <class FEFunction1, class FEFunction2,
-              typename std::enable_if<
-                Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
-                Traits::fe_function_set_type<FEFunction1>::value ==
-                  Traits::fe_function_set_type<FEFunction2>::value &&
-                !Traits::is_fe_function_sum<FEFunction1>::value &&
-                !Traits::is_fe_function_sum<FEFunction2>::value>::type* unused = nullptr>
-    auto
-    operator+(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
-    {
-
-      static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
-                    "You can only add tensors of equal dimension!");
-      static_assert(FEFunction1::TensorTraits::rank == FEFunction2::TensorTraits::rank,
-                    "You can only add tensors of equal rank!");
-      return SumFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
-    }
-
-    /**
      * Operator overloading to add a FEFunction object with a SumFEFuctions object
      *
      */
@@ -1966,23 +2106,6 @@ namespace dealii
     operator+(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
     {
       return old_fe_function + new_fe_function;
-    }
-
-    /**
-     * Operator overloading to subtract two FEFunction objects to form a SumFEFuction object
-     *
-     */
-    template <class FEFunction1, class FEFunction2,
-              typename std::enable_if<
-                Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
-                Traits::fe_function_set_type<FEFunction1>::value ==
-                  Traits::fe_function_set_type<FEFunction2>::value &&
-                !Traits::is_fe_function_sum<FEFunction1>::value &&
-                !Traits::is_fe_function_sum<FEFunction2>::value>::type* unused = nullptr>
-    auto
-    operator-(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
-    {
-      return old_fe_function + (-new_fe_function);
     }
 
     /**
@@ -2278,29 +2401,6 @@ namespace dealii
     private:
       FEFunction factor;
     };
-
-    // fefunc * fefunc
-    /**
-     * Operator overloading to multiply two FEFunction objects to get a
-     * ProductFEFunctions
-     *
-     */
-    template <class FEFunction1, class FEFunction2,
-              typename std::enable_if<
-                Traits::fe_function_set_type<FEFunction1>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<FEFunction1>::value ==
-                    Traits::fe_function_set_type<FEFunction2>::value &&
-                  !Traits::is_fe_function_product<FEFunction1>::value &&
-                  !Traits::is_fe_function_product<FEFunction2>::value,
-                ProductFEFunctions<FEFunction2, FEFunction1>>::type* unused = nullptr>
-    auto operator*(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
-    {
-      static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
-                    "You can only multiply tensors of equal dimension!");
-      static_assert(FEFunction1::TensorTraits::rank == FEFunction2::TensorTraits::rank,
-                    "You can only multiply tensors of equal rank!");
-      return ProductFEFunctions<FEFunction2, FEFunction1>(new_fe_function, old_fe_function);
-    }
 
     // Note: this function changes the order of template parameters compared with its other sibling
     // functions which perform multiplication operation on prodfefunc and fefunc

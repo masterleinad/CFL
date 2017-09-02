@@ -31,11 +31,11 @@ sumfe_same_types()
 
   bitset<max_idx> bs;
 
-  FEFuncType<rank, dim, idx1> fe_function1("test_fe1");
-  FEFuncType<rank, dim, idx2> fe_function2("test_fe2");
-  FEFuncType<rank, dim, idx3> fe_function3("test_fe3");
-  FEFuncType<rank, dim, idx4> fe_function4("test_fe4");
-  FEFuncType<rank, dim, idx5> fe_function5("test_fe5");
+  FEFuncType<rank, dim, idx1> fe_function1;
+  FEFuncType<rank, dim, idx2> fe_function2;
+  FEFuncType<rank, dim, idx3> fe_function3;
+  FEFuncType<rank, dim, idx4> fe_function4;
+  FEFuncType<rank, dim, idx5> fe_function5;
 
   auto sum1 = fe_function1 + fe_function2;
   auto sum2 = fe_function2 + fe_function1;
@@ -69,27 +69,27 @@ struct SumFEfunctor
   static void
   run()
   {
-    sumfe_same_types<FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    sumfe_same_types<FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    sumfe_same_types<FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    sumfe_same_types<FECurl, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    sumfe_same_types<FEGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    sumfe_same_types<FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    sumfe_same_types<FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    sumfe_same_types<FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
-    sumfe_same_types<FEFunctionInteriorFace,
+    sumfe_same_types<Base::FEFunction, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<Base::FEDivergence, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<Base::FESymmetricGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<Base::FECurl, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<Base::FEGradient, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<Base::FELaplacian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<Base::FEDiagonalHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<Base::FEHessian, obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index>();
+    sumfe_same_types<Base::FEFunctionInteriorFace,
                      obj_comb[i].rank,
                      obj_comb[i].dim,
                      obj_comb[i].index>();
-    sumfe_same_types<FEFunctionExteriorFace,
+    sumfe_same_types<Base::FEFunctionExteriorFace,
                      obj_comb[i].rank,
                      obj_comb[i].dim,
                      obj_comb[i].index>();
-    sumfe_same_types<FENormalGradientInteriorFace,
+    sumfe_same_types<Base::FENormalGradientInteriorFace,
                      obj_comb[i].rank,
                      obj_comb[i].dim,
                      obj_comb[i].index>();
-    sumfe_same_types<FENormalGradientExteriorFace,
+    sumfe_same_types<Base::FENormalGradientExteriorFace,
                      obj_comb[i].rank,
                      obj_comb[i].dim,
                      obj_comb[i].index>();
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(SumFEObjDiffType)
   const int dim = 2;
   const int fe_no = 10; // random
 
-  FEFunction<rank, dim, fe_no> F("test_obj");
+  Base::FEFunction<rank, dim, fe_no> F;
   auto GF = grad(F);
   auto DGF = div(grad(F));
   auto DF = div(F);

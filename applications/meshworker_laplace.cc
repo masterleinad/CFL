@@ -8,8 +8,8 @@
 #include <meshworker/fefunctions.h>
 
 using namespace CFL;
-using namespace CFL::dealiiMeshWorker;
-using namespace dealii;
+using namespace CFL::dealii::MeshWorker;
+using namespace ::dealii;
 
 template <int dim>
 void
@@ -22,7 +22,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FEFunction<0, dim> u("u", 0);
   auto Dv = grad(v);
   auto Du = grad(u);
-  auto f = form(Du, Dv);
+  auto f = Base::form(Du, Dv);
 
   Vector<double> x_new, x_old;
   Vector<double> b;

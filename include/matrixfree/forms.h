@@ -13,6 +13,8 @@
 #include <cfl/forms.h>
 #include <cfl/traits.h>
 
+#include <matrixfree/fefunctions.h>
+
 namespace CFL
 {
 namespace dealii::MatrixFree
@@ -40,6 +42,13 @@ namespace dealii::MatrixFree
     static constexpr bool integrate_gradient = Test::integration_flags.gradient;
     static constexpr bool integrate_gradient_exterior =
       (kind_of_form == FormKind::face) ? Test::integration_flags.gradient_exterior : false;
+
+    template <class OtherTest, class OtherExpr>
+    Form(const Base::Form<OtherTest, OtherExpr, kind_of_form, NumberType> f)
+      : test(transform(f.test))
+      , expr(transform(f.expr))
+    {
+    }
 
     Form(Test test_, Expr expr_)
       : test(std::move(test_))
@@ -331,6 +340,12 @@ namespace dealii::MatrixFree
     static constexpr unsigned int fe_number = FormType::fe_number;
     static constexpr unsigned int number = 0;
 
+    template <class OtherTest, class OtherExpr, typename NumberType>
+    Forms(const Base::Forms<Base::Form<OtherTest, OtherExpr, form_kind, NumberType>>& f)
+      : form(f.get_form())
+    {
+    }
+
     explicit Forms(const FormType& form_)
       : form(form_)
     {
@@ -514,6 +529,14 @@ namespace dealii::MatrixFree
 
     static constexpr unsigned int fe_number = FormType::fe_number;
     static constexpr unsigned int number = Forms<Types...>::number + 1;
+
+    template <class OtherType, class... OtherTypes,
+              typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
+    Forms(const Base::Forms<OtherType, OtherTypes...>& f)
+      : Forms<Types...>(static_cast<Base::Forms<OtherTypes...>>(f))
+      , form(f.get_form())
+    {
+    }
 
     Forms(const FormType& form_, const Forms<Types...>& old_form)
       : Forms<Types...>(old_form)
@@ -788,6 +811,22 @@ namespace dealii::MatrixFree
   auto operator*(double scalar, const Form<Test, Expr, kind_of_form, NumberType>& form)
   {
     return form * scalar;
+  }
+
+  template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
+  auto
+  transform(const Base::Form<Test, Expr, kind_of_form, NumberType>& f)
+  {
+    return Form<decltype(transform(std::declval<Test>())),
+                decltype(transform(std::declval<Expr>())),
+                kind_of_form>(f);
+  }
+
+  template <typename... Types>
+  auto
+  transform(const Base::Forms<Types...>& f)
+  {
+    return Forms<decltype(transform(std::declval<Types>()))...>(f);
   }
 }
 } // namespace CFL

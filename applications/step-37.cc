@@ -400,11 +400,11 @@ main(int argc, char* argv[])
     FEData<FE_Q, 2, 1, dimension, 0, 2, float> fedata_float(fe_u);
     FEDatas<decltype(fedata_float)> fe_datas_level{ fedata_float };
 
-    CFL::dealii::MatrixFree::TestFunction<0, dimension, 0> v_system;
+    CFL::Base::TestFunction<0, dimension, 0> v_system;
     auto Dv_system = grad(v_system);
-    CFL::dealii::MatrixFree::FEFunction<0, dimension, 0> u_system("u");
+    CFL::Base::FEFunction<0, dimension, 0> u_system;
     auto Du_system = grad(u_system);
-    auto f_system = CFL::form(Du_system, Dv_system);
+    auto f_system = CFL::dealii::MatrixFree::transform(CFL::Base::form(Du_system, Dv_system));
 
     LaplaceProblem<dimension,
                    decltype(fe_datas_system),

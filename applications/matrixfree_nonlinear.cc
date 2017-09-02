@@ -14,6 +14,7 @@
 #include <deal.II/lac/vector.h>
 
 #include <matrixfree/fefunctions.h>
+#include <matrixfree/forms.h>
 
 using namespace dealii;
 using namespace CFL;
@@ -98,17 +99,17 @@ run()
   FEData<FE_Q, degree, 1, dim, 1, degree, double> fedata_u(fe);
   auto fe_datas = (fedata_e, fedata_u);
 
-  CFL::dealii::MatrixFree::TestFunction<0, dim, 0> v;
+  Base::TestFunction<0, dim, 0> v;
   auto Dv = grad(v);
-  CFL::dealii::MatrixFree::FEFunction<0, dim, 0> e("e");
-  CFL::dealii::MatrixFree::FEFunction<0, dim, 1> u("u");
+  Base::FEFunction<0, dim, 0> e;
+  Base::FEFunction<0, dim, 1> u;
   auto De = grad(e);
 
   const double alpha = 10;
 
-  auto f1 = CFL::form(De, Dv);
-  auto f2 = CFL::form(3 * u * u * e - alpha * e, v);
-  auto f = f1 + f2;
+  auto f1 = Base::form(De, Dv);
+  auto f2 = Base::form(3 * u * u * e - alpha * e, v);
+  auto f = CFL::dealii::MatrixFree::transform(f1 + f2);
 
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe);

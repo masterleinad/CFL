@@ -31,15 +31,15 @@ test()
   Base::FENormalGradientInteriorFace<0, 1, 0> Dnu_p;
   Base::FENormalGradientExteriorFace<0, 1, 0> Dnu_m;
 
-  auto cell = form(Du, Dv);
+  auto cell = Base::form(Du, Dv);
 
   auto flux = u_p - u_m;
   auto flux_grad = Dnu_p - Dnu_m;
 
-  auto flux1 = -face_form(flux, Dnv_p) + face_form(flux, Dnv_m);
-  auto flux2 = face_form(-flux + .5 * flux_grad, v_p) - face_form(-flux + .5 * flux_grad, v_m);
+  auto flux1 = -face_form(flux, Dnv_p) + Base::face_form(flux, Dnv_m);
+  auto flux2 = Base::face_form(-flux + .5 * flux_grad, v_p) - Base::face_form(-flux + .5 * flux_grad, v_m);
 
-  auto boundary1 = boundary_form(2. * u_p - Dnu_p, v_p);
+  auto boundary1 = Base::boundary_form(2. * u_p - Dnu_p, v_p);
   auto boundary3 = -boundary_form(u_p, Dnv_p);
 
   auto face = -flux2 + .5 * flux1;

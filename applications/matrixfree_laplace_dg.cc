@@ -15,6 +15,7 @@
 #include <deal.II/lac/vector.h>
 
 #include <matrixfree/fefunctions.h>
+#include <matrixfree/forms.h>
 
 // To generate a reference solution
 #include <deal.II/integrators/laplace.h>
@@ -226,33 +227,33 @@ run(unsigned int grid_index, unsigned int refine)
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
 
-  TestFunction<0, 1, 0> v;
+  Base::TestFunction<0, 1, 0> v;
   auto Dv = grad(v);
-  TestFunctionInteriorFace<0, 1, 0> v_p;
-  TestFunctionExteriorFace<0, 1, 0> v_m;
-  TestNormalGradientInteriorFace<0, 1, 0> Dnv_p;
-  TestNormalGradientExteriorFace<0, 1, 0> Dnv_m;
+  Base::TestFunctionInteriorFace<0, 1, 0> v_p;
+  Base::TestFunctionExteriorFace<0, 1, 0> v_m;
+  Base::TestNormalGradientInteriorFace<0, 1, 0> Dnv_p;
+  Base::TestNormalGradientExteriorFace<0, 1, 0> Dnv_m;
 
-  FEFunction<0, 1, 0> u("u");
+  Base::FEFunction<0, 1, 0> u;
   auto Du = grad(u);
-  FEFunctionInteriorFace<0, 1, 0> u_p("u+");
-  FEFunctionExteriorFace<0, 1, 0> u_m("u-");
-  FENormalGradientInteriorFace<0, 1, 0> Dnu_p("u+");
-  FENormalGradientExteriorFace<0, 1, 0> Dnu_m("u-");
+  Base::FEFunctionInteriorFace<0, 1, 0> u_p;
+  Base::FEFunctionExteriorFace<0, 1, 0> u_m;
+  Base::FENormalGradientInteriorFace<0, 1, 0> Dnu_p;
+  Base::FENormalGradientExteriorFace<0, 1, 0> Dnu_m;
 
-  auto cell = form(Du, Dv);
+  auto cell = Base::form(Du, Dv);
 
   auto flux = u_p - u_m;
   auto flux_grad = Dnu_p - Dnu_m;
 
-  auto flux1 = -face_form(flux, Dnv_p) + face_form(flux, Dnv_m);
-  auto flux2 = face_form(-flux + .5 * flux_grad, v_p) - face_form(-flux + .5 * flux_grad, v_m);
+  auto flux1 = -Base::face_form(flux, Dnv_p) + Base::face_form(flux, Dnv_m);
+  auto flux2 = Base::face_form(-flux + .5 * flux_grad, v_p) - Base::face_form(-flux + .5 * flux_grad, v_m);
 
-  auto boundary1 = boundary_form(2. * u_p - Dnu_p, v_p);
-  auto boundary3 = -boundary_form(u_p, Dnv_p);
+  auto boundary1 = Base::boundary_form(2. * u_p - Dnu_p, v_p);
+  auto boundary3 = -Base::boundary_form(u_p, Dnv_p);
 
   auto face = -flux2 + .5 * flux1;
-  auto f = cell + face + boundary1 + boundary3;
+  auto f = transform(cell + face + boundary1 + boundary3);
 
   std::tuple<FormKind, unsigned int, IntegrationFlags> tuple =
     std::make_tuple(FormKind::cell, 0, IntegrationFlags());

@@ -14,6 +14,7 @@
 #include <deal.II/lac/vector.h>
 
 #include <matrixfree/fefunctions.h>
+#include <matrixfree/forms.h>
 
 using namespace dealii;
 using namespace CFL;
@@ -161,28 +162,32 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   fes.push_back(&(*fe_u));
   fes.push_back(&(*fe_p));
 
-  TestFunction<1, dim, 0> v;
-  TestFunction<0, dim, 1> q;
-  FEFunction<1, dim, 0> u("u0");
-  FEFunction<0, dim, 1> p("p");
+  Base::TestFunction<1, dim, 0> v;
+  Base::TestFunction<0, dim, 1> q;
+  Base::FEFunction<1, dim, 0> u;
+  Base::FEFunction<0, dim, 1> p;
 
-  FEFunction<0, dim, 0> u1("u1");
-  FEFunction<0, dim, 1> u2("u2");
-  FEFunction<0, dim, 2> u3("u3");
-  FEFunction<0, dim, 3> u4("u4");
+  Base::FEFunction<0, dim, 0> u1;
+  Base::FEFunction<0, dim, 1> u2;
+  Base::FEFunction<0, dim, 2> u3;
+  Base::FEFunction<0, dim, 3> u4;
 
-  SumFEFunctions<decltype(u2), decltype(u1)> sum1 = u1 + u2;
-  SumFEFunctions<decltype(u4), decltype(u3)> sum2 = u3 + u4;
-  SumFEFunctions<decltype(u3), decltype(u4), decltype(u2), decltype(u1)> sum3 = sum1 + sum2;
+  Base::SumFEFunctions<decltype(u2), decltype(u1)> sum1 = u1 + u2;
+  Base::SumFEFunctions<decltype(u4), decltype(u3)> sum2 = u3 + u4;
+  Base::SumFEFunctions<decltype(u3), decltype(u4), decltype(u2), decltype(u1)> sum3 = sum1 + sum2;
+
+  (void) sum1;
+  (void) sum2;
+  (void) sum3;
 
   auto Dv = grad(v);
   //  TestSymmetricGradient<2,dim,0> Dv;
   auto Divu = div(u);
-  FELiftDivergence<decltype(p)> Liftp(p);
-  FESymmetricGradient<2, dim, 0> Du(R"((\nabla+\nabla^T)u)");
-  auto f1 = form(Du + Liftp, Dv);
-  auto f2 = form(Divu, q);
-  auto f = f1 + f2;
+  Base::FELiftDivergence<decltype(p)> Liftp(p);
+  Base::FESymmetricGradient<2, dim, 0> Du;
+  auto f1 = Base::form(Du + Liftp, Dv);
+  auto f2 = Base::form(Divu, q);
+  auto f = transform(f1 + f2);
 
   MatrixFreeData<dim,
                  decltype(fe_datas),

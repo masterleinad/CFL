@@ -60,7 +60,7 @@
 #include <iostream>
 #include <sstream>
 
-#include <cfl/forms.h>
+#include <matrixfree/forms.h>
 #include <matrixfree/fe_data.h>
 #include <matrixfree/fefunctions.h>
 #include <matrixfree/matrix_free_integrator.h>
@@ -72,6 +72,8 @@ constexpr double alpha = 1.;
 namespace Step37
 {
 using namespace dealii;
+using namespace CFL;
+using namespace CFL::dealii::MatrixFree;
 
 template <int dim>
 class ReferenceFunction : public Function<dim>
@@ -579,18 +581,18 @@ main(int argc, char* argv[])
       fedata_u_level(fe_shared);
     auto fe_datas_level = (fedata_e_level, fedata_u_level);
 
-    CFL::dealii::MatrixFree::TestFunction<0, dimension, 0> v;
+    Base::TestFunction<0, dimension, 0> v;
     auto Dv = grad(v);
-    CFL::dealii::MatrixFree::FEFunction<0, dimension, 0> e("e");
+    Base::FEFunction<0, dimension, 0> e;
     auto De = grad(e);
-    CFL::dealii::MatrixFree::FEFunction<0, dimension, 1> u("u");
+    Base::FEFunction<0, dimension, 1> u;
     auto Du = grad(u);
 
-    auto f1 = CFL::form(De, Dv);
-    auto f2 = CFL::form(3 * u * u * e - alpha * e, v);
-    auto f = f1 + f2;
+    auto f1 = CFL::Base::form(De, Dv);
+    auto f2 = CFL::Base::form(3 * u * u * e - alpha * e, v);
+    auto f = transform(f1 + f2);
 
-    auto rhs = CFL::form(-Du, Dv) + CFL::form(-u * u * u + alpha * u, v);
+    auto rhs = transform(CFL::Base::form(-Du, Dv) + CFL::Base::form(-u * u * u + alpha * u, v));
 
     LaplaceProblem<dimension,
                    decltype(fe_datas_system),

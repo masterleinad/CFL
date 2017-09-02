@@ -20,7 +20,7 @@
 #include <string>
 
 using namespace dealii;
-using namespace CFL::dealiiMeshWorker;
+using namespace CFL::dealii::MeshWorker;
 
 template <int dim, class FORM>
 class MeshWorkerIntegrator : public ::dealii::MeshWorker::LocalIntegrator<dim>

@@ -14,6 +14,7 @@
 #include <deal.II/lac/vector.h>
 
 #include <matrixfree/fefunctions.h>
+#include <matrixfree/forms.h>
 
 using namespace dealii;
 using namespace CFL;
@@ -30,12 +31,16 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_p);
 
-  TestFunction<0, dim, 0> q;
-  FEFunction<0, dim, 0> p("p");
+  Base::TestFunction<0, dim, 0> q;
+  Base::FEFunction<0, dim, 0> p;
 
-  auto f1 = form(p, q);
-  auto f2 = form(-p, q);
-  auto f3 = -f2;
+  auto base_f1 = Base::form(p, q);
+  auto base_f2 = Base::form(-p, q);
+  auto base_f3 = -base_f2;
+
+  auto f1 = transform(base_f1);
+  auto f2 = transform(base_f2);
+  auto f3 = transform(base_f3);
 
   MatrixFreeData<dim, decltype(fe_datas), decltype(f1), LinearAlgebra::distributed::Vector<double>>
     data1(grid_index, refine, fes, fe_datas, f1);

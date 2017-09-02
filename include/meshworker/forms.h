@@ -3,12 +3,12 @@
 
 #include <cfl/forms.h>
 
-namespace CFL::dealiiMeshWorker
+namespace CFL::dealii::MeshWorker
 {
 template <class TEST, class EXPR, FormKind kind_of_form>
 void
 anchor(
-  const Form<TEST, EXPR, kind_of_form>& form,
+  const Base::Form<TEST, EXPR, kind_of_form>& form,
   const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim, TEST::TensorTraits::dim>& ii,
   const ::dealii::MeshWorker::LocalIntegrator<TEST::TensorTraits::dim>& li)
 {
@@ -18,7 +18,7 @@ anchor(
 template <class TEST, class EXPR, FormKind kind_of_form>
 void
 reinit(
-  const Form<TEST, EXPR, kind_of_form>& form,
+  const Base::Form<TEST, EXPR, kind_of_form>& form,
   const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim, TEST::TensorTraits::dim>& ii)
 {
   form.test.reinit(ii);
@@ -41,4 +41,4 @@ anchor(const T& t, const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
 }
 }
 
-#endif // FORMS_H
+#endif // Base::FormS_H

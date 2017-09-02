@@ -102,11 +102,11 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&(*fe_u));
 
-  TestFunction<1, dim, 0> v;
+  Base::TestFunction<1, dim, 0> v;
   auto Dv = grad(v);
-  FEFunction<1, dim, 0> u("u");
+  Base::FEFunction<1, dim, 0> u;
   auto Du = grad(u);
-  auto f = form(Du, Dv);
+  auto f = transform(Base::form(Du, Dv));
 
   MatrixFreeData<dim,
                  decltype(fe_datas),

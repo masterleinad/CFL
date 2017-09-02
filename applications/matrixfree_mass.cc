@@ -13,6 +13,7 @@
 #include <deal.II/lac/vector.h>
 
 #include <matrixfree/fefunctions.h>
+#include <matrixfree/forms.h>
 
 using namespace dealii;
 using namespace CFL;
@@ -96,9 +97,9 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FEData<FESystem, 1, dim, dim, 0, 1> fedata1{ fe_u };
   FEDatas<decltype(fedata1)> fe_datas{ fedata1 };
 
-  TestFunction<1, dim, 0> v;
-  FEFunction<1, dim, 0> u("u");
-  auto f = form(u, v);
+  Base::TestFunction<1, dim, 0> v;
+  Base::FEFunction<1, dim, 0> u;
+  auto f = transform(Base::form(u, v));
 
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&(*fe_u));

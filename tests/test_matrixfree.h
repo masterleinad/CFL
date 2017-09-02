@@ -7,6 +7,7 @@
 
 #include "test_utils.h"
 
+#include <cfl/fefunctions.h>
 #include <matrixfree/fefunctions.h>
 
 #include <deal.II/fe/fe_q.h>
@@ -19,6 +20,7 @@
 using namespace std;
 using namespace boost;
 using namespace dealii;
+using namespace CFL;
 using namespace CFL::dealii::MatrixFree;
 namespace utf = boost::unit_test;
 
