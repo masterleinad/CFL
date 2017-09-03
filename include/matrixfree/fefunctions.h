@@ -302,20 +302,13 @@ namespace dealii
       }
     };
 
-    // CRTP
-
     /**
      * Top level base class for Test Functions, should never be constructed
      * Defined for safety reasons
      *
      */
     template <class T>
-    class TestFunctionBaseBase
-    {
-    public:
-      // This class should never be constructed
-      TestFunctionBaseBase() = delete;
-    };
+    class TestFunctionBaseBase;
 
     /**
      * Top level base class for Test Functions
@@ -377,12 +370,6 @@ namespace dealii
       using Base = TestFunctionFaceBase<TestFunctionInteriorFace<rank, dim, idx>>;
       static constexpr const IntegrationFlags integration_flags{ true, false, false, false };
 
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return function_names[idx] + "^+";
-      }
-
       /**
        * Wrapper around submit_face_value function of FEEvaluation
        *
@@ -416,12 +403,6 @@ namespace dealii
     public:
       using Base = TestFunctionFaceBase<TestFunctionExteriorFace<rank, dim, idx>>;
       static constexpr IntegrationFlags integration_flags{ false, true, false, false };
-
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return function_names[idx] + "^-";
-      }
 
       /**
        * Wrapper around submit_face_value function of FEEvaluation
@@ -457,12 +438,6 @@ namespace dealii
       using Base = TestFunctionFaceBase<TestNormalGradientInteriorFace<rank, dim, idx>>;
       static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return R"(\boldsymbol{n}^+\cdot\nabla )" + function_names[idx] + "^+";
-      }
-
       /**
        * Wrapper around submit_normal_gradient function of FEEvaluation
        *
@@ -497,12 +472,6 @@ namespace dealii
     public:
       using Base = TestFunctionFaceBase<TestNormalGradientExteriorFace<rank, dim, idx>>;
       static constexpr IntegrationFlags integration_flags{ false, false, false, true };
-
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return R"(\boldsymbol{n}^-\cdot\nabla )" + function_names[idx] + "^-";
-      }
 
       /**
        * Wrapper around submit_normal_gradient function of FEEvaluation
@@ -666,12 +635,6 @@ namespace dealii
       using Base = TestFunctionBase<TestGradient<rank, dim, idx>>;
       static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return R"(\nabla )" + function_names[idx];
-      }
-
       /**
        * Wrapper around submit_gradient function of FEEvaluation
        *
@@ -793,44 +756,6 @@ namespace dealii
     }*/
 
     /**
-     * Utility function to return a TestDivergence object
-     * given a TestFunction
-     *
-     */
-    template <int rank, int dim, unsigned int idx>
-    TestDivergence<rank - 1, dim, idx>
-    div(const TestFunction<rank, dim, idx>& /*unused*/)
-    {
-      return TestDivergence<rank - 1, dim, idx>();
-    }
-
-    /**
-     * Utility function to return a TestGradient object
-     * given a TestFunction
-     *
-     */
-    template <int rank, int dim, unsigned int idx>
-    TestGradient<rank + 1, dim, idx>
-    grad(const TestFunction<rank, dim, idx>& /*unused*/)
-    {
-      return TestGradient<rank + 1, dim, idx>();
-    }
-
-    /**
-     * Utility function to return a TestHessian object
-     * given a TestGradient
-     *
-     */
-    template <int rank, int dim, unsigned int idx>
-    TestHessian<rank + 1, dim, idx>
-    grad(const TestGradient<rank, dim, idx>& /*unused*/)
-    {
-      return TestHessian<rank + 1, dim, idx>();
-    }
-
-    // CRTP
-
-    /**
      * Top level base class for FE Functions, should never be constructed
      * Defined for safety reasons
      *
@@ -851,25 +776,10 @@ namespace dealii
     template <template <int, int, unsigned int> class Derived, int rank, int dim, unsigned int idx>
     class FEFunctionBaseBase<Derived<rank, dim, idx>>
     {
-    protected:
-      const std::string data_name;
-
     public:
       using TensorTraits = Traits::Tensor<rank, dim>;
       static constexpr unsigned int index = idx;
       double scalar_factor = 1.;
-
-      FEFunctionBaseBase() = delete;
-
-      /**
-       * Constructor to optionally allow a string name for FE function
-       *
-       */
-      explicit FEFunctionBaseBase(const std::string name, double new_factor = 1.)
-        : data_name(std::move(name))
-        , scalar_factor(new_factor)
-      {
-      }
 
       /**
        * Default constructor
@@ -881,16 +791,6 @@ namespace dealii
       }
 
       /**
-       * Returns the name for FE function given during construction
-       *
-       */
-      const std::string&
-      name() const
-      {
-        return data_name;
-      }
-
-      /**
        * Allows to scale an FE function with a arithmetic value
        *
        */
@@ -898,7 +798,7 @@ namespace dealii
       typename std::enable_if_t<std::is_arithmetic<Number>::value, Derived<rank, dim, idx>>
       operator*(const Number scalar_factor_) const
       {
-        return Derived<rank, dim, idx>(data_name, scalar_factor * scalar_factor_);
+        return Derived<rank, dim, idx>(scalar_factor * scalar_factor_);
       }
 
       /**
@@ -908,8 +808,8 @@ namespace dealii
       Derived<rank, dim, idx>
       operator-() const
       {
-        const Derived<rank, dim, idx> newfunction(-scalar_factor);
-        return newfunction;
+        const Derived<rank, dim, idx> new_function(-scalar_factor);
+        return new_function;
       }
     };
 
@@ -920,12 +820,12 @@ namespace dealii
      * as the actual derived class. This might look like CRTP pattern, but
      * its not since the base class is not trying to use static polymorphism.
      * This way of implementation allows us to clearly structure our class
-     * heirarchy and collect the values of <code> index </code>, and Tensor
+     * hierarchy and collect the values of <code> index </code>, and Tensor
      * traits in a single place
      * <li> Also note that because this is a template class, the actual base
      * class which is created after template specialization will be different
      * for each FE Function class. This is different from traditional non-
-     * template base-derived heirarchy where all derived classes have common
+     * template base-derived hierarchy where all derived classes have common
      * base class.
      */
     template <class Derived>
@@ -958,12 +858,6 @@ namespace dealii
       using Base = FEFunctionFaceBase<FEFunctionInteriorFace<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
-
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return function_names[idx] + "^+";
-      }
 
       template <class FEDatas>
       auto
@@ -1006,12 +900,6 @@ namespace dealii
       // inherit constructors
       using Base::Base;
 
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return function_names[idx] + "^-";
-      }
-
       template <class FEDatas>
       auto
       value(const FEDatas& phi, unsigned int q) const
@@ -1052,12 +940,6 @@ namespace dealii
       using Base = FEFunctionFaceBase<FENormalGradientInteriorFace<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
-
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return R"(\boldsymbol{n}^+\cdot\nabla )" + function_names[idx] + "^+";
-      }
 
       template <class FEDatas>
       auto
@@ -1100,12 +982,6 @@ namespace dealii
       using Base = FEFunctionFaceBase<FENormalGradientExteriorFace<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
-
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return R"(\boldsymbol{n}^-\cdot\nabla )" + function_names[idx] + "^-";
-      }
 
       template <class FEDatas>
       auto
@@ -1313,12 +1189,6 @@ namespace dealii
       using Base = FEFunctionBase<FEGradient<rank, dim, idx>>;
       // inherit constructors
       using Base::Base;
-
-      static std::string
-      print(const std::vector<std::string>& function_names)
-      {
-        return R"(\nabla )" + function_names[idx];
-      }
 
       explicit FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
         : FEGradient(fefunction.name(), fefunction.scalar_factor)
@@ -1647,778 +1517,6 @@ namespace dealii
         FEFunctionType::set_evaluation_flags(phi);
       }
     };
-
-    /**
-     * Utility function to return a FEGradient object
-     * given a FEFunction
-     *
-     */
-    template <int rank, int dim, unsigned int idx>
-    FEGradient<rank + 1, dim, idx>
-    grad(const FEFunction<rank, dim, idx>& f)
-    {
-      return FEGradient<rank + 1, dim, idx>(f);
-    }
-
-    /**
-     * Utility function to return a FEDivergence object
-     * given a FEFunction
-     *
-     */
-    template <int rank, int dim, unsigned int idx>
-    FEDivergence<rank - 1, dim, idx>
-    div(const FEFunction<rank, dim, idx>& f)
-    {
-      return FEDivergence<rank - 1, dim, idx>(f);
-    }
-
-    /**
-     * Utility function to return a FEHessian object
-     * given a FEGradient
-     *
-     */
-    template <int rank, int dim, unsigned int idx>
-    FEHessian<rank + 1, dim, idx>
-    grad(const FEGradient<rank, dim, idx>& f)
-    {
-      return FEHessian<rank + 1, dim, idx>(f);
-    }
-
-    /**
-     * Utility function to return a FELaplacian object
-     * given a FEGradient
-     *
-     */
-    template <int rank, int dim, unsigned int idx>
-    FELaplacian<rank - 1, dim, idx>
-    div(const FEGradient<rank, dim, idx>& f)
-    {
-      return FELaplacian<rank - 1, dim, idx>(f);
-    }
-
-    template <class A, class B>
-    inline auto
-    sum(const A& a, const B& b)
-    {
-      return a + b;
-    }
-
-    template <>
-    inline auto
-    sum<std::string, std::string>(const std::string& a, const std::string& b)
-    {
-
-      if (b[0] == '-')
-        return a + b;
-      return a + "+" + b;
-    }
-
-    template <typename... Types>
-    class SumFEFunctions;
-
-    /**
-     * Weak formulation of PDE equations gives rise to forms (linear,bilinear
-     * etc). These may consist of several FE functions tested with test Function
-     * as a sum. It is possible to define sum/difference of such FE Functions using
-     * SumFEFunctions class. The summation is achieved by operator overloading.
-     * Difference is summation with a negative sign and can be easily achieved.
-     *
-     * <h3>Implementation</h3>
-     * The summation process does not physically add something. Rather, it
-     * maintains a static container (also see \ref FEDatas) of the FE Functions
-     * An example would be:
-     * <code>
-                  auto sum3 = fe_function1 + fe_function1 + fe_function3;
-     * </code>
-     * This will be stored as:
-     * *   @verbatim
-     *		SumFEFunctions<FEFunction>  --> holds fe_function1
-     *		     ^
-     *		     |
-     *		     |
-     *		SumFEFunctions<FEFunction,FEFunction> --> holds fe_function2
-     *		     ^
-     *		     |
-     *		     |
-     *		SumFEFunctions<FEFunction,FEFunction,FEFunction> --> holds fe_function3
-     *   @endverbatim
-     */
-    template <class FEFunction>
-    class SumFEFunctions<FEFunction>
-    {
-    public:
-      using TensorTraits =
-        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
-
-      template <class OtherType>
-      SumFEFunctions(const SumFEFunctions<OtherType>& f)
-        : summand(f.get_summand().scalar_factor)
-      {
-      }
-
-      explicit SumFEFunctions(const FEFunction summand_)
-        : summand(std::move(summand_))
-      {
-        static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                      "You need to construct this with a FEFunction object!");
-      }
-
-      static std::string
-      print(const std::vector<std::string>& function_names, bool)
-      {
-        return FEFunction::print(function_names) + ")";
-      }
-
-      /**
-       * Operator overloading to create a SumFEFunctions from
-       * two FEFunction objects
-       *
-       */
-      template <class NewFEFunction>
-      auto
-      operator+(const NewFEFunction& new_summand) const
-      {
-        static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
-                      "Only FEFunction objects can be added!");
-        static_assert(TensorTraits::dim == NewFEFunction::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == NewFEFunction::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
-        return SumFEFunctions<NewFEFunction, FEFunction>(new_summand, summand);
-      }
-
-      /**
-       * Operator overloading to create a SumFEFunctions from
-       * two FEFunction objects
-       *
-       */
-      template <class NewFEFunction>
-      auto
-      operator-(const NewFEFunction& new_summand) const
-      {
-        return operator+(-new_summand);
-      }
-
-      /**
-       * Wrapper around set_evaluation_flags function of FEFunction
-       *
-       */
-      template <class... ParameterTypes>
-      auto
-      value(const ParameterTypes&... parameters) const
-      {
-        return summand.value(parameters...);
-      }
-
-      /**
-       * Wrapper around set_evaluation_flags function of FEFunction
-       *
-       */
-      template <class FEEvaluation>
-      static void
-      set_evaluation_flags(FEEvaluation& phi)
-      {
-        FEFunction::set_evaluation_flags(phi);
-      }
-
-      /**
-       * Returns the FEFunction object held by this object
-       *
-       */
-      const FEFunction&
-      get_summand() const
-      {
-        return summand;
-      }
-
-      /**
-       * Unary minus operator overloading to get -SumFEFunctions
-       *
-       */
-      SumFEFunctions<FEFunction>
-      operator-() const
-      {
-        // create a copy
-        const SumFEFunctions<FEFunction> copy_this(*this);
-        copy_this.multiply_by_scalar(-1.);
-        return copy_this;
-      }
-
-      /**
-       * Scale all FEFunctions of SumFEFunctions by a scalar factor
-       *
-       */
-      template <typename Number>
-      typename std::enable_if<std::is_arithmetic<Number>::value, SumFEFunctions<FEFunction>>::type
-      operator*(const Number scalar_factor) const
-      {
-        SumFEFunctions<FEFunction> tmp = *this;
-        tmp.multiply_by_scalar(scalar_factor);
-        return tmp;
-      }
-
-      /**
-       * Scale only the FEFunction held by this SumFEFunctions by a scalar factor
-       *
-       */
-      template <typename Number>
-      std::enable_if_t<std::is_arithmetic<Number>::value>
-      multiply_by_scalar(const Number scalar)
-      {
-        summand.scalar_factor *= scalar;
-      }
-
-    private:
-      FEFunction summand;
-    };
-
-    /**
-    * @brief Class to provide Sum of FE Functions.
-    * This is for variadic template definition of the SumFEFunctions class.
-    * Please refer to the documentation of the previous class
-    */
-    template <class FEFunction, typename... Types>
-    class SumFEFunctions<FEFunction, Types...> : public SumFEFunctions<Types...>
-    {
-    public:
-      using TensorTraits =
-        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
-      using Base = SumFEFunctions<Types...>;
-
-      template <class OtherType, typename... OtherTypes,
-                typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
-      SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
-        : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f))
-        , summand(f.get_summand().scalar_factor)
-      {
-      }
-
-      /*static std::string
-      print(const std::vector<std::string>& function_names, bool first = true)
-      {
-        std::string prefix = first ? "(" : "";
-        return prefix + FEFunction::print(function_names) + "+" +
-               Base::print(function_names, false);
-      }*/
-
-      /**
-       * Actual evaluation of sum of the FE Function values in a Matrix Free
-       * context
-       *
-       */
-      template <class... ParameterTypes>
-      auto
-      value(const ParameterTypes&... parameters) const
-      {
-        const auto own_value = summand.value(parameters...);
-        const auto other_value = Base::value(parameters...);
-        assert_is_compatible(own_value, other_value);
-        return sum(own_value, other_value);
-      }
-
-      /**
-       * Wrapper around set_evaluation_flags of FEFunction
-       *
-       */
-      template <class FEEvaluation>
-      static void
-      set_evaluation_flags(FEEvaluation& phi)
-      {
-        FEFunction::set_evaluation_flags(phi);
-        Base::set_evaluation_flags(phi);
-      }
-
-      explicit SumFEFunctions(const FEFunction summand_, const Types... old_sum)
-        : Base(std::move(old_sum...))
-        , summand(std::move(summand_))
-      {
-        static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                      "You need to construct this with a FEFunction object!");
-        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
-      }
-
-      SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
-        : Base(old_sum)
-        , summand(summand_)
-      {
-        static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                      "You need to construct this with a FEFunction object!");
-        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
-      }
-
-      /**
-       * Operator overloading to add FEFunction to existing SumFEFunctions
-       *
-       */
-      template <class NewFEFunction,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value &&
-                  !Traits::is_fe_function_sum<NewFEFunction>::value>::type* unused = nullptr>
-      auto
-      operator+(const NewFEFunction& new_summand) const
-      {
-        return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_summand, *this);
-      }
-
-      /**
-       * Operator overloading to add two SumFEFunctions
-       *
-       */
-      template <class NewFEFunction1, class NewFEFunction2, typename... NewTypes,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction1>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction1>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto
-      operator+(const SumFEFunctions<NewFEFunction1, NewFEFunction2, NewTypes...>& new_sum) const
-      {
-        return SumFEFunctions<NewFEFunction1, FEFunction, Types...>(new_sum.get_summand(), *this) +
-               SumFEFunctions<NewFEFunction2, NewTypes...>(
-                 static_cast<const SumFEFunctions<NewFEFunction2, NewTypes...>&>(new_sum));
-      }
-
-      /**
-       * Operator overloading to add two SumFEFunctions
-       *
-       */
-      template <class NewFEFunction,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto
-      operator+(const SumFEFunctions<NewFEFunction>& new_sum) const
-      {
-        return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this);
-      }
-
-      /**
-       * Operator overloading to subtract a FEFunction from a SumFEFunction
-       *
-       */
-      template <class NewFEFunction,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto
-      operator-(const NewFEFunction& new_summand) const
-      {
-        return operator+(-new_summand);
-      }
-
-      /**
-       * Unary minus operator overloading to get -SumFEFunction
-       *
-       */
-      auto
-      operator-() const
-      {
-        // create a copy
-        SumFEFunctions<FEFunction, Types...> copy_this(*this);
-        copy_this.multiply_by_scalar(-1.);
-        return copy_this;
-      }
-
-      /**
-       * Multiply all FEFunction objects of this SumFEFunction with a scalar factor
-       *
-       */
-      template <typename Number>
-      typename std::enable_if<std::is_arithmetic<Number>::value,
-                              SumFEFunctions<FEFunction, Types...>>::type
-      operator*(const Number scalar_factor) const
-      {
-        SumFEFunctions<FEFunction, Types...> tmp = *this;
-        tmp.multiply_by_scalar(scalar_factor);
-        return tmp;
-      }
-
-      /**
-       * Multiply only the FEFunction object of this SumFEFunction with a scalar factor
-       *
-       */
-      template <typename Number>
-      std::enable_if_t<std::is_arithmetic<Number>::value>
-      multiply_by_scalar(const Number scalar)
-      {
-        summand.scalar_factor *= scalar;
-        Base::multiply_by_scalar(scalar);
-      }
-
-      /**
-       * Operator overloading to subtract a SumFEFuction from a SumFEFunction
-       *
-       */
-      template <class NewFEFunction, typename... NewTypes,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto
-      operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
-      {
-        return operator+(-new_sum);
-      }
-
-      /**
-       * Operator overloading to subtract a SumFEFuction from a SumFEFunction
-       *
-       */
-      template <class NewFEFunction,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto
-      operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
-      {
-        return operator+(-new_sum);
-      }
-
-      const FEFunction&
-      get_summand() const
-      {
-        return summand;
-      }
-
-    private:
-      FEFunction summand;
-    };
-
-    /**
-     * Operator overloading to add a FEFunction object with a SumFEFuctions object
-     *
-     */
-    template <class FEFunction, typename... Types,
-              typename std::enable_if<
-                Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
-                !Traits::is_fe_function_sum<FEFunction>::value>::type* unused = nullptr>
-    auto
-    operator+(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
-    {
-      return old_fe_function + new_fe_function;
-    }
-
-    /**
-     * Operator overloading to subtract an FEFunction object from a SumFEFuction object
-     *
-     */
-    template <class FEFunction, typename... Types,
-              typename std::enable_if<
-                Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
-                !Traits::is_fe_function_sum<FEFunction>::value>::type* unused = nullptr>
-    auto
-    operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
-    {
-      return -(old_fe_function - new_fe_function);
-    }
-
-    /**
-     * See \ref SumFEFunctions.
-     * It is possible to define product of such FE Functions using
-     * ProductFEFunctions class. The product is achieved by operator overloading.
-     *
-     * <h3>Implementation</h3>
-     * The product process does not physically multiply something. Rather, it
-     * maintains a static container (also see \ref FEDatas) of the FE Functions
-     * An example would be:
-     * <code>
-                  auto prod1 = fe_function1 * fe_function1 * fe_function3;
-     * </code>
-     * This will be stored as:
-     * *   @verbatim
-     *		ProductFEFunctions<FEFunction>  --> holds fe_function1
-     *		     ^
-     *		     |
-     *		     |
-     *		ProductFEFunctions<FEFunction,FEFunction> --> holds fe_function2
-     *		     ^
-     *		     |
-     *		     |
-     *		ProductFEFunctions<FEFunction,FEFunction,FEFunction> --> holds fe_function3
-     *   @endverbatim
-     */
-    template <class FEFunction>
-    class ProductFEFunctions<FEFunction>
-    {
-    public:
-      using TensorTraits =
-        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
-      static constexpr unsigned int n = 1;
-
-      explicit ProductFEFunctions(const FEFunction factor_)
-        : factor(std::move(factor_))
-      {
-        static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                      "You need to construct this with a FEFunction object!");
-      }
-
-      // prodfefunc * fefunc
-      /**
-       * Operator overloading to multiply a ProductFEFunctions with an FEFunction
-       *
-       */
-      template <class NewFEFunction>
-      auto operator*(const NewFEFunction& new_factor) const
-      {
-        static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
-                      "Only FEFunction objects can be added!");
-        static_assert(TensorTraits::dim == NewFEFunction::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == NewFEFunction::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
-        return ProductFEFunctions<NewFEFunction, FEFunction>(new_factor, factor);
-      }
-
-      /**
-       * Wrapper around value function of FEFunction
-       *
-       */
-      template <class FEEvaluation>
-      auto
-      value(FEEvaluation& phi, unsigned int q) const
-      {
-        return factor.value(phi, q);
-      }
-
-      /**
-       * Wrapper around set_evaluation_flags function of FEFunction
-       *
-       */
-      template <class FEEvaluation>
-      static void
-      set_evaluation_flags(FEEvaluation& phi)
-      {
-        FEFunction::set_evaluation_flags(phi);
-      }
-
-      /**
-       * Returns the FEFunction object held by this object
-       *
-       */
-      const FEFunction&
-      get_factor() const
-      {
-        return factor;
-      }
-
-      /**
-       * Unary minus operator overloading to get -ProductFEFunctions
-       *
-       */
-      ProductFEFunctions<FEFunction>
-      operator-() const
-      {
-        // create a copy
-        ProductFEFunctions<FEFunction> copy_this(*this);
-        copy_this.multiply_by_scalar(-1.);
-        return copy_this;
-      }
-
-      template <typename Number>
-      std::enable_if_t<std::is_arithmetic<Number>::value>
-      multiply_by_scalar(const Number scalar)
-      {
-        factor.scalar_factor *= scalar;
-      }
-
-    private:
-      FEFunction factor;
-    };
-
-    /**
-    * @brief Class to provide Product of FE Functions.
-    * This is for variadic template definition of the ProductFEFunctions class.
-    * Please refer to the documentation of the previous class
-    */
-    template <class FEFunction, typename... Types>
-    class ProductFEFunctions<FEFunction, Types...> : public ProductFEFunctions<Types...>
-    {
-    public:
-      using TensorTraits =
-        Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
-      using Base = ProductFEFunctions<Types...>;
-      static constexpr unsigned int n = Base::n + 1;
-
-      /**
-       * Actual evaluation of product of the FE Function values in a Matrix Free
-       * context
-       *
-       */
-      template <class FEEvaluation>
-      auto
-      value(const FEEvaluation& phi, unsigned int q) const
-      {
-        const auto own_value = factor.value(phi, q);
-        const auto other_value = Base::value(phi, q);
-        assert_is_compatible(own_value, other_value);
-        return own_value * other_value;
-      }
-
-      /**
-       * Wrapper around set_evaluation_flags of FEFunction
-       *
-      */
-      template <class FEEvaluation>
-      static void
-      set_evaluation_flags(FEEvaluation& phi)
-      {
-        FEFunction::set_evaluation_flags(phi);
-        Base::set_evaluation_flags(phi);
-      }
-
-      explicit ProductFEFunctions(const FEFunction factor_, const Types... old_product)
-        : Base(std::move(old_product...))
-        , factor(std::move(factor_))
-      {
-        static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                      "You need to construct this with a FEFunction object!");
-        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
-      }
-
-      ProductFEFunctions(const FEFunction factor_, const ProductFEFunctions<Types...> old_product)
-        : Base(std::move(old_product))
-        , factor(std::move(factor_))
-      {
-        static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                      "You need to construct this with a FEFunction object!");
-        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
-      }
-
-      // prodfefunc * fefunc
-      /**
-       * Operator overloading to multiply FEFunction to existing ProductFEFunctions
-       *
-       */
-      template <class NewFEFunction,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-                    Traits::fe_function_set_type<NewFEFunction>::value ==
-                      Traits::fe_function_set_type<FEFunction>::value,
-                  ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type* unused = nullptr>
-      auto operator*(const NewFEFunction& new_factor) const
-      {
-        return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_factor, *this);
-      }
-
-      /**
-       * Unary minus operator overloading to negate a ProductFEFunctions
-       *
-       */
-      ProductFEFunctions<FEFunction, Types...>
-      operator-() const
-      {
-        // create a copy
-        ProductFEFunctions<FEFunction, Types...> copy_this(*this);
-        copy_this.multiply_by_scalar(-1.);
-        return copy_this;
-      }
-
-      // prodfefunc * number
-      /**
-       * Multiply all components of ProductFEFunctions with a scalar factor
-       *
-       */
-      template <typename Number,
-                typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr>
-      auto operator*(const Number scalar_factor) const
-      {
-        ProductFEFunctions<FEFunction, Types...> tmp = *this;
-        tmp.multiply_by_scalar(scalar_factor);
-        return tmp;
-      }
-
-      /**
-       * Multiply only the component held by this ProductFEFunctions with a scalar factor
-       *
-       */
-      template <typename Number>
-      std::enable_if_t<std::is_arithmetic<Number>::value>
-      multiply_by_scalar(const Number scalar)
-      {
-        factor.scalar_factor *= scalar;
-      }
-
-      // prodfefunc * prodfefunc
-      /**
-       * Operator overloading to multiply two ProductFEFunctions
-       *
-       */
-      template <class NewFEFunction1, class NewFEFunction2, typename... NewTypes,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction1>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction1>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value &&
-                  Traits::fe_function_set_type<NewFEFunction2>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction2>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto operator*(
-        const ProductFEFunctions<NewFEFunction1, NewFEFunction2, NewTypes...>& new_product) const
-      {
-        return ProductFEFunctions<NewFEFunction1, FEFunction, Types...>(new_product.get_factor(),
-                                                                        *this) *
-               ProductFEFunctions<NewFEFunction2, NewTypes...>(
-                 static_cast<const ProductFEFunctions<NewFEFunction2, NewTypes...>&>(new_product));
-      }
-
-      // prodfefunc * prodfefunc
-      /**
-       * Operator overloading to multiply two ProductFEFunctions
-       *
-       */
-      template <class NewFEFunction,
-                typename std::enable_if<
-                  Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-      auto operator*(const ProductFEFunctions<NewFEFunction>& new_product) const
-      {
-        return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_product.get_factor(),
-                                                                       *this);
-      }
-
-      const FEFunction&
-      get_factor() const
-      {
-        return factor;
-      }
-
-    private:
-      FEFunction factor;
-    };
-
-    // Note: this function changes the order of template parameters compared with its other sibling
-    // functions which perform multiplication operation on prodfefunc and fefunc
-    // fefunc * prodfefunc
-    /**
-     * Operator overloading to multiply an FEFunction object to a
-     * ProductFEFunctions
-     *
-     */
-    template <
-      class FEFunction, typename... Types,
-      typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                              ProductFEFunctions<FEFunction, Types...>>::type* unused = nullptr>
-    auto operator*(const FEFunction& new_fe_function,
-                   const ProductFEFunctions<Types...>& old_fe_function)
-    {
-      return old_fe_function * new_fe_function;
-    }
   } // namespace MatrixFree
 } // namespace dealii
 } // namespace CFL

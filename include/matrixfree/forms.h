@@ -50,31 +50,6 @@ namespace dealii::MatrixFree
     {
     }
 
-    Form(Test test_, Expr expr_)
-      : test(std::move(test_))
-      , expr(std::move(expr_))
-    {
-      static_assert(Traits::test_function_set_type<Test>::value != ObjectType::none,
-                    "The first argument must be a test function!");
-      static_assert(Traits::fe_function_set_type<Expr>::value != ObjectType::none,
-                    "The second argument must be a finite element function!");
-      static_assert(
-        formkind_matches_objecttype<kind_of_form, Traits::test_function_set_type<Test>::value>(),
-        "The type of the test function must be compatible with the type of the form!");
-      static_assert(
-        formkind_matches_objecttype<kind_of_form, Traits::fe_function_set_type<Expr>::value>(),
-        "The type of the expression must be compatible with the type of the form!");
-      static_assert(Test::TensorTraits::rank == Expr::TensorTraits::rank,
-                    "Test function and expression must have the same tensor rank!");
-      static_assert(Test::TensorTraits::dim == Expr::TensorTraits::dim,
-                    "Test function and expression must have the same dimension!");
-
-      if constexpr(form_kind == FormKind::boundary) static_assert(
-          Test::integration_flags.value_exterior == false &&
-            Test::integration_flags.gradient_exterior == false,
-          "A boundary form cannot have a test function associated with the neighbor of a cell!");
-    }
-
     static constexpr void
     get_form_kinds(std::array<bool, 3>& use_objects)
     {
@@ -204,122 +179,7 @@ namespace dealii::MatrixFree
     {
       Test::submit(phi, q, value);
     }
-
-    template <class TestNew, class ExprNew, FormKind kind_new>
-    Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
-    operator+(const Form<TestNew, ExprNew, kind_new>& new_form) const
-    {
-      return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this,
-                                                                                     new_form);
-    }
-
-    template <class TestNew, class ExprNew, FormKind kind_new>
-    Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
-    operator-(const Form<TestNew, ExprNew, kind_new>& new_form) const
-    {
-      return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this,
-                                                                                     -new_form);
-    }
-
-    template <class... Types>
-    auto
-    operator+(const Forms<Types...>& old_form) const
-    {
-      return old_form + *this;
-    }
-
-    auto
-    operator-() const
-    {
-      const typename std::remove_reference<decltype(*this)>::type newform(test, -expr);
-      return newform;
-    }
-
-    auto operator*(const double scalar) const
-    {
-      const typename std::remove_reference<decltype(*this)>::type newform(test, expr * scalar);
-      return newform;
-    }
   };
-}
-
-namespace Traits
-{
-  template <class Test, class Expr, FormKind kind_of_form>
-  struct is_form<dealii::MatrixFree::Form<Test, Expr, kind_of_form>>
-  {
-    const static bool value = true;
-  };
-
-  template <class Test, class Expr, FormKind kind_of_form>
-  struct is_cfl_object<dealii::MatrixFree::Form<Test, Expr, kind_of_form>>
-  {
-    const static bool value = true;
-  };
-
-  template <class Test1, class Expr1, FormKind kind1, class Test2, class Expr2, FormKind kind2>
-  struct is_summable<dealii::MatrixFree::Form<Test1, Expr1, kind1>,
-                     dealii::MatrixFree::Form<Test2, Expr2, kind2>>
-  {
-    const static bool value = true;
-  };
-
-  template <class Test, class Expr, FormKind kind_of_form, typename... Types>
-  struct is_summable<dealii::MatrixFree::Form<Test, Expr, kind_of_form>,
-                     dealii::MatrixFree::Forms<Types...>>
-  {
-    const static bool value = true;
-  };
-
-  template <class Test, class Expr, FormKind kind_of_form, typename... Types>
-  struct is_summable<dealii::MatrixFree::Forms<Types...>,
-                     dealii::MatrixFree::Form<Test, Expr, kind_of_form>>
-  {
-    const static bool value = true;
-  };
-} // namespace Traits
-
-namespace dealii::MatrixFree
-{
-  template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::cell>>::type
-  form(const Test& t, const Expr& e)
-  {
-    return Form<Test, Expr, FormKind::cell>(t, e);
-  }
-
-  template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::face>>::type
-  face_form(const Test& t, const Expr& e)
-  {
-    return Form<Test, Expr, FormKind::face>(t, e);
-  }
-
-  template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::face>>::type
-  face_form(const Expr& e, const Test& t)
-  {
-    return Form<Test, Expr, FormKind::face>(t, e);
-  }
-
-  template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::boundary>>::type
-  boundary_form(const Test& t, const Expr& e)
-  {
-    return Form<Test, Expr, FormKind::boundary>(t, e);
-  }
-
-  template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::boundary>>::type
-  boundary_form(const Expr& e, const Test& t)
-  {
-    return Form<Test, Expr, FormKind::boundary>(t, e);
-  }
 
   template <typename... Types>
   class Forms;
@@ -344,16 +204,6 @@ namespace dealii::MatrixFree
     Forms(const Base::Forms<Base::Form<OtherTest, OtherExpr, form_kind, NumberType>>& f)
       : form(f.get_form())
     {
-    }
-
-    explicit Forms(const FormType& form_)
-      : form(form_)
-    {
-      AssertThrow(
-        (check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>()),
-        ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
-      static_assert(Traits::is_form<FormType>::value,
-                    "You need to construct this with a Form object!");
     }
 
     static constexpr void
@@ -487,30 +337,7 @@ namespace dealii::MatrixFree
       return form;
     }
 
-  protected:
-    template <unsigned int size, typename IntegrationFlags>
-    static /*constexpr*/ bool
-    check_forms(
-      std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
-        container = std::array<
-          std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
-    {
-      const IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
-
-      for (unsigned int i = number; i < size; ++i)
-      {
-        const auto& item = container.at(i);
-        if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
-            ((std::get<2>(item)) & integration_flags))
-          return false;
-      }
-
-      return true;
-    }
-
   private:
-    const /*static constexpr*/ bool valid =
-      check_forms<number, decltype(FormType::TestType::integration_flags)>();
     const FormType form;
   };
 
@@ -536,51 +363,6 @@ namespace dealii::MatrixFree
       : Forms<Types...>(static_cast<Base::Forms<OtherTypes...>>(f))
       , form(f.get_form())
     {
-    }
-
-    Forms(const FormType& form_, const Forms<Types...>& old_form)
-      : Forms<Types...>(old_form)
-      , form(form_)
-    {
-      AssertThrow(
-        valid,
-        ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
-      static_assert(Traits::is_form<FormType>::value,
-                    "You need to construct this with a Form object!");
-    }
-
-    explicit Forms(const FormType& form_, const Types&... old_form)
-      : Forms<Types...>(old_form...)
-      , form(form_)
-    {
-      AssertThrow(
-        valid,
-        ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
-      static_assert(Traits::is_form<FormType>::value,
-                    "You need to construct this with a Form object!");
-    }
-
-    template <class Test, class Expr, FormKind kind_of_form>
-    Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>
-    operator+(const Form<Test, Expr, kind_of_form>& new_form) const
-    {
-      return Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>(new_form, *this);
-    }
-
-    template <class NewForm1, class NewForm2, typename... NewForms>
-    auto
-    operator+(const Forms<NewForm1, NewForm2, NewForms...>& new_forms) const
-    {
-      return Forms<NewForm1, FormType, Types...>(new_forms.get_form(), *this) +
-             Forms<NewForm2, NewForms...>(
-               static_cast<const Forms<NewForm2, NewForms...>&>(new_forms));
-    }
-
-    template <class NewForm>
-    auto
-    operator+(const Forms<NewForm>& new_forms) const
-    {
-      return Forms<NewForm, FormType, Types...>(new_forms.get_form(), *this);
     }
 
     static constexpr void
@@ -741,77 +523,9 @@ namespace dealii::MatrixFree
       return form;
     }
 
-    auto operator*(const double scalar) const
-    {
-      const typename std::remove_reference<decltype(*this)>::type newform(
-        form * scalar, Forms<Types...>::get_form() * scalar);
-      return newform;
-    }
-
-    auto
-    operator-() const
-    {
-      return (*this) * -1.;
-    }
-
-  protected:
-    template <unsigned int size, typename IntegrationFlags>
-    static /*constexpr*/ bool
-    check_forms(
-      std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
-        container = std::array<
-          std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
-    {
-      IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
-      const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
-
-      for (unsigned int i = number; i < size; ++i)
-      {
-        const auto& item = container.at(i);
-        if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
-            ((std::get<2>(item)) & integration_flags))
-          return false;
-      }
-
-      container[number - 1] = new_tuple;
-      return Forms<Types...>::template check_forms<size, IntegrationFlags>(container);
-    }
-
   private:
-    const /*static constexpr*/ bool valid =
-      check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>();
     const FormType form;
   };
-}
-
-namespace Traits
-{
-  template <class... Args>
-  struct is_multiplicable<dealii::MatrixFree::Forms<Args...>, double>
-  {
-    static const bool value = true;
-  };
-
-  template <class... Args>
-  struct is_multiplicable<dealii::MatrixFree::Form<Args...>, double>
-  {
-    static const bool value = true;
-  };
-}
-
-namespace dealii::MatrixFree
-{
-  template <class... Args>
-  auto operator*(double scalar, const Forms<Args...>& forms)
-  {
-    return forms * scalar;
-  }
-
-  template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
-  auto operator*(double scalar, const Form<Test, Expr, kind_of_form, NumberType>& form)
-  {
-    return form * scalar;
-  }
 
   template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
   auto

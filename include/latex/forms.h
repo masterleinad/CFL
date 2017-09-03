@@ -28,13 +28,10 @@ public:
       {
         case FormKind::cell:
           return R"(_\Omega)";
-          break;
         case FormKind::face:
           return R"(_F)";
-          break;
         case FormKind::boundary:
           return R"(_{\partial \Omega})";
-          break;
         default:
           Assert(false, ::dealii::ExcInternalError());
       }

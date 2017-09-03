@@ -38,7 +38,7 @@ struct TestDatafunctor
   run()
   {
     // TBD: Change to avoid duplication??
-    TestFunction<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_obj1;
+    Base::TestFunction<obj_comb[i].rank, obj_comb[i].dim, obj_comb[i].index> test_obj1;
     // Check basic state of object
     BOOST_TEST(test_obj1.index == obj_comb[i].index);
     BOOST_TEST(test_obj1.scalar_valued == obj_comb[i].scalar_valued);

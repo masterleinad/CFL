@@ -413,14 +413,14 @@ public:
         std::cout << "Read face DoF values " << fe_number << " " << interior << " " << exterior
                   << std::endl;
 #endif
-        if constexpr(interior == true)
+        if constexpr(interior)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
                 fe_data.fe_evaluation_interior->read_dof_values(vector.block(fe_number));
             else
               fe_data.fe_evaluation_interior->read_dof_values(vector);
           }
-        if constexpr(exterior == true)
+        if constexpr(exterior)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
                 fe_data.fe_evaluation_exterior->read_dof_values(vector.block(fe_number));
@@ -577,14 +577,14 @@ public:
         std::cout << "Distribute face DoF values " << fe_number << " " << interior << " "
                   << exterior << std::endl;
 #endif
-        if constexpr(interior == true) if (integrate_values | integrate_gradients)
+        if constexpr(interior) if (integrate_values | integrate_gradients)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
                 fe_data.fe_evaluation_interior->distribute_local_to_global(vector.block(fe_number));
             else
               fe_data.fe_evaluation_interior->distribute_local_to_global(vector);
           }
-        if constexpr(exterior == true) if (integrate_values_exterior | integrate_gradients_exterior)
+        if constexpr(exterior) if (integrate_values_exterior | integrate_gradients_exterior)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
                 fe_data.fe_evaluation_exterior->distribute_local_to_global(vector.block(fe_number));
@@ -662,9 +662,9 @@ public:
         Assert((fe_data.template evaluation_is_initialized<interior, exterior>()),
                ::dealii::ExcInternalError());
 
-        if constexpr(interior == true)
+        if constexpr(interior)
             fe_data.fe_evaluation_interior->evaluate(evaluate_values, evaluate_gradients);
-        if constexpr(exterior == true)
+        if constexpr(exterior)
             fe_data.fe_evaluation_exterior->evaluate(evaluate_values, evaluate_gradients);
       }
   }
@@ -1319,14 +1319,14 @@ public:
         std::cout << "Read face DoF values " << fe_number << " " << interior << " " << exterior
                   << std::endl;
 #endif
-        if constexpr(interior == true)
+        if constexpr(interior)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
                 fe_data.fe_evaluation_interior->read_dof_values(vector.block(fe_number));
             else
               fe_data.fe_evaluation_interior->read_dof_values(vector);
           }
-        if constexpr(exterior == true)
+        if constexpr(exterior)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
                 fe_data.fe_evaluation_exterior->read_dof_values(vector.block(fe_number));
@@ -1377,14 +1377,14 @@ public:
         std::cout << "Distribute face DoF values " << fe_number << " " << interior << " "
                   << exterior << std::endl;
 #endif
-        if constexpr(interior == true) if (integrate_values | integrate_gradients)
+        if constexpr(interior) if (integrate_values | integrate_gradients)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
                 fe_data.fe_evaluation_interior->distribute_local_to_global(vector.block(fe_number));
             else
               fe_data.fe_evaluation_interior->distribute_local_to_global(vector);
           }
-        if constexpr(exterior == true) if (integrate_values_exterior | integrate_gradients_exterior)
+        if constexpr(exterior) if (integrate_values_exterior | integrate_gradients_exterior)
           {
             if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
                 fe_data.fe_evaluation_exterior->distribute_local_to_global(vector.block(fe_number));
@@ -1423,9 +1423,9 @@ public:
         Assert((fe_data.template evaluation_is_initialized<interior, exterior>()),
                ::dealii::ExcInternalError());
 
-        if constexpr(interior == true)
+        if constexpr(interior)
             fe_data.fe_evaluation_interior->evaluate(evaluate_values, evaluate_gradients);
-        if constexpr(exterior == true)
+        if constexpr(exterior)
             fe_data.fe_evaluation_exterior->evaluate(evaluate_values, evaluate_gradients);
       }
 
