@@ -46,6 +46,8 @@ SET_PROPERTY(
 
 ADD_SUBDIRECTORY(applications)
 
+ADD_SUBDIRECTORY(doc)
+
 # Enable testing and descent into tests/ subdirectory:
 INCLUDE_DIRECTORIES(third_party/include) #for boost test
 ENABLE_TESTING()
