@@ -28,6 +28,26 @@ namespace dealii
    */
   namespace MeshWorker
   {
+    /**
+     * In MeshWorker, a test function space is characterized by the
+     * FEValues object it accesses and by the block in the result
+     * vector into which the data is written.
+     *
+     * This data is independent of whether we use the function itself
+     * or its derivatives. It is also independent of whether the space
+     * is scalar or vector valued.
+     *
+     * The class is just a simple wrapper, such that a struct seemed
+     * reasonable.
+     */
+    struct TestFunctionIdentifier
+    {
+      /// The number of the FEValues object in IntegrationInfo
+      unsigned int fe_index;
+      /// The block in the finite element system associated with these test functions
+      unsigned int block_index;
+    };
+
     template <int dim>
     class ScalarTestFunction;
     template <int dim>
@@ -90,9 +110,12 @@ namespace dealii
     template <int dim>
     class ScalarTestFunction
     {
-      /// Index of the dealii::FEValues object in IntegrationInfo
-      unsigned int index;
+      /// The constant index data used in local integration
+      TestFunctionIdentifier id;
 
+      /// Pointer to the DoFInfo object storing the result
+      mutable ::dealii::MeshWorker::DoFInfo<dim, dim> const* di;
+      /// Pointer to the IntegrationInfo object containing the local data
       mutable ::dealii::MeshWorker::IntegrationInfo<dim, dim> const* ii;
 
       friend class ScalarTestGradient<dim>;
@@ -101,15 +124,18 @@ namespace dealii
     public:
       typedef Traits::Tensor<0, dim> TensorTraits;
 
-      ScalarTestFunction(unsigned int index)
-        : index(index)
-        , ii(nullptr)
+      constexpr ScalarTestFunction(unsigned int fe_index, unsigned int block_index)
+        : id{ fe_index, block_index }
+        , di{ nullptr }
+        , ii{ nullptr }
       {
       }
 
       void
-      reinit(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
+      reinit(const ::dealii::MeshWorker::DoFInfo<dim, dim>& di,
+             const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
       {
+        (this)->di = &di;
         (this)->ii = &ii;
       }
 
@@ -117,7 +143,7 @@ namespace dealii
       evaluate(unsigned int quadrature_index, unsigned int test_function_index) const
       {
         Assert(ii != nullptr, ::dealii::ExcInternalError());
-        return ii->fe_values(index).shape_value(test_function_index, quadrature_index);
+        return ii->fe_values(id.fe_index).shape_value(test_function_index, quadrature_index);
       }
     };
 
@@ -136,16 +162,17 @@ namespace dealii
       }
 
       void
-      reinit(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
+      reinit(const ::dealii::MeshWorker::DoFInfo<dim, dim>& di,
+             const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
       {
-        base.reinit(ii);
+        base.reinit(di, ii);
       }
 
       double
       evaluate(unsigned int quadrature_index, unsigned int test_function_index, int comp) const
       {
         Assert(base.ii != nullptr, ::dealii::ExcInternalError());
-        return base.ii->fe_values(base.index)
+        return base.ii->fe_values(base.id.fe_index)
           .shape_grad(test_function_index, quadrature_index)[comp];
       }
     };
@@ -164,9 +191,10 @@ namespace dealii
       }
 
       void
-      reinit(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
+      reinit(const ::dealii::MeshWorker::DoFInfo<dim, dim>& di,
+             const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii) const
       {
-        base.reinit(ii);
+        base.reinit(di, ii);
       }
 
       double
@@ -174,7 +202,7 @@ namespace dealii
                int comp2) const
       {
         Assert(base.ii != nullptr, ::dealii::ExcInternalError());
-        return base.ii->fe_values(base.index)
+        return base.ii->fe_values(base.id.fe_index)
           .shape_hessian(test_function_index, quadrature_index)(comp1, comp2);
       }
     };
@@ -350,11 +378,13 @@ namespace dealii
 
     template <class TEST, class EXPR, FormKind kind_of_form>
     void
-    reinit(const Form<TEST, EXPR, kind_of_form>& form,
-           const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim,
-                                                       TEST::TensorTraits::dim>& ii)
+    reinit(
+      const Form<TEST, EXPR, kind_of_form>& form,
+      const ::dealii::MeshWorker::DoFInfo<TEST::TensorTraits::dim, TEST::TensorTraits::dim>& di,
+      const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim, TEST::TensorTraits::dim>&
+        ii)
     {
-      form.test.reinit(ii);
+      form.test.reinit(di, ii);
     }
 
     template <class T, int dim = T::TensorTraits::dim>

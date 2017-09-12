@@ -41,7 +41,7 @@ public:
   cell(MeshWorker::DoFInfo<dim>& dinfo, MeshWorker::IntegrationInfo<dim>& info) const override
   {
     anchor(form, info, *this);
-    reinit(form, info);
+    reinit(form, dinfo, info);
     for (unsigned int k = 0; k < info.fe_values(0).n_quadrature_points; ++k)
     {
       // std::cerr << '<' << &info

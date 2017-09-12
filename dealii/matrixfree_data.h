@@ -101,13 +101,15 @@ public:
   void
   resize_vector(VectorType& v) const
   {
-    if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+    if
+      constexpr(CFL::Traits::is_block_vector<VectorType>::value)
       {
         AssertDimension(v.n_blocks(), dh_ptr_vector.size());
         for (unsigned int i = 0; static_cast<size_t>(i) < v.n_blocks(); ++i)
         {
           mf->initialize_dof_vector(v.block(i), i);
-          if constexpr(
+          if
+            constexpr(
               std::is_same<
                 dealii::LinearAlgebra::distributed::BlockVector<typename VectorType::value_type>,
                 VectorType>::value) mf->initialize_dof_vector(v.block(i), i);
@@ -119,7 +121,8 @@ public:
     else
     {
       AssertDimension(dh_ptr_vector.size(), 1);
-      if constexpr(
+      if
+        constexpr(
           std::is_same<dealii::LinearAlgebra::distributed::Vector<typename VectorType::value_type>,
                        VectorType>::value) mf->initialize_dof_vector(v, 0);
       else
