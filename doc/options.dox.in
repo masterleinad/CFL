@@ -1,0 +1,34 @@
+# Doxyfile 1.7.6.1
+
+PROJECT_NAME           = "CFL"
+PROJECT_BRIEF           = "A C++ template language for operators in weak form"
+FULL_PATH_NAMES        = NO
+STRIP_FROM_PATH        = @DOXYGEN_STRIP_FROM_PATH@
+STRIP_FROM_INC_PATH    =
+BUILTIN_STL_SUPPORT    = YES
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_ANON_NSPACES   = YES
+
+
+EXTERNAL_GROUPS	       = NO
+EXTERNAL_PAGES	       = NO
+
+USE_MATHJAX            = YES
+MATHJAX_EXTENSIONS     = TeX/AMSmath TeX/AMSsymbols
+
+HAVE_DOT	       = YES
+DOT_IMAGE_FORMAT       = png  # svg causes problems on bitbucket
+INCLUDE_GRAPH	       = NO
+INCLUDED_BY_GRAPH      = NO
+CALL_GRAPH	       = YES
+
+GENERATE_LATEX	       = NO
+EXTRA_PACKAGES	       = amsmath
+
+INPUT                  = @DOXYGEN_INPUT@
+EXCLUDE		       = doc /usr/include
+RECURSIVE	       = YES
+
+UML_LOOK	       = NO
