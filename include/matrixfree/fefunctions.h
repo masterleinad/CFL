@@ -1407,7 +1407,7 @@ namespace dealii
       static constexpr unsigned int index = FEFunctionType::idx;
 
       template <class OtherFEFunctionType>
-      FELiftDivergence(const Base::FELiftDivergence<OtherFEFunctionType>& other_function)
+      explicit FELiftDivergence(const Base::FELiftDivergence<OtherFEFunctionType>& other_function)
         : fefunction(transform(other_function.get_fefunction()))
       {
       }

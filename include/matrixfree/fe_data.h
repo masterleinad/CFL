@@ -1200,8 +1200,7 @@ public:
   static constexpr unsigned int
   rank()
   {
-    if constexpr(fe_number == fe_number_extern)
-      return TensorTraits::rank;
+    if constexpr(fe_number == fe_number_extern) return TensorTraits::rank;
     else
       return Base::template rank<fe_number_extern>();
   }
@@ -1898,8 +1897,7 @@ public:
   unsigned int
   dofs_per_cell() const
   {
-    if constexpr(fe_number == fe_number_extern)
-      return fe_data.fe_evaluation->dofs_per_cell;
+    if constexpr(fe_number == fe_number_extern) return fe_data.fe_evaluation->dofs_per_cell;
     else
       return Base::template dofs_per_cell<fe_number_extern>();
   }
@@ -1918,8 +1916,7 @@ public:
   const auto&
   begin_dof_values() const
   {
-    if constexpr(fe_number == fe_number_extern)
-      return fe_data.fe_evaluation->begin_dof_values();
+    if constexpr(fe_number == fe_number_extern) return fe_data.fe_evaluation->begin_dof_values();
     else
       return Base::template begin_dof_values<fe_number_extern>();
   }

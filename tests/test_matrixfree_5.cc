@@ -37,6 +37,10 @@ prodfe_same_types()
   FEFuncType<rank, dim, idx4> fe_function4;
   FEFuncType<rank, dim, idx5> fe_function5;
 
+  CFL::Base::ProductFEFunctions<decltype(fe_function1)> prod0(fe_function1);
+  auto prod0a = prod0*2.;
+  auto prod0b = -prod0a;
+
   // multiplication of fefunction and prodfefunction amongst themselves
   auto prod1 = fe_function1 * fe_function2;
   auto prod2 = fe_function2 * fe_function1;

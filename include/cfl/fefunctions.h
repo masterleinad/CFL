@@ -993,8 +993,7 @@ namespace Base
     template <class OtherType>
     SumFEFunctions(const SumFEFunctions<OtherType>& f)
       : summand([&f]() {
-        if
-          constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
+        if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
             .get_summand()
             .scalar_factor;
         else
@@ -1114,8 +1113,7 @@ namespace Base
     SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
       : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f))
       , summand([&f]() {
-        if
-          constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
+        if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
             .get_summand()
             .scalar_factor;
         else
@@ -1427,7 +1425,7 @@ namespace Base
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
     static constexpr unsigned int n = 1;
 
-    explicit ProductFEFunctions(const FEFunction factor_)
+    explicit ProductFEFunctions(FEFunction factor_)
       : factor(std::move(factor_))
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
@@ -1445,8 +1443,13 @@ namespace Base
      * Operator overloading to multiply a ProductFEFunctions with an FEFunction
      *
      */
-    template <class NewFEFunction>
-    auto operator*(const NewFEFunction& new_factor) const
+    template <class NewFEFunction,
+              typename std::enable_if<
+                Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
+                  Traits::fe_function_set_type<NewFEFunction>::value ==
+                    Traits::fe_function_set_type<FEFunction>::value,
+                ProductFEFunctions<NewFEFunction, FEFunction>>::type* unused = nullptr>
+    ProductFEFunctions<NewFEFunction, FEFunction> operator*(const NewFEFunction& new_factor) const
     {
       static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
                     "Only FEFunction objects can be added!");
@@ -1489,6 +1492,18 @@ namespace Base
       return factor;
     }
 
+    // prodfefunc * number
+    /**
+     * Multiply all components of ProductFEFunctions with a scalar factor
+     *
+     */
+    template <typename Number,
+              typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr>
+    auto operator*(const Number scalar_factor) const
+    {
+      return ProductFEFunctions<FEFunction>(factor * scalar_factor);
+    }
+
     /**
      * Unary minus operator overloading to get -ProductFEFunctions
      *
@@ -1496,17 +1511,7 @@ namespace Base
     ProductFEFunctions<FEFunction>
     operator-() const
     {
-      // create a copy
-      ProductFEFunctions<FEFunction> copy_this(*this);
-      copy_this.multiply_by_scalar(-1.);
-      return copy_this;
-    }
-
-    template <typename Number>
-    std::enable_if_t<std::is_arithmetic<Number>::value>
-    multiply_by_scalar(const Number scalar)
-    {
-      factor.scalar_factor *= scalar;
+      return (*this)*-1.;
     }
 
   private:
@@ -1609,10 +1614,7 @@ namespace Base
     ProductFEFunctions<FEFunction, Types...>
     operator-() const
     {
-      // create a copy
-      ProductFEFunctions<FEFunction, Types...> copy_this(*this);
-      copy_this.multiply_by_scalar(-1.);
-      return copy_this;
+      return (*this) * -1.;
     }
 
     // prodfefunc * number
@@ -1624,20 +1626,8 @@ namespace Base
               typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr>
     auto operator*(const Number scalar_factor) const
     {
-      ProductFEFunctions<FEFunction, Types...> tmp = *this;
-      tmp.multiply_by_scalar(scalar_factor);
-      return tmp;
-    }
-
-    /**
-     * Multiply only the component held by this ProductFEFunctions with a scalar factor
-     *
-     */
-    template <typename Number>
-    std::enable_if_t<std::is_arithmetic<Number>::value>
-    multiply_by_scalar(const Number scalar)
-    {
-      factor.scalar_factor *= scalar;
+      return ProductFEFunctions<FEFunction, Types...>(
+        factor * scalar_factor, static_cast<ProductFEFunctions<Types...>>(*this));
     }
 
     // prodfefunc * prodfefunc
