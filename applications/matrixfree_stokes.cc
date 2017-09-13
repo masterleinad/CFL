@@ -176,9 +176,9 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   Base::SumFEFunctions<decltype(u4), decltype(u3)> sum2 = u3 + u4;
   Base::SumFEFunctions<decltype(u3), decltype(u4), decltype(u2), decltype(u1)> sum3 = sum1 + sum2;
 
-  (void) sum1;
-  (void) sum2;
-  (void) sum3;
+  (void)sum1;
+  (void)sum2;
+  (void)sum3;
 
   auto Dv = grad(v);
   //  TestSymmetricGradient<2,dim,0> Dv;

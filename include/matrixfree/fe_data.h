@@ -165,10 +165,10 @@ private:
 namespace CFL::Traits
 {
 /**
-* @brief Trait to determine if a given type is CFL FEData
-* @todo Should be moved to dealii_matrixfree.h?
-*
-*/
+ * @brief Trait to determine if a given type is CFL FEData
+ * @todo Should be moved to dealii_matrixfree.h?
+ *
+ */
 template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_degree, typename Number>
 struct is_fe_data<CFL::dealii::MatrixFree::FEData<FiniteElementType, fe_degree, n_components, dim,
@@ -178,10 +178,10 @@ struct is_fe_data<CFL::dealii::MatrixFree::FEData<FiniteElementType, fe_degree, 
 };
 
 /**
-        * @brief Trait to determine if a given type is CFL FEDataFace
-        * @todo Should be moved to dealii_matrixfree.h?
-        *
-        */
+ * @brief Trait to determine if a given type is CFL FEDataFace
+ * @todo Should be moved to dealii_matrixfree.h?
+ *
+ */
 template <template <int, int> class FiniteElementType, int fe_degree, int n_components, int dim,
           unsigned int fe_no, unsigned int max_degree, typename Number>
 struct is_fe_data_face<CFL::dealii::MatrixFree::FEDataFace<
@@ -290,9 +290,9 @@ public:
   }
 
   /**
-     * Returns the rank of the FEData object stored in this collection
-     *
-  */
+   * Returns the rank of the FEData object stored in this collection
+   *
+   */
   template <unsigned int fe_number_extern>
   static constexpr bool
   rank()
@@ -302,10 +302,10 @@ public:
   }
 
   /**
-     * Comma operator to append another item to this collection in a
-     * static manner
-     *
-  */
+   * Comma operator to append another item to this collection in a
+   * static manner
+   *
+   */
   template <class NewFEData>
   FEDatas<NewFEData, FEData>
   operator,(const NewFEData& new_fe_data) const
@@ -319,9 +319,9 @@ public:
   }
 
   /**
-     * Wrapper around reinit function of FEEvaluation used for cell
-     *
-  */
+   * Wrapper around reinit function of FEEvaluation used for cell
+   *
+   */
   template <typename Cell>
   void
   reinit(const Cell& cell)
@@ -337,9 +337,9 @@ public:
   }
 
   /**
-     * Wrapper around reinit function of FEEvaluation used for faces
-     *
-  */
+   * Wrapper around reinit function of FEEvaluation used for faces
+   *
+   */
   template <typename Face>
   void
   reinit_face(const Face& face)
@@ -356,9 +356,9 @@ public:
   }
 
   /**
-     * Wrapper around reinit function of FEEvaluation used for exterior face
-     *
-  */
+   * Wrapper around reinit function of FEEvaluation used for exterior face
+   *
+   */
   template <typename Face>
   void
   reinit_boundary(const Face& face)
@@ -376,9 +376,9 @@ public:
   }
 
   /**
-     * Wrapper around read_dof_values function of FEEvaluation used for cell
-     *
-  */
+   * Wrapper around read_dof_values function of FEEvaluation used for cell
+   *
+   */
   template <typename VectorType>
   void
   read_dof_values(const VectorType& vector)
@@ -398,9 +398,9 @@ public:
   }
 
   /**
-     * Wrapper around read_dof_values function of FEEvaluation used for face
-     *
-  */
+   * Wrapper around read_dof_values function of FEEvaluation used for face
+   *
+   */
   template <typename VectorType, bool interior = true, bool exterior = true>
   void
   read_dof_values_face(const VectorType& vector)
@@ -431,9 +431,9 @@ public:
   }
 
   /**
-     * Saves the integration flags on cell used later for MatrixFree evaluation
-     *
-  */
+   * Saves the integration flags on cell used later for MatrixFree evaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   void
   set_integration_flags(bool integrate_value, bool integrate_gradient)
@@ -451,9 +451,9 @@ public:
   }
 
   /**
-     * Clears the integration flags
-     *
-  */
+   * Clears the integration flags
+   *
+   */
   void
   reset_integration_flags_face_and_boundary()
   {
@@ -467,9 +467,9 @@ public:
   }
 
   /**
-     * Saves the integration flags on faces used later for MatrixFree evaluation
-     *
-  */
+   * Saves the integration flags on faces used later for MatrixFree evaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   void
   set_integration_flags_face_and_boundary(bool integrate_value, bool integrate_value_exterior,
@@ -494,9 +494,9 @@ public:
   }
 
   /**
-     * Saves the integration flags on cell used later for MatrixFree evaluation
-     *
-  */
+   * Saves the integration flags on cell used later for MatrixFree evaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   void
   set_evaluation_flags(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
@@ -517,9 +517,9 @@ public:
   }
 
   /**
-     * Saves the integration flags on faces used later for MatrixFree evaluation
-     *
-  */
+   * Saves the integration flags on faces used later for MatrixFree evaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   void
   set_evaluation_flags_face(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
@@ -540,9 +540,9 @@ public:
   }
 
   /**
-     * Wrapper around distribute_local_to_global function of FEEvaluation used for cell
-     *
-  */
+   * Wrapper around distribute_local_to_global function of FEEvaluation used for cell
+   *
+   */
   template <typename VectorType>
   void
   distribute_local_to_global(VectorType& vector)
@@ -561,9 +561,9 @@ public:
   }
 
   /**
-     * Wrapper around distribute_local_to_global function of FEEvaluation used for faces
-     *
-  */
+   * Wrapper around distribute_local_to_global function of FEEvaluation used for faces
+   *
+   */
   template <typename VectorType, bool interior = true, bool exterior = true>
   void
   distribute_local_to_global_face(VectorType& vector)
@@ -595,9 +595,9 @@ public:
   }
 
   /**
-     * Initializes the FEData object with appropriate FEEvaluation object
-     *
-  */
+   * Initializes the FEData object with appropriate FEEvaluation object
+   *
+   */
   template <int dim, typename OtherNumber>
   void
   initialize(const ::dealii::MatrixFree<dim, OtherNumber>& mf)
@@ -627,9 +627,9 @@ public:
   }
 
   /**
-     * Wrapper around evaluate function of FEEvaluation used for cell
-     *
-  */
+   * Wrapper around evaluate function of FEEvaluation used for cell
+   *
+   */
   void
   evaluate()
   {
@@ -646,9 +646,9 @@ public:
   }
 
   /**
-     * Wrapper around evaluate function of FEEvaluation used for faces
-     *
-  */
+   * Wrapper around evaluate function of FEEvaluation used for faces
+   *
+   */
   template <bool interior = true, bool exterior = true>
   void
   evaluate_face()
@@ -670,9 +670,9 @@ public:
   }
 
   /**
-     * Wrapper around static_n_q_points of FEEvaluation used for cell
-     *
-  */
+   * Wrapper around static_n_q_points of FEEvaluation used for cell
+   *
+   */
   template <unsigned int fe_number_extern = fe_number>
   static constexpr unsigned int
   get_n_q_points()
@@ -683,9 +683,9 @@ public:
   }
 
   /**
-     * Wrapper around static_n_q_points of FEEvaluation used for faces
-     *
-  */
+   * Wrapper around static_n_q_points of FEEvaluation used for faces
+   *
+   */
   template <unsigned int fe_number_extern = fe_number>
   static constexpr unsigned int
   get_n_q_points_face()
@@ -696,9 +696,9 @@ public:
   }
 
   /**
-     * Wrapper around get_gradient function of FEEvaluation
-     *
-  */
+   * Wrapper around get_gradient function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   auto
   get_gradient(unsigned int q) const
@@ -711,9 +711,9 @@ public:
   }
 
   /**
-     * Wrapper around get_normal_gradient function of FEEvaluation
-     *
-  */
+   * Wrapper around get_normal_gradient function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern, bool interior>
   auto
   get_normal_gradient(unsigned int q) const
@@ -728,9 +728,9 @@ public:
   }
 
   /**
-     * Wrapper around get_symmetric_gradient function of FEEvaluation
-     *
-  */
+   * Wrapper around get_symmetric_gradient function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   auto
   get_symmetric_gradient(unsigned int q) const
@@ -743,9 +743,9 @@ public:
   }
 
   /**
-     * Wrapper around get_divergence function of FEEvaluation
-     *
-  */
+   * Wrapper around get_divergence function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   auto
   get_divergence(unsigned int q) const
@@ -758,9 +758,9 @@ public:
   }
 
   /**
-     * Wrapper around get_laplacian function of FEEvaluation
-     *
-  */
+   * Wrapper around get_laplacian function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   auto
   get_laplacian(unsigned int q) const
@@ -773,9 +773,9 @@ public:
   }
 
   /**
-     * Wrapper around get_hessian_diagonal function of FEEvaluation
-     *
-  */
+   * Wrapper around get_hessian_diagonal function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   auto
   get_hessian_diagonal(unsigned int q) const
@@ -788,9 +788,9 @@ public:
   }
 
   /**
-     * Wrapper around get_hessian function of FEEvaluation
-     *
-  */
+   * Wrapper around get_hessian function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   auto
   get_hessian(unsigned int q) const
@@ -803,9 +803,9 @@ public:
   }
 
   /**
-     * Wrapper around get_value function of FEEvaluation used for cell
-     *
-  */
+   * Wrapper around get_value function of FEEvaluation used for cell
+   *
+   */
   template <unsigned int fe_number_extern>
   auto
   get_value(unsigned int q) const
@@ -822,9 +822,9 @@ public:
   }
 
   /**
-     * Wrapper around get_value function of FEEvaluation used for faces
-     *
-  */
+   * Wrapper around get_value function of FEEvaluation used for faces
+   *
+   */
   template <unsigned int fe_number_extern, bool interior>
   auto
   get_face_value(unsigned int q) const
@@ -854,9 +854,9 @@ public:
   }
 
   /**
-     * Wrapper around submit_gradient function of FEEvaluation
-     *
-  */
+   * Wrapper around submit_gradient function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_gradient(const ValueType& value, unsigned int q)
@@ -871,9 +871,9 @@ public:
   }
 
   /**
-     * Wrapper around submit_curl function of FEEvaluation
-     *
-  */
+   * Wrapper around submit_curl function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_curl(const ValueType& value, unsigned int q)
@@ -891,9 +891,9 @@ public:
   }
 
   /**
-     * Wrapper around submit_divergence function of FEEvaluation
-     *
-  */
+   * Wrapper around submit_divergence function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_divergence(const ValueType& value, unsigned int q)
@@ -911,9 +911,9 @@ public:
   }
 
   /**
-     * Wrapper around submit_symmetric_gradient function of FEEvaluation
-     *
-  */
+   * Wrapper around submit_symmetric_gradient function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_symmetric_gradient(const ValueType& value, unsigned int q)
@@ -931,9 +931,9 @@ public:
   }
 
   /**
-     * Wrapper around submit_value function of FEEvaluation used for cell
-     *
-  */
+   * Wrapper around submit_value function of FEEvaluation used for cell
+   *
+   */
   template <unsigned int fe_number_extern, typename ValueType>
   void
   submit_value(const ValueType& value, unsigned int q)
@@ -948,9 +948,9 @@ public:
   }
 
   /**
-     * Wrapper around submit_value function of FEEvaluation used for faces
-     *
-  */
+   * Wrapper around submit_value function of FEEvaluation used for faces
+   *
+   */
   template <unsigned int fe_number_extern, bool interior, typename ValueType>
   void
   submit_face_value(const ValueType& value, unsigned int q)
@@ -967,9 +967,9 @@ public:
   }
 
   /**
-     * Wrapper around submit_normal_gradient function of FEEvaluation
-     *
-  */
+   * Wrapper around submit_normal_gradient function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern, bool interior, typename ValueType>
   void
   submit_normal_gradient(const ValueType& value, unsigned int q)
@@ -986,9 +986,9 @@ public:
   }
 
   /**
-     * Wrapper around integrate function of FEEvaluation used for cell
-     *
-  */
+   * Wrapper around integrate function of FEEvaluation used for cell
+   *
+   */
   void
   integrate()
   {
@@ -1006,9 +1006,9 @@ public:
   }
 
   /**
-     * Wrapper around integrate function of FEEvaluation used for faces
-     *
-  */
+   * Wrapper around integrate function of FEEvaluation used for faces
+   *
+   */
   void
   integrate_face()
   {
@@ -1036,9 +1036,9 @@ public:
   }
 
   /**
-     * Returns the FEData object with given fe_number
-     *
-  */
+   * Returns the FEData object with given fe_number
+   *
+   */
   template <unsigned int fe_number_extern>
   const auto&
   get_fe_data() const
@@ -1050,9 +1050,9 @@ public:
   }
 
   /**
-     * Returns the FEData object with given fe_number
-     *
-  */
+   * Returns the FEData object with given fe_number
+   *
+   */
   template <unsigned int fe_number_extern>
   const auto&
   get_fe_data_face() const
@@ -1064,9 +1064,9 @@ public:
   }
 
   /**
-     * Returns the FEData object held with this class
-     *
-  */
+   * Returns the FEData object held with this class
+   *
+   */
   auto
   get_fe_datas() const
   {
@@ -1074,9 +1074,9 @@ public:
   }
 
   /**
-     * Wrapper around dofs_per_cell function of FEEvaluation
-     *
-  */
+   * Wrapper around dofs_per_cell function of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   unsigned int
   dofs_per_cell() const
@@ -1086,9 +1086,9 @@ public:
   }
 
   /**
-     * Wrapper around tensor_dofs_per_cell of FEEvaluation
-     *
-  */
+   * Wrapper around tensor_dofs_per_cell of FEEvaluation
+   *
+   */
   template <unsigned int fe_number_extern>
   static constexpr unsigned int
   tensor_dofs_per_cell()
@@ -1098,8 +1098,8 @@ public:
   }
 
   /**
-      * Wrapper around begin_dof_values function of FEEvaluation
-      *
+   * Wrapper around begin_dof_values function of FEEvaluation
+   *
    */
   template <unsigned int fe_number_extern>
   auto
@@ -1113,8 +1113,8 @@ protected:
   FEData fe_data;
 
   /**
-      * Ensures uniqueness of FEData objects added to the container
-      *
+   * Ensures uniqueness of FEData objects added to the container
+   *
    */
   template <unsigned int fe_number_extern>
   void
@@ -1125,8 +1125,8 @@ protected:
   }
 
   /**
-      * Ensures uniqueness of FEData objects added to the container
-      *
+   * Ensures uniqueness of FEData objects added to the container
+   *
    */
   template <unsigned int fe_number_extern>
   void
@@ -1148,10 +1148,10 @@ private:
 };
 
 /**
-* @brief Class to provide FEEvaluation services in the scope of CFL
-* This is for variadic template definition of the FEDatas class.
-* Please refer to the documentation of the previous class
-*/
+ * @brief Class to provide FEEvaluation services in the scope of CFL
+ * This is for variadic template definition of the FEDatas class.
+ * Please refer to the documentation of the previous class
+ */
 template <class FEData, typename... Types>
 class FEDatas<FEData, Types...> : public FEDatas<Types...>
 {
@@ -1200,7 +1200,8 @@ public:
   static constexpr unsigned int
   rank()
   {
-    if constexpr(fe_number == fe_number_extern) { return TensorTraits::rank; }
+    if constexpr(fe_number == fe_number_extern)
+      return TensorTraits::rank;
     else
       return Base::template rank<fe_number_extern>();
   }
@@ -1897,7 +1898,8 @@ public:
   unsigned int
   dofs_per_cell() const
   {
-    if constexpr(fe_number == fe_number_extern) { return fe_data.fe_evaluation->dofs_per_cell; }
+    if constexpr(fe_number == fe_number_extern)
+      return fe_data.fe_evaluation->dofs_per_cell;
     else
       return Base::template dofs_per_cell<fe_number_extern>();
   }
@@ -1916,7 +1918,8 @@ public:
   const auto&
   begin_dof_values() const
   {
-    if constexpr(fe_number == fe_number_extern) { return fe_data.fe_evaluation->begin_dof_values(); }
+    if constexpr(fe_number == fe_number_extern)
+      return fe_data.fe_evaluation->begin_dof_values();
     else
       return Base::template begin_dof_values<fe_number_extern>();
   }
@@ -1988,9 +1991,9 @@ private:
 };
 
 /**
-* Operator overloading function to allow appending FEData to FEDatas
-* \relates FEDatas
-*/
+ * Operator overloading function to allow appending FEData to FEDatas
+ * \relates FEDatas
+ */
 template <class FEData, typename... Types>
 typename std::enable_if_t<CFL::Traits::is_fe_data<FEData>::value ||
                             CFL::Traits::is_fe_data_face<FEData>::value,
@@ -2001,10 +2004,10 @@ operator,(const FEData& new_fe_data, const FEDatas<Types...>& old_fe_data)
 }
 
 /**
-* Operator overloading function to allow appending two FEData to form
-* a new container FEDatas
-* \relates FEDatas
-*/
+ * Operator overloading function to allow appending two FEData to form
+ * a new container FEDatas
+ * \relates FEDatas
+ */
 template <class FEData1, class FEData2>
 std::enable_if_t<CFL::Traits::is_fe_data<FEData1>::value ||
                    CFL::Traits::is_fe_data_face<FEData1>::value,

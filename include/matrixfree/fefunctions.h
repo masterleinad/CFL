@@ -34,10 +34,6 @@ namespace dealii::MatrixFree
   template <class Derived>
   class FEFunctionFaceBase;
 
-  template <typename... Types>
-  class SumFEFunctions;
-  template <typename... Types>
-  class ProductFEFunctions;
   template <class FEFunctionType>
   class FELiftDivergence;
 } // namespace MatrixFree
@@ -45,12 +41,12 @@ namespace dealii::MatrixFree
 namespace Traits
 {
   /**
-  * @brief Indicator for type of Block Vector
-  *
-  * This trait is used to determine if the given type is dealII's parallel
-  * distributed vector
-  *
-  */
+   * @brief Indicator for type of Block Vector
+   *
+   * This trait is used to determine if the given type is dealII's parallel
+   * distributed vector
+   *
+   */
   template <typename Number>
   struct is_block_vector<::dealii::LinearAlgebra::distributed::BlockVector<Number>>
   {
@@ -58,11 +54,11 @@ namespace Traits
   };
 
   /**
-  * @brief Indicator for type of Block Vector
-  * This trait is used to determine if the given type is block vector based on
-  * dealII's block vector
-  *
-  */
+   * @brief Indicator for type of Block Vector
+   * This trait is used to determine if the given type is block vector based on
+   * dealII's block vector
+   *
+   */
   template <typename Number>
   struct is_block_vector<::dealii::BlockVector<Number>>
   {
@@ -70,15 +66,15 @@ namespace Traits
   };
 
   /**
-  * @brief Indicator for compatibility of objects of Tensor and SymmetricTensor
-  *
-  * A trait to determine that a general dealii Tensor and dealii
-  * symmetric tensor are of equal dimension, rank and Number so that
-  * they can be compatibly used in an expression
-  *
-  * @note Currently unused
-  *
-  */
+   * @brief Indicator for compatibility of objects of Tensor and SymmetricTensor
+   *
+   * A trait to determine that a general dealii Tensor and dealii
+   * symmetric tensor are of equal dimension, rank and Number so that
+   * they can be compatibly used in an expression
+   *
+   * @note Currently unused
+   *
+   */
   template <int dim, int rank, typename Number>
   struct is_compatible<::dealii::Tensor<rank, dim, Number>,
                        ::dealii::SymmetricTensor<rank, dim, Number>>
@@ -87,14 +83,14 @@ namespace Traits
   };
 
   /**
-  * @brief Indicator for compatibility of objects of Tensor and SymmetricTensor
-  * A trait to determine that a general dealii Tensor and dealii
-  * symmetric tensor are of equal dimension, rank and Number so that
-  * they can be compatibly used in an expression
-  *
-  * @note Currently unused
-  *
-  */
+   * @brief Indicator for compatibility of objects of Tensor and SymmetricTensor
+   * A trait to determine that a general dealii Tensor and dealii
+   * symmetric tensor are of equal dimension, rank and Number so that
+   * they can be compatibly used in an expression
+   *
+   * @note Currently unused
+   *
+   */
   template <int dim, int rank, typename Number>
   struct is_compatible<::dealii::SymmetricTensor<rank, dim, Number>,
                        ::dealii::Tensor<rank, dim, Number>>
@@ -103,21 +99,11 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to determine if a given type is CFL SumFEFunctions
-  *
-  */
-  template <typename... Types>
-  struct is_cfl_object<dealii::MatrixFree::SumFEFunctions<Types...>>
-  {
-    static const bool value = true;
-  };
-
-  /**
-  * @brief Trait to determine if a given type is CFL object
-  *
-  * Trait to determine if a given type is derived from CFL \ref TestFunctionBaseBase
-  *
-  */
+   * @brief Trait to determine if a given type is CFL object
+   *
+   * Trait to determine if a given type is derived from CFL \ref TestFunctionBaseBase
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct is_cfl_object<
     T<rank, dim, idx>,
@@ -155,12 +141,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as cell for a test function
-  *
-  * This trait is used to check if the given test function is derived from CFL
-  * \ref TestFunctionBase and marks its \ref ObjectType as cell
-  *
-  */
+   * @brief Trait to store measure region as cell for a test function
+   *
+   * This trait is used to check if the given test function is derived from CFL
+   * \ref TestFunctionBase and marks its \ref ObjectType as cell
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct test_function_set_type<
     T<rank, dim, idx>,
@@ -171,12 +157,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as face for a test function
-  *
-  * This trait is used to check if the given test function is derived from CFL
-  * \ref TestFunctionFaceBase and marks its \ref ObjectType as face
-  *
-  */
+   * @brief Trait to store measure region as face for a test function
+   *
+   * This trait is used to check if the given test function is derived from CFL
+   * \ref TestFunctionFaceBase and marks its \ref ObjectType as face
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct test_function_set_type<
     T<rank, dim, idx>,
@@ -187,12 +173,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as cell for a \ref FELiftDivergence function
-  *
-  * This trait is used to check if the given FE function is of type CFL
-  * \ref FELiftDivergence and marks its \ref ObjectType as cell
-  *
-  */
+   * @brief Trait to store measure region as cell for a \ref FELiftDivergence function
+   *
+   * This trait is used to check if the given FE function is of type CFL
+   * \ref FELiftDivergence and marks its \ref ObjectType as cell
+   *
+   */
   template <class FEFunctionType>
   struct fe_function_set_type<dealii::MatrixFree::FELiftDivergence<FEFunctionType>>
   {
@@ -200,12 +186,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as cell type for a FE function
-  *
-  * This trait is used to check if the given FE function is derived from CFL
-  * \ref FEFunctionBase and marks its \ref ObjectType as cell
-  *
-  */
+   * @brief Trait to store measure region as cell type for a FE function
+   *
+   * This trait is used to check if the given FE function is derived from CFL
+   * \ref FEFunctionBase and marks its \ref ObjectType as cell
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct fe_function_set_type<
     T<rank, dim, idx>,
@@ -216,12 +202,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as face for a FE function
-  *
-  * This trait is used to check if the given FE function is derived from CFL
-  * \ref FEFunctionFaceBase and marks its \ref ObjectType as face
-  *
-  */
+   * @brief Trait to store measure region as face for a FE function
+   *
+   * This trait is used to check if the given FE function is derived from CFL
+   * \ref FEFunctionFaceBase and marks its \ref ObjectType as face
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct fe_function_set_type<
     T<rank, dim, idx>,
@@ -230,52 +216,6 @@ namespace Traits
   {
     static const ObjectType value = ObjectType::face;
   };
-
-  /**
-  * @brief Trait to store measure region as face for a \ref SumFEFunctions function
-  *
-  * This trait is used to mark the \ref ObjectType of an object of type CFL
-  * \ref SumFEFunctions as the measure region of its first constituting element
-  *
-  */
-  template <class FirstType, typename... Types>
-  struct fe_function_set_type<dealii::MatrixFree::SumFEFunctions<FirstType, Types...>>
-  {
-    static const ObjectType value = fe_function_set_type<FirstType>::value;
-  };
-
-  /**
-  * @brief Trait to store measure region as face for a \ref ProductFEFunctions function
-  *
-  * This trait is used to mark the \ref ObjectType of an object of type CFL
-  * \ref ProductFEFunctions as the measure region of its first constituting element
-  *
-  */
-  template <class FirstType, typename... Types>
-  struct fe_function_set_type<dealii::MatrixFree::ProductFEFunctions<FirstType, Types...>>
-  {
-    static const ObjectType value = fe_function_set_type<FirstType>::value;
-  };
-
-  /**
-  * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
-  *
-  */
-  template <typename... Types>
-  struct is_fe_function_product<dealii::MatrixFree::ProductFEFunctions<Types...>>
-  {
-    static const bool value = true;
-  };
-
-  /**
-  * @brief Determine if a given object is of type CFL \ref SumFEFunctions
-  *
-  */
-  template <typename... Types>
-  struct is_fe_function_sum<dealii::MatrixFree::SumFEFunctions<Types...>>
-  {
-    static const bool value = true;
-  };
 } // namespace Traits
 
 namespace dealii
@@ -283,10 +223,10 @@ namespace dealii
   namespace MatrixFree
   {
     /**
-    * @brief TBD
-    * \todo Add details
-    *
-    */
+     * @brief TBD
+     * \todo Add details
+     *
+     */
     struct IntegrationFlags
     {
       bool value = false;

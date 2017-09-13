@@ -41,9 +41,9 @@ namespace Base
 namespace Traits
 {
   /**
-  * @brief Trait to determine if a given type is CFL SumFEFunctions
-  *
-  */
+   * @brief Trait to determine if a given type is CFL SumFEFunctions
+   *
+   */
   template <typename... Types>
   struct is_cfl_object<Base::SumFEFunctions<Types...>>
   {
@@ -51,11 +51,11 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to determine if a given type is CFL object
-  *
-  * Trait to determine if a given type is derived from CFL \ref TestFunctionBaseBase
-  *
-  */
+   * @brief Trait to determine if a given type is CFL object
+   *
+   * Trait to determine if a given type is derived from CFL \ref TestFunctionBaseBase
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct is_cfl_object<T<rank, dim, idx>,
                        std::enable_if_t<std::is_base_of<
@@ -91,12 +91,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to determine if two FE functions can be summed together
-  *
-  * This trait is used to check if two FE functions are of same type. i.e.
-  * (cell/face) \ref ObjectType so that they can be summed together
-  *
-  */
+   * @brief Trait to determine if two FE functions can be summed together
+   *
+   * This trait is used to check if two FE functions are of same type. i.e.
+   * (cell/face) \ref ObjectType so that they can be summed together
+   *
+   */
   template <typename A, typename B>
   struct is_summable<
     A, B,
@@ -107,12 +107,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to determine if two FE functions can be multiplied together
-  *
-  * This trait is used to check if two FE functions are of same type. i.e.
-  * (cell/face) \ref ObjectType so that they can be multiplied together
-  *
-  */
+   * @brief Trait to determine if two FE functions can be multiplied together
+   *
+   * This trait is used to check if two FE functions are of same type. i.e.
+   * (cell/face) \ref ObjectType so that they can be multiplied together
+   *
+   */
   template <typename A, typename B>
   struct is_multiplicable<
     A, B,
@@ -123,12 +123,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to determine if a given constant can be multipled with FE function
-  *
-  * This trait is used to check if a given constant type is arithmetic so that
-  * it can be multiplied with FE function
-  *
-  */
+   * @brief Trait to determine if a given constant can be multipled with FE function
+   *
+   * This trait is used to check if a given constant type is arithmetic so that
+   * it can be multiplied with FE function
+   *
+   */
   template <typename A, typename B>
   struct is_multiplicable<
     A, B, typename std::enable_if_t<std::is_arithmetic<A>() &&
@@ -138,12 +138,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to determine if a given constant can be multipled with FE function
-  *
-  * This trait is used to check if a given constant type is arithmetic so that
-  * it can be multiplied with FE function
-  *
-  */
+   * @brief Trait to determine if a given constant can be multipled with FE function
+   *
+   * This trait is used to check if a given constant type is arithmetic so that
+   * it can be multiplied with FE function
+   *
+   */
   template <typename A, typename B>
   struct is_multiplicable<
     A, B, typename std::enable_if_t<fe_function_set_type<A>::value != ObjectType::none &&
@@ -153,12 +153,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as cell for a test function
-  *
-  * This trait is used to check if the given test function is derived from CFL
-  * \ref TestFunctionBase and marks its \ref ObjectType as cell
-  *
-  */
+   * @brief Trait to store measure region as cell for a test function
+   *
+   * This trait is used to check if the given test function is derived from CFL
+   * \ref TestFunctionBase and marks its \ref ObjectType as cell
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct test_function_set_type<
     T<rank, dim, idx>, std::enable_if_t<std::is_base_of<Base::TestFunctionBase<T<rank, dim, idx>>,
@@ -168,12 +168,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as face for a test function
-  *
-  * This trait is used to check if the given test function is derived from CFL
-  * \ref TestFunctionFaceBase and marks its \ref ObjectType as face
-  *
-  */
+   * @brief Trait to store measure region as face for a test function
+   *
+   * This trait is used to check if the given test function is derived from CFL
+   * \ref TestFunctionFaceBase and marks its \ref ObjectType as face
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct test_function_set_type<
     T<rank, dim, idx>, std::enable_if_t<std::is_base_of<
@@ -183,12 +183,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as cell for a \ref FELiftDivergence function
-  *
-  * This trait is used to check if the given FE function is of type CFL
-  * \ref FELiftDivergence and marks its \ref ObjectType as cell
-  *
-  */
+   * @brief Trait to store measure region as cell for a \ref FELiftDivergence function
+   *
+   * This trait is used to check if the given FE function is of type CFL
+   * \ref FELiftDivergence and marks its \ref ObjectType as cell
+   *
+   */
   template <class FEFunctionType>
   struct fe_function_set_type<Base::FELiftDivergence<FEFunctionType>>
   {
@@ -196,12 +196,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as cell type for a FE function
-  *
-  * This trait is used to check if the given FE function is derived from CFL
-  * \ref FEFunctionBase and marks its \ref ObjectType as cell
-  *
-  */
+   * @brief Trait to store measure region as cell type for a FE function
+   *
+   * This trait is used to check if the given FE function is derived from CFL
+   * \ref FEFunctionBase and marks its \ref ObjectType as cell
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct fe_function_set_type<
     T<rank, dim, idx>, std::enable_if_t<std::is_base_of<Base::FEFunctionBase<T<rank, dim, idx>>,
@@ -211,12 +211,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as face for a FE function
-  *
-  * This trait is used to check if the given FE function is derived from CFL
-  * \ref FEFunctionFaceBase and marks its \ref ObjectType as face
-  *
-  */
+   * @brief Trait to store measure region as face for a FE function
+   *
+   * This trait is used to check if the given FE function is derived from CFL
+   * \ref FEFunctionFaceBase and marks its \ref ObjectType as face
+   *
+   */
   template <template <int, int, unsigned int> class T, int rank, int dim, unsigned int idx>
   struct fe_function_set_type<
     T<rank, dim, idx>, std::enable_if_t<std::is_base_of<Base::FEFunctionFaceBase<T<rank, dim, idx>>,
@@ -226,12 +226,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as face for a \ref SumFEFunctions function
-  *
-  * This trait is used to mark the \ref ObjectType of an object of type CFL
-  * \ref SumFEFunctions as the measure region of its first constituting element
-  *
-  */
+   * @brief Trait to store measure region as face for a \ref SumFEFunctions function
+   *
+   * This trait is used to mark the \ref ObjectType of an object of type CFL
+   * \ref SumFEFunctions as the measure region of its first constituting element
+   *
+   */
   template <class FirstType, typename... Types>
   struct fe_function_set_type<Base::SumFEFunctions<FirstType, Types...>>
   {
@@ -239,12 +239,12 @@ namespace Traits
   };
 
   /**
-  * @brief Trait to store measure region as face for a \ref ProductFEFunctions function
-  *
-  * This trait is used to mark the \ref ObjectType of an object of type CFL
-  * \ref ProductFEFunctions as the measure region of its first constituting element
-  *
-  */
+   * @brief Trait to store measure region as face for a \ref ProductFEFunctions function
+   *
+   * This trait is used to mark the \ref ObjectType of an object of type CFL
+   * \ref ProductFEFunctions as the measure region of its first constituting element
+   *
+   */
   template <class FirstType, typename... Types>
   struct fe_function_set_type<Base::ProductFEFunctions<FirstType, Types...>>
   {
@@ -252,11 +252,11 @@ namespace Traits
   };
 
   /**
-  * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
-  *
-  * Default Trait
-  * @todo Should it be removed? Discuss
-  */
+   * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
+   *
+   * Default Trait
+   * @todo Should it be removed? Discuss
+   */
   template <class T>
   struct is_fe_function_product
   {
@@ -264,9 +264,9 @@ namespace Traits
   };
 
   /**
-  * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
-  *
-  */
+   * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
+   *
+   */
   template <typename... Types>
   struct is_fe_function_product<Base::ProductFEFunctions<Types...>>
   {
@@ -274,11 +274,11 @@ namespace Traits
   };
 
   /**
-  * @brief Determine if a given object is of type CFL \ref SumFEFunctions
-  *
-  * Default Trait
-  * @todo Should it be removed? Discuss
-  */
+   * @brief Determine if a given object is of type CFL \ref SumFEFunctions
+   *
+   * Default Trait
+   * @todo Should it be removed? Discuss
+   */
   template <class T>
   struct is_fe_function_sum
   {
@@ -286,9 +286,9 @@ namespace Traits
   };
 
   /**
-  * @brief Determine if a given object is of type CFL \ref SumFEFunctions
-  *
-  */
+   * @brief Determine if a given object is of type CFL \ref SumFEFunctions
+   *
+   */
   template <typename... Types>
   struct is_fe_function_sum<Base::SumFEFunctions<Types...>>
   {
@@ -299,10 +299,10 @@ namespace Traits
 namespace Base
 {
   /**
-  * @brief TBD
-  * \todo Add details
-  *
-  */
+   * @brief TBD
+   * \todo Add details
+   *
+   */
   struct IntegrationFlags
   {
     bool value = false;
@@ -1109,10 +1109,10 @@ namespace Base
   };
 
   /**
-  * @brief Class to provide Sum of FE Functions.
-  * This is for variadic template definition of the SumFEFunctions class.
-  * Please refer to the documentation of the previous class
-  */
+   * @brief Class to provide Sum of FE Functions.
+   * This is for variadic template definition of the SumFEFunctions class.
+   * Please refer to the documentation of the previous class
+   */
   template <class FEFunction, typename... Types>
   class SumFEFunctions<FEFunction, Types...> : public SumFEFunctions<Types...>
   {
@@ -1529,10 +1529,10 @@ namespace Base
   };
 
   /**
-  * @brief Class to provide Product of FE Functions.
-  * This is for variadic template definition of the ProductFEFunctions class.
-  * Please refer to the documentation of the previous class
-  */
+   * @brief Class to provide Product of FE Functions.
+   * This is for variadic template definition of the ProductFEFunctions class.
+   * Please refer to the documentation of the previous class
+   */
   template <class FEFunction, typename... Types>
   class ProductFEFunctions<FEFunction, Types...> : public ProductFEFunctions<Types...>
   {
@@ -1568,7 +1568,7 @@ namespace Base
     /**
      * Wrapper around set_evaluation_flags of FEFunction
      *
-    */
+     */
     template <class FEEvaluation>
     static void
     set_evaluation_flags(FEEvaluation& phi)

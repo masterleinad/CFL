@@ -37,7 +37,8 @@ test()
   auto flux_grad = Dnu_p - Dnu_m;
 
   auto flux1 = -face_form(flux, Dnv_p) + Base::face_form(flux, Dnv_m);
-  auto flux2 = Base::face_form(-flux + .5 * flux_grad, v_p) - Base::face_form(-flux + .5 * flux_grad, v_m);
+  auto flux2 =
+    Base::face_form(-flux + .5 * flux_grad, v_p) - Base::face_form(-flux + .5 * flux_grad, v_m);
 
   auto boundary1 = Base::boundary_form(2. * u_p - Dnu_p, v_p);
   auto boundary3 = -boundary_form(u_p, Dnv_p);
