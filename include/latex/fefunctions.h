@@ -9,7 +9,7 @@ namespace CFL::Latex
 {
 namespace
 {
-  [[maybe_unused]] std::string
+  inline std::string
   double_to_string(double d)
   {
     std::string return_string = std::to_string(d);
@@ -42,13 +42,13 @@ class FEFunctionBaseBase<Derived<rank, dim, idx>>
 public:
   using TensorTraits = Traits::Tensor<rank, dim>;
   static constexpr unsigned int index = idx;
-  double scalar_factor = 1.;
+  const double scalar_factor = 1.;
 
   /**
    * Default constructor
    *
    */
-  explicit FEFunctionBaseBase(double new_factor = 1.)
+  constexpr explicit FEFunctionBaseBase(double new_factor = 1.)
     : scalar_factor(new_factor)
   {
   }

@@ -573,13 +573,13 @@ namespace Base
   public:
     using TensorTraits = Traits::Tensor<rank, dim>;
     static constexpr unsigned int index = idx;
-    double scalar_factor = 1.;
+    const double scalar_factor = 1.;
 
     /**
      * Default constructor
      *
      */
-    explicit FEFunctionBaseBase(double new_factor = 1.)
+    explicit constexpr FEFunctionBaseBase(double new_factor = 1.)
       : scalar_factor(new_factor)
     {
     }
@@ -993,7 +993,8 @@ namespace Base
     template <class OtherType>
     SumFEFunctions(const SumFEFunctions<OtherType>& f)
       : summand([&f]() {
-        if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
+        if
+          constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
             .get_summand()
             .scalar_factor;
         else
@@ -1088,20 +1089,7 @@ namespace Base
     typename std::enable_if<std::is_arithmetic<Number>::value, SumFEFunctions<FEFunction>>::type
     operator*(const Number scalar_factor) const
     {
-      SumFEFunctions<FEFunction> tmp = *this;
-      tmp.multiply_by_scalar(scalar_factor);
-      return tmp;
-    }
-
-    /**
-     * Scale only the FEFunction held by this SumFEFunctions by a scalar factor
-     *
-     */
-    template <typename Number>
-    std::enable_if_t<std::is_arithmetic<Number>::value>
-    multiply_by_scalar(const Number scalar)
-    {
-      summand.scalar_factor *= scalar;
+      return SumFEFunctions<FEFunction>(summand * scalar_factor);
     }
 
   private:
@@ -1126,7 +1114,8 @@ namespace Base
     SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
       : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f))
       , summand([&f]() {
-        if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
+        if
+          constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
             .get_summand()
             .scalar_factor;
         else
@@ -1256,10 +1245,7 @@ namespace Base
     auto
     operator-() const
     {
-      // create a copy
-      SumFEFunctions<FEFunction, Types...> copy_this(*this);
-      copy_this.multiply_by_scalar(-1.);
-      return copy_this;
+      return (*this) * -1.;
     }
 
     /**
@@ -1271,22 +1257,21 @@ namespace Base
                             SumFEFunctions<FEFunction, Types...>>::type
     operator*(const Number scalar_factor) const
     {
-      SumFEFunctions<FEFunction, Types...> tmp = *this;
-      tmp.multiply_by_scalar(scalar_factor);
-      return tmp;
+      return SumFEFunctions<FEFunction, Types...>(
+        summand * scalar_factor, static_cast<SumFEFunctions<Types...>>(*this) * scalar_factor);
     }
 
     /**
      * Multiply only the FEFunction object of this SumFEFunction with a scalar factor
      *
      */
-    template <typename Number>
-    std::enable_if_t<std::is_arithmetic<Number>::value>
-    multiply_by_scalar(const Number scalar)
-    {
-      summand.scalar_factor *= scalar;
-      Base::multiply_by_scalar(scalar);
-    }
+    /*    template <typename Number>
+        std::enable_if_t<std::is_arithmetic<Number>::value>
+        multiply_by_scalar(const Number scalar)
+        {
+          summand.scalar_factor *= scalar;
+          Base::multiply_by_scalar(scalar);
+        }*/
 
     /**
      * Operator overloading to subtract a SumFEFuction from a SumFEFunction

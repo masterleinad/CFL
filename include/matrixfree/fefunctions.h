@@ -719,13 +719,13 @@ namespace dealii
     public:
       using TensorTraits = Traits::Tensor<rank, dim>;
       static constexpr unsigned int index = idx;
-      double scalar_factor = 1.;
+      const double scalar_factor = 1.;
 
       /**
        * Default constructor
        *
        */
-      explicit FEFunctionBaseBase(double new_factor = 1.)
+      constexpr explicit FEFunctionBaseBase(double new_factor = 1.)
         : scalar_factor(new_factor)
       {
       }

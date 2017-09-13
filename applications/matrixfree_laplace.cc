@@ -100,9 +100,9 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&(*fe_u));
 
-  Base::TestFunction<1, dim, 0> v;
+  constexpr Base::TestFunction<1, dim, 0> v;
   auto Dv = grad(v);
-  Base::FEFunction<1, dim, 0> u;
+  constexpr Base::FEFunction<1, dim, 0> u;
   auto Du = grad(u);
   auto f = transform(Base::form(Du, Dv));
 
