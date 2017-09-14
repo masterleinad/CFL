@@ -529,8 +529,7 @@ namespace Base
    *
    */
   template <int rank, int dim, unsigned int idx>
-  TestGradient<rank + 1, dim, idx>
-  grad(const TestFunction<rank, dim, idx>& /*unused*/)
+  TestGradient<rank + 1, dim, idx> constexpr grad(const TestFunction<rank, dim, idx>& /*unused*/)
   {
     return TestGradient<rank + 1, dim, idx>();
   }
@@ -541,8 +540,7 @@ namespace Base
    *
    */
   template <int rank, int dim, unsigned int idx>
-  TestHessian<rank + 1, dim, idx>
-  grad(const TestGradient<rank, dim, idx>& /*unused*/)
+  TestHessian<rank + 1, dim, idx> constexpr grad(const TestGradient<rank, dim, idx>& /*unused*/)
   {
     return TestHessian<rank + 1, dim, idx>();
   }
@@ -589,8 +587,8 @@ namespace Base
      *
      */
     template <typename Number>
-    typename std::enable_if_t<std::is_arithmetic<Number>::value, Derived<rank, dim, idx>> operator*(
-      const Number scalar_factor_) const
+    constexpr typename std::enable_if_t<std::is_arithmetic<Number>::value, Derived<rank, dim, idx>>
+    operator*(const Number scalar_factor_) const
     {
       return Derived<rank, dim, idx>(scalar_factor * scalar_factor_);
     }
@@ -599,7 +597,7 @@ namespace Base
      * Allows to negate an FE function
      *
      */
-    Derived<rank, dim, idx>
+    constexpr Derived<rank, dim, idx>
     operator-() const
     {
       const Derived<rank, dim, idx> newfunction(-scalar_factor);
@@ -757,15 +755,16 @@ namespace Base
       return fefunction;
     }
 
-    auto
+    constexpr auto
     operator-() const
     {
       return FELiftDivergence(-fefunction);
     }
 
     template <typename Number>
-    typename std::enable_if_t<std::is_arithmetic<Number>::value, FELiftDivergence<FEFunctionType>>
-    operator*(const Number scalar_factor_) const
+    constexpr
+      typename std::enable_if_t<std::is_arithmetic<Number>::value, FELiftDivergence<FEFunctionType>>
+      operator*(const Number scalar_factor_) const
     {
       return FELiftDivergence<FEFunctionType>(
         FEFunctionType(fefunction.scalar_factor * scalar_factor_));
@@ -818,7 +817,7 @@ namespace Base
     // inherit constructors
     using Base::Base;
 
-    explicit FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
+    explicit constexpr FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
       : FEGradient(fefunction.scalar_factor)
     {
     }
@@ -881,8 +880,7 @@ namespace Base
    *
    */
   template <int rank, int dim, unsigned int idx>
-  FEGradient<rank + 1, dim, idx>
-  grad(const FEFunction<rank, dim, idx>& f)
+  FEGradient<rank + 1, dim, idx> constexpr grad(const FEFunction<rank, dim, idx>& f)
   {
     return FEGradient<rank + 1, dim, idx>(f);
   }
@@ -893,8 +891,7 @@ namespace Base
    *
    */
   template <int rank, int dim, unsigned int idx>
-  FEDivergence<rank - 1, dim, idx>
-  div(const FEFunction<rank, dim, idx>& f)
+  FEDivergence<rank - 1, dim, idx> constexpr div(const FEFunction<rank, dim, idx>& f)
   {
     return FEDivergence<rank - 1, dim, idx>(f);
   }
@@ -905,8 +902,7 @@ namespace Base
    *
    */
   template <int rank, int dim, unsigned int idx>
-  FEHessian<rank + 1, dim, idx>
-  grad(const FEGradient<rank, dim, idx>& f)
+  FEHessian<rank + 1, dim, idx> constexpr grad(const FEGradient<rank, dim, idx>& f)
   {
     return FEHessian<rank + 1, dim, idx>(f);
   }
@@ -917,8 +913,7 @@ namespace Base
    *
    */
   template <int rank, int dim, unsigned int idx>
-  FELaplacian<rank - 1, dim, idx>
-  div(const FEGradient<rank, dim, idx>& f)
+  FELaplacian<rank - 1, dim, idx> constexpr div(const FEGradient<rank, dim, idx>& f)
   {
     return FELaplacian<rank - 1, dim, idx>(f);
   }
@@ -928,9 +923,9 @@ namespace Base
    *
    */
   template <typename Number, class A>
-  typename std::enable_if_t<Traits::fe_function_set_type<A>::value != ObjectType::none &&
-                              std::is_arithmetic<Number>::value,
-                            A>
+  constexpr typename std::enable_if_t<Traits::fe_function_set_type<A>::value != ObjectType::none &&
+                                        std::is_arithmetic<Number>::value,
+                                      A>
   operator*(const Number scalar_factor, const A& a)
   {
     return a * scalar_factor;
@@ -991,7 +986,7 @@ namespace Base
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
 
     template <class OtherType>
-    SumFEFunctions(const SumFEFunctions<OtherType>& f)
+    constexpr SumFEFunctions(const SumFEFunctions<OtherType>& f)
       : summand([&f]() {
         if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
             .get_summand()
@@ -1002,7 +997,7 @@ namespace Base
     {
     }
 
-    explicit SumFEFunctions(const FEFunction summand_)
+    explicit constexpr SumFEFunctions(const FEFunction summand_)
       : summand(std::move(summand_))
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
@@ -1015,7 +1010,7 @@ namespace Base
      *
      */
     template <class NewFEFunction>
-    auto
+    constexpr auto
     operator+(const NewFEFunction& new_summand) const
     {
       static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
@@ -1033,7 +1028,7 @@ namespace Base
      *
      */
     template <class NewFEFunction>
-    auto
+    constexpr auto
     operator-(const NewFEFunction& new_summand) const
     {
       return operator+(-new_summand);
@@ -1061,7 +1056,7 @@ namespace Base
      * Returns the FEFunction object held by this object
      *
      */
-    const FEFunction&
+    constexpr FEFunction
     get_summand() const
     {
       return summand;
@@ -1071,7 +1066,7 @@ namespace Base
      * Unary minus operator overloading to get -SumFEFunctions
      *
      */
-    SumFEFunctions<FEFunction>
+    constexpr SumFEFunctions<FEFunction>
     operator-() const
     {
       // create a copy
@@ -1085,14 +1080,15 @@ namespace Base
      *
      */
     template <typename Number>
-    typename std::enable_if<std::is_arithmetic<Number>::value, SumFEFunctions<FEFunction>>::type
-    operator*(const Number scalar_factor) const
+    constexpr
+      typename std::enable_if<std::is_arithmetic<Number>::value, SumFEFunctions<FEFunction>>::type
+      operator*(const Number scalar_factor) const
     {
       return SumFEFunctions<FEFunction>(summand * scalar_factor);
     }
 
   private:
-    FEFunction summand;
+    const FEFunction summand;
   };
 
   /**
@@ -1109,8 +1105,7 @@ namespace Base
     using Base = SumFEFunctions<Types...>;
 
     template <class OtherType, typename... OtherTypes,
-              typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
-    SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
+              typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr> constexpr SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
       : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f))
       , summand([&f]() {
         if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
@@ -1149,7 +1144,7 @@ namespace Base
       Base::set_evaluation_flags(phi);
     }
 
-    explicit SumFEFunctions(const FEFunction summand_, const Types... old_sum)
+    explicit constexpr SumFEFunctions(const FEFunction summand_, const Types... old_sum)
       : Base(std::move(old_sum...))
       , summand(std::move(summand_))
     {
@@ -1161,7 +1156,7 @@ namespace Base
                     "You can only add tensors of equal rank!");
     }
 
-    SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
+    constexpr SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
       : Base(old_sum)
       , summand(summand_)
     {
@@ -1183,7 +1178,7 @@ namespace Base
                 Traits::fe_function_set_type<NewFEFunction>::value ==
                   Traits::fe_function_set_type<FEFunction>::value &&
                 !Traits::is_fe_function_sum<NewFEFunction>::value>::type* unused = nullptr>
-    auto
+    constexpr auto
     operator+(const NewFEFunction& new_summand) const
     {
       return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_summand, *this);
@@ -1198,7 +1193,7 @@ namespace Base
                 Traits::fe_function_set_type<NewFEFunction1>::value != ObjectType::none &&
                 Traits::fe_function_set_type<NewFEFunction1>::value ==
                   Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-    auto
+    constexpr auto
     operator+(const SumFEFunctions<NewFEFunction1, NewFEFunction2, NewTypes...>& new_sum) const
     {
       return SumFEFunctions<NewFEFunction1, FEFunction, Types...>(new_sum.get_summand(), *this) +
@@ -1215,7 +1210,7 @@ namespace Base
                 Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
                 Traits::fe_function_set_type<NewFEFunction>::value ==
                   Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-    auto
+    constexpr auto
     operator+(const SumFEFunctions<NewFEFunction>& new_sum) const
     {
       return SumFEFunctions<NewFEFunction, FEFunction, Types...>(new_sum.get_summand(), *this);
@@ -1230,7 +1225,7 @@ namespace Base
                 Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
                 Traits::fe_function_set_type<NewFEFunction>::value ==
                   Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-    auto
+    constexpr auto
     operator-(const NewFEFunction& new_summand) const
     {
       return operator+(-new_summand);
@@ -1240,7 +1235,7 @@ namespace Base
      * Unary minus operator overloading to get -SumFEFunction
      *
      */
-    auto
+    constexpr auto
     operator-() const
     {
       return (*this) * -1.;
@@ -1251,25 +1246,13 @@ namespace Base
      *
      */
     template <typename Number>
-    typename std::enable_if<std::is_arithmetic<Number>::value,
-                            SumFEFunctions<FEFunction, Types...>>::type
+    constexpr typename std::enable_if<std::is_arithmetic<Number>::value,
+                                      SumFEFunctions<FEFunction, Types...>>::type
     operator*(const Number scalar_factor) const
     {
       return SumFEFunctions<FEFunction, Types...>(
         summand * scalar_factor, static_cast<SumFEFunctions<Types...>>(*this) * scalar_factor);
     }
-
-    /**
-     * Multiply only the FEFunction object of this SumFEFunction with a scalar factor
-     *
-     */
-    /*    template <typename Number>
-        std::enable_if_t<std::is_arithmetic<Number>::value>
-        multiply_by_scalar(const Number scalar)
-        {
-          summand.scalar_factor *= scalar;
-          Base::multiply_by_scalar(scalar);
-        }*/
 
     /**
      * Operator overloading to subtract a SumFEFuction from a SumFEFunction
@@ -1280,7 +1263,7 @@ namespace Base
                 Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
                 Traits::fe_function_set_type<NewFEFunction>::value ==
                   Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-    auto
+    constexpr auto
     operator-(const SumFEFunctions<NewFEFunction, NewTypes...>& new_sum) const
     {
       return operator+(-new_sum);
@@ -1295,20 +1278,20 @@ namespace Base
                 Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
                 Traits::fe_function_set_type<NewFEFunction>::value ==
                   Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-    auto
+    constexpr auto
     operator-(const SumFEFunctions<NewFEFunction>& new_sum) const
     {
       return operator+(-new_sum);
     }
 
-    const FEFunction&
+    constexpr FEFunction
     get_summand() const
     {
       return summand;
     }
 
   private:
-    FEFunction summand;
+    const FEFunction summand;
   };
 
   /**
@@ -1322,7 +1305,7 @@ namespace Base
                 Traits::fe_function_set_type<FEFunction2>::value &&
               !Traits::is_fe_function_sum<FEFunction1>::value &&
               !Traits::is_fe_function_sum<FEFunction2>::value>::type* unused = nullptr>
-  auto
+  constexpr auto
   operator+(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
   {
 
@@ -1341,7 +1324,7 @@ namespace Base
     class FEFunction, typename... Types,
     typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
                             !Traits::is_fe_function_sum<FEFunction>::value>::type* unused = nullptr>
-  auto
+  constexpr auto
   operator+(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
   {
     return old_fe_function + new_fe_function;
@@ -1358,7 +1341,7 @@ namespace Base
                 Traits::fe_function_set_type<FEFunction2>::value &&
               !Traits::is_fe_function_sum<FEFunction1>::value &&
               !Traits::is_fe_function_sum<FEFunction2>::value>::type* unused = nullptr>
-  auto
+  constexpr auto
   operator-(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
   {
     return old_fe_function + (-new_fe_function);
@@ -1372,7 +1355,7 @@ namespace Base
     class FEFunction, typename... Types,
     typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none &&
                             !Traits::is_fe_function_sum<FEFunction>::value>::type* unused = nullptr>
-  auto
+  constexpr auto
   operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
   {
     return -(old_fe_function - new_fe_function);
@@ -1449,7 +1432,8 @@ namespace Base
                   Traits::fe_function_set_type<NewFEFunction>::value ==
                     Traits::fe_function_set_type<FEFunction>::value,
                 ProductFEFunctions<NewFEFunction, FEFunction>>::type* unused = nullptr>
-    ProductFEFunctions<NewFEFunction, FEFunction> operator*(const NewFEFunction& new_factor) const
+    constexpr ProductFEFunctions<NewFEFunction, FEFunction> operator*(
+      const NewFEFunction& new_factor) const
     {
       static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
                     "Only FEFunction objects can be added!");
@@ -1498,8 +1482,7 @@ namespace Base
      *
      */
     template <typename Number,
-              typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr>
-    auto operator*(const Number scalar_factor) const
+              typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr> constexpr auto operator*(const Number scalar_factor) const
     {
       return ProductFEFunctions<FEFunction>(factor * scalar_factor);
     }
@@ -1508,14 +1491,14 @@ namespace Base
      * Unary minus operator overloading to get -ProductFEFunctions
      *
      */
-    ProductFEFunctions<FEFunction>
+    constexpr ProductFEFunctions<FEFunction>
     operator-() const
     {
-      return (*this)*-1.;
+      return (*this) * -1.;
     }
 
   private:
-    FEFunction factor;
+    const FEFunction factor;
   };
 
   /**
@@ -1602,7 +1585,7 @@ namespace Base
                   Traits::fe_function_set_type<NewFEFunction>::value ==
                     Traits::fe_function_set_type<FEFunction>::value,
                 ProductFEFunctions<NewFEFunction, FEFunction, Types...>>::type* unused = nullptr>
-    auto operator*(const NewFEFunction& new_factor) const
+    constexpr auto operator*(const NewFEFunction& new_factor) const
     {
       return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_factor, *this);
     }
@@ -1611,7 +1594,7 @@ namespace Base
      * Unary minus operator overloading to negate a ProductFEFunctions
      *
      */
-    ProductFEFunctions<FEFunction, Types...>
+    constexpr ProductFEFunctions<FEFunction, Types...>
     operator-() const
     {
       return (*this) * -1.;
@@ -1623,8 +1606,7 @@ namespace Base
      *
      */
     template <typename Number,
-              typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr>
-    auto operator*(const Number scalar_factor) const
+              typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr> constexpr auto operator*(const Number scalar_factor) const
     {
       return ProductFEFunctions<FEFunction, Types...>(
         factor * scalar_factor, static_cast<ProductFEFunctions<Types...>>(*this));
@@ -1643,7 +1625,7 @@ namespace Base
                 Traits::fe_function_set_type<NewFEFunction2>::value != ObjectType::none &&
                 Traits::fe_function_set_type<NewFEFunction2>::value ==
                   Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-    auto operator*(
+    constexpr auto operator*(
       const ProductFEFunctions<NewFEFunction1, NewFEFunction2, NewTypes...>& new_product) const
     {
       return ProductFEFunctions<NewFEFunction1, FEFunction, Types...>(new_product.get_factor(),
@@ -1662,7 +1644,7 @@ namespace Base
                 Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
                 Traits::fe_function_set_type<NewFEFunction>::value ==
                   Traits::fe_function_set_type<FEFunction>::value>::type* unused = nullptr>
-    auto operator*(const ProductFEFunctions<NewFEFunction>& new_product) const
+    constexpr auto operator*(const ProductFEFunctions<NewFEFunction>& new_product) const
     {
       return ProductFEFunctions<NewFEFunction, FEFunction, Types...>(new_product.get_factor(),
                                                                      *this);
@@ -1675,7 +1657,7 @@ namespace Base
     }
 
   private:
-    FEFunction factor;
+    const FEFunction factor;
   };
 
   // fefunc * fefunc
@@ -1692,7 +1674,7 @@ namespace Base
                               !Traits::is_fe_function_product<FEFunction1>::value &&
                               !Traits::is_fe_function_product<FEFunction2>::value,
                             ProductFEFunctions<FEFunction2, FEFunction1>>::type* unused = nullptr>
-  auto operator*(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
+  constexpr auto operator*(const FEFunction1& old_fe_function, const FEFunction2& new_fe_function)
   {
     static_assert(FEFunction1::TensorTraits::dim == FEFunction2::TensorTraits::dim,
                   "You can only multiply tensors of equal dimension!");
@@ -1713,8 +1695,8 @@ namespace Base
     class FEFunction, typename... Types,
     typename std::enable_if<Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                             ProductFEFunctions<FEFunction, Types...>>::type* unused = nullptr>
-  auto operator*(const FEFunction& new_fe_function,
-                 const ProductFEFunctions<Types...>& old_fe_function)
+  constexpr auto operator*(const FEFunction& new_fe_function,
+                           const ProductFEFunctions<Types...>& old_fe_function)
   {
     return old_fe_function * new_fe_function;
   }

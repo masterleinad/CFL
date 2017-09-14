@@ -79,7 +79,7 @@ namespace Base
     static constexpr bool integrate_gradient_exterior =
       (kind_of_form == FormKind::face) ? Test::integration_flags.gradient_exterior : false;
 
-    Form(Test test_, Expr expr_)
+    constexpr Form(Test test_, Expr expr_)
       : test(std::move(test_))
       , expr(std::move(expr_))
     {
@@ -127,7 +127,7 @@ namespace Base
     }
 
     template <class TestNew, class ExprNew, FormKind kind_new>
-    Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
+    constexpr Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
     operator+(const Form<TestNew, ExprNew, kind_new>& new_form) const
     {
       return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this,
@@ -135,7 +135,7 @@ namespace Base
     }
 
     template <class TestNew, class ExprNew, FormKind kind_new>
-    Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
+    constexpr Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
     operator-(const Form<TestNew, ExprNew, kind_new>& new_form) const
     {
       return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this,
@@ -143,20 +143,20 @@ namespace Base
     }
 
     template <class... Types>
-    auto
+    constexpr auto
     operator+(const Forms<Types...>& old_form) const
     {
       return old_form + *this;
     }
 
-    auto
+    constexpr auto
     operator-() const
     {
       const typename std::remove_reference<decltype(*this)>::type newform(test, -expr);
       return newform;
     }
 
-    auto operator*(const double scalar) const
+    constexpr auto operator*(const double scalar) const
     {
       const typename std::remove_reference<decltype(*this)>::type newform(test, expr * scalar);
       return newform;
@@ -200,48 +200,48 @@ namespace Traits
 namespace Base
 {
   template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::cell>>::type
+  constexpr typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                                    Form<Test, Expr, FormKind::cell>>::type
   form(const Test& t, const Expr& e)
   {
     return Form<Test, Expr, FormKind::cell>(t, e);
   }
 
   template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::cell>>::type
+  constexpr typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                                    Form<Test, Expr, FormKind::cell>>::type
   form(const Expr& e, const Test& t)
   {
     return Form<Test, Expr, FormKind::cell>(t, e);
   }
 
   template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::face>>::type
+  constexpr typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                                    Form<Test, Expr, FormKind::face>>::type
   face_form(const Test& t, const Expr& e)
   {
     return Form<Test, Expr, FormKind::face>(t, e);
   }
 
   template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::face>>::type
+  constexpr typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                                    Form<Test, Expr, FormKind::face>>::type
   face_form(const Expr& e, const Test& t)
   {
     return Form<Test, Expr, FormKind::face>(t, e);
   }
 
   template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::boundary>>::type
+  constexpr typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                                    Form<Test, Expr, FormKind::boundary>>::type
   boundary_form(const Test& t, const Expr& e)
   {
     return Form<Test, Expr, FormKind::boundary>(t, e);
   }
 
   template <class Test, class Expr>
-  typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
-                          Form<Test, Expr, FormKind::boundary>>::type
+  constexpr typename std::enable_if<Traits::test_function_set_type<Test>::value != ObjectType::none,
+                                    Form<Test, Expr, FormKind::boundary>>::type
   boundary_form(const Expr& e, const Test& t)
   {
     return Form<Test, Expr, FormKind::boundary>(t, e);
@@ -266,7 +266,7 @@ namespace Base
     static constexpr unsigned int fe_number = FormType::fe_number;
     static constexpr unsigned int number = 0;
 
-    explicit Forms(const FormType& form_)
+    explicit constexpr Forms(const FormType& form_)
       : form(form_)
     {
       AssertThrow(
@@ -298,7 +298,7 @@ namespace Base
       }
     }
 
-    const FormType&
+    constexpr FormType
     get_form() const
     {
       return form;
@@ -306,7 +306,7 @@ namespace Base
 
   protected:
     template <unsigned int size, typename IntegrationFlags>
-    static /*constexpr*/ bool
+    static constexpr bool
     check_forms(
       std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
         container = std::array<
@@ -326,10 +326,27 @@ namespace Base
     }
 
   private:
-    const /*static constexpr*/ bool valid =
+    const static constexpr bool valid =
       check_forms<number, decltype(FormType::TestType::integration_flags)>();
     const FormType form;
   };
+
+  namespace
+  {
+    template <typename T, std::size_t N, std::size_t... I>
+    constexpr std::array<T, N + 1>
+    append_aux(std::array<T, N> a, T t, std::index_sequence<I...>)
+    {
+      return std::array<T, N + 1>{ a[I]..., t };
+    }
+
+    template <typename T, std::size_t N>
+    constexpr std::array<T, N + 1>
+    append(std::array<T, N> a, T t)
+    {
+      return append_aux(a, t, std::make_index_sequence<N>());
+    }
+  }
 
   template <typename FormType, typename... Types>
   class Forms<FormType, Types...> : public Forms<Types...>
@@ -347,7 +364,7 @@ namespace Base
     static constexpr unsigned int fe_number = FormType::fe_number;
     static constexpr unsigned int number = Forms<Types...>::number + 1;
 
-    Forms(const FormType& form_, const Forms<Types...>& old_form)
+    constexpr Forms(const FormType& form_, const Forms<Types...>& old_form)
       : Forms<Types...>(old_form)
       , form(form_)
     {
@@ -358,7 +375,7 @@ namespace Base
                     "You need to construct this with a Form object!");
     }
 
-    explicit Forms(const FormType& form_, const Types&... old_form)
+    explicit constexpr Forms(const FormType& form_, const Types&... old_form)
       : Forms<Types...>(old_form...)
       , form(form_)
     {
@@ -370,14 +387,14 @@ namespace Base
     }
 
     template <class Test, class Expr, FormKind kind_of_form>
-    Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>
+    constexpr Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>
     operator+(const Form<Test, Expr, kind_of_form>& new_form) const
     {
       return Forms<Form<Test, Expr, kind_of_form>, FormType, Types...>(new_form, *this);
     }
 
     template <class NewForm1, class NewForm2, typename... NewForms>
-    auto
+    constexpr auto
     operator+(const Forms<NewForm1, NewForm2, NewForms...>& new_forms) const
     {
       return Forms<NewForm1, FormType, Types...>(new_forms.get_form(), *this) +
@@ -386,7 +403,7 @@ namespace Base
     }
 
     template <class NewForm>
-    auto
+    constexpr auto
     operator+(const Forms<NewForm>& new_forms) const
     {
       return Forms<NewForm, FormType, Types...>(new_forms.get_form(), *this);
@@ -415,20 +432,20 @@ namespace Base
       Forms<Types...>::get_form_kinds(use_objects);
     }
 
-    const FormType&
+    constexpr FormType
     get_form() const
     {
       return form;
     }
 
-    auto operator*(const double scalar) const
+    constexpr auto operator*(const double scalar) const
     {
       const typename std::remove_reference<decltype(*this)>::type newform(
         form * scalar, Forms<Types...>::get_form() * scalar);
       return newform;
     }
 
-    auto
+    constexpr auto
     operator-() const
     {
       return (*this) * -1.;
@@ -436,7 +453,7 @@ namespace Base
 
   protected:
     template <unsigned int size, typename IntegrationFlags>
-    static /*constexpr*/ bool
+    static constexpr bool
     check_forms(
       std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
         container = std::array<
@@ -453,24 +470,25 @@ namespace Base
           return false;
       }
 
-      container[number - 1] = new_tuple;
-      return Forms<Types...>::template check_forms<size, IntegrationFlags>(container);
+      auto new_container = append(container, new_tuple);
+      return Forms<Types...>::template check_forms<size + 1, IntegrationFlags>(new_container);
     }
 
   private:
-    const /*static constexpr*/ bool valid =
-      check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>();
+    const static constexpr bool valid =
+      check_forms<0, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>();
     const FormType form;
   };
 
   template <class Test, class Expr, FormKind kind_of_form, typename NumberType>
-  auto operator*(double scalar, const Base::Form<Test, Expr, kind_of_form, NumberType>& form)
+  constexpr auto operator*(double scalar,
+                           const Base::Form<Test, Expr, kind_of_form, NumberType>& form)
   {
     return form * scalar;
   }
 
   template <class... Args>
-  auto operator*(double scalar, const Base::Forms<Args...>& forms)
+  constexpr auto operator*(double scalar, const Base::Forms<Args...>& forms)
   {
     return forms * scalar;
   }
