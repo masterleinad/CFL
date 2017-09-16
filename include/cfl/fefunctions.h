@@ -798,8 +798,8 @@ namespace Base
     // inherit constructors
     using Base::Base;
 
-    explicit FECurl(const FEFunction<rank - 1, dim, idx>& fefunction)
-      : FECurl(fefunction.name(), fefunction.scalar_factor)
+    explicit constexpr FECurl(const FEFunction<rank - 1, dim, idx>& fefunction)
+      : Base(fefunction.scalar_factor)
     {
     }
   };
@@ -818,7 +818,7 @@ namespace Base
     using Base::Base;
 
     explicit constexpr FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
-      : FEGradient(fefunction.scalar_factor)
+      : Base(fefunction.scalar_factor)
     {
     }
   };
@@ -837,7 +837,7 @@ namespace Base
     using Base::Base;
 
     explicit FELaplacian(const FEGradient<rank + 1, dim, idx>& fe_function)
-      : FELaplacian(fe_function.scalar_factor)
+      : Base(fe_function.scalar_factor)
     {
     }
   };
@@ -880,7 +880,8 @@ namespace Base
    *
    */
   template <int rank, int dim, unsigned int idx>
-  FEGradient<rank + 1, dim, idx> constexpr grad(const FEFunction<rank, dim, idx>& f)
+  FEGradient<rank + 1, dim, idx>
+  constexpr grad(const FEFunction<rank, dim, idx>& f)
   {
     return FEGradient<rank + 1, dim, idx>(f);
   }
@@ -902,7 +903,8 @@ namespace Base
    *
    */
   template <int rank, int dim, unsigned int idx>
-  FEHessian<rank + 1, dim, idx> constexpr grad(const FEGradient<rank, dim, idx>& f)
+  FEHessian<rank + 1, dim, idx>
+  constexpr grad(const FEGradient<rank, dim, idx>& f)
   {
     return FEHessian<rank + 1, dim, idx>(f);
   }

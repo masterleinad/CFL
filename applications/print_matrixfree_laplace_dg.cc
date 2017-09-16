@@ -48,7 +48,7 @@ test()
 
   std::vector<std::string> function_names(1, "u");
   std::vector<std::string> test_names(1, "v");
-  const auto latex_forms = Latex::transform(f);
+  constexpr auto latex_forms = Latex::transform(f);
   Latex::Evaluator<decltype(latex_forms)> evaluator(latex_forms, function_names, test_names);
   evaluator.print(std::cout);
 }

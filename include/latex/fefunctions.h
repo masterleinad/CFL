@@ -358,93 +358,93 @@ public:
 };
 
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FEFunctionInteriorFace<ints...>& f)
 {
   return FEFunctionInteriorFace<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FEFunctionExteriorFace<ints...>& f)
 {
   return FEFunctionExteriorFace<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FENormalGradientInteriorFace<ints...>& f)
 {
   return FENormalGradientInteriorFace<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FENormalGradientExteriorFace<ints...>& f)
 {
   return FENormalGradientExteriorFace<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FEFunction<ints...>& f)
 {
   return FEFunction<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FEDivergence<ints...>& f)
 {
   return FEDivergence<ints...>(f.scalar_factor);
 }
 template <class Type>
-auto
+constexpr auto
 transform(const Base::FELiftDivergence<Type>& f)
 {
   return FELiftDivergence<decltype(transform(std::declval<Type>()))>(transform(f.get_fefunction()));
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FESymmetricGradient<ints...>& f)
 {
   return FESymmetricGradient<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FECurl<ints...>& f)
 {
   return FECurl<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FEGradient<ints...>& f)
 {
   return FEGradient<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FEDiagonalHessian<ints...>& f)
 {
   return FEDiagonalHessian<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FEHessian<ints...>& f)
 {
   return FEHessian<ints...>(f.scalar_factor);
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::FELaplacian<ints...>& f)
 {
   return FELaplacian<ints...>(f.scalar_factor);
 }
 
 template <class... Types>
-auto
+constexpr auto
 transform(const Base::SumFEFunctions<Types...>& f)
 {
   return Base::SumFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
 }
 
 template <class... Types>
-auto
+constexpr auto
 transform(const Base::ProductFEFunctions<Types...>& f)
 {
   return Base::ProductFEFunctions<decltype(transform(std::declval<Types>()))...>(f);
@@ -695,61 +695,61 @@ public:
 };
 
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestFunctionInteriorFace<ints...>&)
 {
   return TestFunctionInteriorFace<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestFunctionExteriorFace<ints...>&)
 {
   return TestFunctionExteriorFace<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestNormalGradientInteriorFace<ints...>&)
 {
   return TestNormalGradientInteriorFace<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestNormalGradientExteriorFace<ints...>&)
 {
   return TestNormalGradientExteriorFace<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestFunction<ints...>&)
 {
   return TestFunction<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestDivergence<ints...>&)
 {
   return TestDivergence<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestSymmetricGradient<ints...>&)
 {
   return TestSymmetricGradient<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestCurl<ints...>&)
 {
   return TestCurl<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestGradient<ints...>&)
 {
   return TestGradient<ints...>();
 }
 template <auto... ints>
-auto
+constexpr auto
 transform(const Base::TestHessian<ints...>&)
 {
   return TestHessian<ints...>();
