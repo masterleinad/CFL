@@ -795,8 +795,8 @@ namespace Base
     // inherit constructors
     using Base::Base;
 
-    explicit FECurl(const FEFunction<rank - 1, dim, idx>& fefunction)
-      : FECurl(fefunction.name(), fefunction.scalar_factor)
+    explicit constexpr FECurl(const FEFunction<rank - 1, dim, idx>& fefunction)
+      : Base(fefunction.scalar_factor)
     {
     }
   };
@@ -815,7 +815,7 @@ namespace Base
     using Base::Base;
 
     explicit constexpr FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
-      : FEGradient(fefunction.scalar_factor)
+      : Base(fefunction.scalar_factor)
     {
     }
   };
@@ -834,7 +834,7 @@ namespace Base
     using Base::Base;
 
     explicit FELaplacian(const FEGradient<rank + 1, dim, idx>& fe_function)
-      : FELaplacian(fe_function.scalar_factor)
+      : Base(fe_function.scalar_factor)
     {
     }
   };
