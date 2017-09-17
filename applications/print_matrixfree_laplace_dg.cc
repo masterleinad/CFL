@@ -56,7 +56,7 @@ test()
 int
 main(int /*argc*/, char** /*argv*/)
 {
-  ::dealii::deallog.depth_console(10);
+  dealii::deallog.depth_console(10);
   try
   {
     test();

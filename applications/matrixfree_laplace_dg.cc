@@ -227,20 +227,19 @@ run(unsigned int grid_index, unsigned int refine)
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
 
-  constexpr Base::TestFunction<0, 1, 0> v;
+  constexpr Base::TestFunction<0, dim, 0> v;
   constexpr auto Dv = grad(v);
-  constexpr Base::TestFunctionInteriorFace<0, 1, 0> v_p;
-  constexpr Base::TestFunctionExteriorFace<0, 1, 0> v_m;
-  constexpr Base::TestNormalGradientInteriorFace<0, 1, 0> Dnv_p;
-  constexpr Base::TestNormalGradientExteriorFace<0, 1, 0> Dnv_m;
+  constexpr Base::TestFunctionInteriorFace<0, dim, 0> v_p;
+  constexpr Base::TestFunctionExteriorFace<0, dim, 0> v_m;
+  constexpr Base::TestNormalGradientInteriorFace<0, dim, 0> Dnv_p;
+  constexpr Base::TestNormalGradientExteriorFace<0, dim, 0> Dnv_m;
 
-  constexpr Base::FEFunction<0, 1, 0> u;
-  //constexpr auto Du = grad(u);
-    constexpr Base::FEGradient<1,dim,0> Du ;
-  constexpr Base::FEFunctionInteriorFace<0, 1, 0> u_p;
-  constexpr Base::FEFunctionExteriorFace<0, 1, 0> u_m;
-  constexpr Base::FENormalGradientInteriorFace<0, 1, 0> Dnu_p;
-  constexpr Base::FENormalGradientExteriorFace<0, 1, 0> Dnu_m;
+  constexpr Base::FEFunction<0, dim, 0> u;
+  constexpr auto Du = grad(u);
+  constexpr Base::FEFunctionInteriorFace<0, dim, 0> u_p;
+  constexpr Base::FEFunctionExteriorFace<0, dim, 0> u_m;
+  constexpr Base::FENormalGradientInteriorFace<0, dim, 0> Dnu_p;
+  constexpr Base::FENormalGradientExteriorFace<0, dim, 0> Dnu_m;
 
   constexpr auto cell = Base::form(Du, Dv);
 

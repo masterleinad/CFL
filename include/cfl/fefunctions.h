@@ -9,9 +9,6 @@
 
 #include <utility>
 
-#define AssertIndexInRange(index, range)                                                           \
-  Assert((index) < (range), ::dealii::ExcIndexRange((index), 0, (range)))
-
 namespace CFL
 {
 namespace Base
