@@ -269,9 +269,7 @@ namespace Base
     explicit constexpr Forms(const FormType& form_)
       : form(form_)
     {
-      AssertThrow(
-        (check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>()),
-        ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
+      static_assert(valid, "There are multiple forms that try to submit the same information!");
       static_assert(Traits::is_form<FormType>::value,
                     "You need to construct this with a Form object!");
     }
@@ -368,9 +366,7 @@ namespace Base
       : Forms<Types...>(old_form)
       , form(form_)
     {
-      AssertThrow(
-        valid,
-        ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
+      static_assert(valid, "There are multiple forms that try to submit the same information!");
       static_assert(Traits::is_form<FormType>::value,
                     "You need to construct this with a Form object!");
     }
@@ -379,9 +375,7 @@ namespace Base
       : Forms<Types...>(old_form...)
       , form(form_)
     {
-      AssertThrow(
-        valid,
-        ::dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
+      static_assert(valid, "There are multiple forms that try to submit the same information!");
       static_assert(Traits::is_form<FormType>::value,
                     "You need to construct this with a Form object!");
     }
