@@ -22,7 +22,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FEFunction<0, dim> u(0, 0);
   auto Dv = grad(v);
   auto Du = grad(u);
-  auto f = form(Du, Dv);
+  auto f = 3.*form(Du, Dv) - form(u,v) + form(grad(Du), grad(Dv));
 
   Vector<double> x_new, x_old;
   Vector<double> b;

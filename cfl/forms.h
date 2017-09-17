@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include <cfl/traits.h>
+#include <cfl/constants.h>
 
 namespace CFL
 {
@@ -161,15 +162,6 @@ public:
 
   static constexpr FormKind form_kind = kind_of_form;
 
-  static constexpr unsigned int fe_number = Test::index;
-  static constexpr bool integrate_value = Test::integration_flags.value;
-  static constexpr bool integrate_value_exterior =
-    (kind_of_form == FormKind::face) ? Test::integration_flags.value_exterior : false;
-  static constexpr bool integrate_gradient = Test::integration_flags.gradient;
-  static constexpr bool integrate_gradient_exterior =
-    (kind_of_form == FormKind::face) ? Test::integration_flags.gradient_exterior : false;
-
-  
   constexpr Form(Test test_, Expr expr_)
     : test_data(std::move(test_))
     , expr_data(std::move(expr_))
@@ -234,119 +226,6 @@ public:
     return form_latex_aux<Test::TensorTraits::rank, Test, Expr>()(test_data, expr_data);
   }
 
-  template <class FEEvaluation>
-  static void
-  integrate(FEEvaluation& phi)
-  {
-    // only to be used if there is only one form!
-    phi.template integrate<fe_number>(integrate_value, integrate_gradient);
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_integration_flags(FEEvaluation& phi)
-  {
-    // only to be used if there is only one form!
-    if constexpr(form_kind == FormKind::cell)
-        phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_integration_flags_face(FEEvaluation& phi)
-  {
-    // only to be used if there is only one form!
-    if constexpr(form_kind == FormKind::face)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(
-          integrate_value,
-          integrate_value_exterior,
-          integrate_gradient,
-          integrate_gradient_exterior);
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_integration_flags_boundary(FEEvaluation& phi)
-  {
-    // only to be used if there is only one form!
-    if constexpr(form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(
-          integrate_value,
-          integrate_value_exterior,
-          integrate_gradient,
-          integrate_gradient_exterior);
-  }
-
-  template <class FEEvaluation>
-  void
-  set_evaluation_flags(FEEvaluation& phi) const
-  {
-    // only to be used if there is only one form!
-    if constexpr(form_kind == FormKind::cell) expr_data.set_evaluation_flags(phi);
-  }
-
-  template <class FEEvaluation>
-  void
-  set_evaluation_flags_face(FEEvaluation& phi) const
-  {
-    // only to be used if there is only one form!
-    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        expr_data.set_evaluation_flags(phi);
-  }
-
-  NumberType
-  evaluate(unsigned int k, unsigned int i) const
-  {
-    return form_evaluate_aux<Test::TensorTraits::rank, Test, Expr>()(k, i, test_data, expr_data);
-  }
-
-  template <class FEEvaluation>
-  void evaluate([[maybe_unused]] FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::cell)
-      {
-        // only to be used if there is only one form!
-        const auto value = expr_data.value(phi, q);
-        Test::submit(phi, q, value);
-      }
-  }
-
-  template <class FEEvaluation>
-  void evaluate_face([[maybe_unused]] FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::face)
-      {
-        // only to be used if there is only one form!
-        const auto value = expr_data.value(phi, q);
-        Test::submit(phi, q, value);
-      }
-  }
-
-  template <class FEEvaluation>
-  void evaluate_boundary([[maybe_unused]] FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::boundary)
-      {
-        // only to be used if there is only one form!
-        const auto value = expr_data.value(phi, q);
-        Test::submit(phi, q, value);
-      }
-  }
-
-  template <class FEEvaluation>
-  auto
-  value(FEEvaluation& phi, unsigned int q) const
-  {
-    return expr_data.value(phi, q);
-  }
-
-  template <class FEEvaluation, typename ValueType>
-  static void
-  submit(FEEvaluation& phi, unsigned int q, const ValueType& value)
-  {
-    Test::submit(phi, q, value);
-  }
-
   template <class TestNew, class ExprNew, FormKind kind_new>
   Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
   operator+(const Form<TestNew, ExprNew, kind_new>& new_form) const
@@ -355,11 +234,10 @@ public:
   }
 
   template <class TestNew, class ExprNew, FormKind kind_new>
-  Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
+  auto
   operator-(const Form<TestNew, ExprNew, kind_new>& new_form) const
   {
-    return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>(*this,
-                                                                                   -new_form);
+    return Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ConstantScaled<ExprNew,NumberType>, kind_new>>(*this,-new_form);
   }
 
   template <class... Types>
@@ -372,14 +250,16 @@ public:
   auto
   operator-() const
   {
-    const typename std::remove_reference<decltype(*this)>::type newform(test_data, -expr_data);
+    const Form<Test, ConstantScaled<Expr, NumberType>, kind_of_form, NumberType>
+      newform(test_data, scale(-1., expr_data));
     return newform;
   }
 
   auto
   operator*(const double scalar) const
   {
-    const typename std::remove_reference<decltype(*this)>::type newform(test_data, expr_data*scalar);
+    const Form<Test, ConstantScaled<Expr, NumberType>, kind_of_form, NumberType>
+      newform(test_data, scale(scalar,expr_data));
     return newform;
   }
 };
@@ -473,23 +353,11 @@ class Forms<FormType>
 {
 public:
   static constexpr FormKind form_kind = FormType::form_kind;
-
-  static constexpr bool integrate_value = FormType::integrate_value;
-  static constexpr bool integrate_value_exterior =
-    (form_kind == FormKind::face) ? FormType::integrate_value_exterior : false;
-  static constexpr bool integrate_gradient = FormType::integrate_gradient;
-  static constexpr bool integrate_gradient_exterior =
-    (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
-
-  static constexpr unsigned int fe_number = FormType::fe_number;
   static constexpr unsigned int number = 0;
 
   explicit Forms(const FormType& form_)
     : form(form_)
   {
-    AssertThrow(
-      (check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>()),
-      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -516,138 +384,13 @@ public:
     }
   }
 
-  template <class FEEvaluation>
-  static void
-  set_integration_flags(FEEvaluation& phi)
-  {
-    if constexpr(form_kind == FormKind::cell)
-        phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_integration_flags_face(FEEvaluation& phi)
-  {
-    if constexpr(form_kind == FormKind::face)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(
-          integrate_value,
-          integrate_value_exterior,
-          integrate_gradient,
-          integrate_gradient_exterior);
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_integration_flags_boundary(FEEvaluation& phi)
-  {
-    if constexpr(form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(
-          integrate_value,
-          integrate_value_exterior,
-          integrate_gradient,
-          integrate_gradient_exterior);
-  }
-
-  template <class FEEvaluation>
-  void
-  set_evaluation_flags(FEEvaluation& phi) const
-  {
-    if constexpr(form_kind == FormKind::cell) form.expr_data.set_evaluation_flags(phi);
-  }
-
-  template <class FEEvaluation>
-  void
-  set_evaluation_flags_face(FEEvaluation& phi) const
-  {
-    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        form.expr_data.set_evaluation_flags(phi);
-  }
-
-  template <class FEEvaluation>
-  void evaluate([[maybe_unused]] FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::cell)
-      {
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting cell value from fe_number " << fe_number << std::endl;
-#endif
-        const auto value = form.value(phi, q);
-#ifdef DEBUG_OUUTPUT
-        std::cout << "expecting cell submit from fe_number " << fe_number << std::endl;
-#endif
-        form.submit(phi, q, value);
-      }
-  }
-
-  template <class FEEvaluation>
-  void evaluate_face([[maybe_unused]] FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::face)
-      {
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting face value from fe_number " << fe_number << std::endl;
-#endif
-        const auto value = form.value(phi, q);
-#ifdef DEBUG_OUUTPUT
-        std::cout << "expecting face submit from fe_number " << fe_number << std::endl;
-#endif
-        form.submit(phi, q, value);
-      }
-  }
-
-  template <class FEEvaluation>
-  void evaluate_boundary([[maybe_unused]] FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::boundary)
-      {
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting face value from fe_number " << fe_number << std::endl;
-#endif
-        const auto value = form.value(phi, q);
-#ifdef DEBUG_OUUTPUT
-        std::cout << "expecting face submit from fe_number " << fe_number << std::endl;
-#endif
-        form.submit(phi, q, value);
-      }
-  }
-
-  template <class FEEvaluation>
-  static void
-  integrate(FEEvaluation& phi)
-  {
-    phi.template integrate<fe_number>(integrate_value, integrate_gradient);
-  }
-
   const FormType&
   get_form() const
   {
     return form;
   }
 
-protected:
-  template <unsigned int size, typename IntegrationFlags>
-  static /*constexpr*/ bool
-  check_forms(
-    std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
-      container =
-        std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
-  {
-    const IntegrationFlags integration_flags = decltype(form.test_data)::integration_flags;
-
-    for (unsigned int i = number; i < size; ++i)
-    {
-      const auto& item = container.at(i);
-      if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
-          ((std::get<2>(item)) & integration_flags))
-        return false;
-    }
-
-    return true;
-  }
-
 private:
-  const /*static constexpr*/ bool valid =
-    check_forms<number, decltype(FormType::TestType::integration_flags)>();
   const FormType form;
 };
 
@@ -656,24 +399,12 @@ class Forms<FormType, Types...> : public Forms<Types...>
 {
 public:
   static constexpr FormKind form_kind = FormType::form_kind;
-
-  static constexpr bool integrate_value = FormType::integrate_value;
-  static constexpr bool integrate_value_exterior =
-    (form_kind == FormKind::face) ? FormType::integrate_value_exterior : false;
-  static constexpr bool integrate_gradient = FormType::integrate_gradient;
-  static constexpr bool integrate_gradient_exterior =
-    (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
-
-  static constexpr unsigned int fe_number = FormType::fe_number;
   static constexpr unsigned int number = Forms<Types...>::number + 1;
 
   Forms(const FormType& form_, const Forms<Types...>& old_form)
     : Forms<Types...>(old_form)
     , form(form_)
   {
-    AssertThrow(
-      valid,
-      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -682,9 +413,6 @@ public:
     : Forms<Types...>(old_form...)
     , form(form_)
   {
-    AssertThrow(
-      valid,
-      dealii::ExcMessage("There are multiple forms that try to submit the same information!"));
     static_assert(Traits::is_form<FormType>::value,
                   "You need to construct this with a Form object!");
   }
@@ -735,133 +463,9 @@ public:
     Forms<Types...>::get_form_kinds(use_objects);
   }
 
-  template <class FEEvaluation>
-  static void
-  set_integration_flags(FEEvaluation& phi)
+  const Forms<Types...>& get_other() const
   {
-    if constexpr(form_kind == FormKind::cell)
-        phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
-    Forms<Types...>::set_integration_flags(phi);
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_integration_flags_face(FEEvaluation& phi)
-  {
-    if constexpr(form_kind == FormKind::face)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(
-          integrate_value,
-          integrate_value_exterior,
-          integrate_gradient,
-          integrate_gradient_exterior);
-    Forms<Types...>::set_integration_flags_face(phi);
-  }
-
-  template <class FEEvaluation>
-  static void
-  set_integration_flags_boundary(FEEvaluation& phi)
-  {
-    if constexpr(form_kind == FormKind::boundary)
-        phi.template set_integration_flags_face_and_boundary<fe_number>(
-          integrate_value,
-          integrate_value_exterior,
-          integrate_gradient,
-          integrate_gradient_exterior);
-    Forms<Types...>::set_integration_flags_boundary(phi);
-  }
-
-  template <class FEEvaluation>
-  void
-  set_evaluation_flags(FEEvaluation& phi) const
-  {
-    if constexpr(form_kind == FormKind::cell) form.expr_data.set_evaluation_flags(phi);
-    Forms<Types...>::set_evaluation_flags(phi);
-  }
-
-  template <class FEEvaluation>
-  void
-  set_evaluation_flags_face(FEEvaluation& phi) const
-  {
-    if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        form.expr_data.set_evaluation_flags(phi);
-    Forms<Types...>::set_evaluation_flags_face(phi);
-  }
-
-  template <class FEEvaluation>
-  void
-  evaluate(FEEvaluation& phi, unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::cell)
-      {
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting cell value from fe_number " << fe_number << std::endl;
-#endif
-        const auto value = form.value(phi, q);
-#ifdef DEBUG_OUTPUT
-        std::cout << "descending" << std::endl;
-#endif
-        Forms<Types...>::evaluate(phi, q);
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting cell submit from fe_number " << fe_number << std::endl;
-#endif
-        form.submit(phi, q, value);
-      }
-    else
-      Forms<Types...>::evaluate(phi, q);
-  }
-
-  template <class FEEvaluation>
-  void
-  evaluate_face(FEEvaluation& phi, unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::face)
-      {
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting face value from fe_number " << fe_number << std::endl;
-#endif
-        const auto value = form.value(phi, q);
-#ifdef DEBUG_OUTPUT
-        std::cout << "descending" << std::endl;
-#endif
-        Forms<Types...>::evaluate_face(phi, q);
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting face submit from fe_number " << fe_number << std::endl;
-#endif
-        form.submit(phi, q, value);
-      }
-    else
-      Forms<Types...>::evaluate_face(phi, q);
-  }
-
-  template <class FEEvaluation>
-  void
-  evaluate_boundary(FEEvaluation& phi, unsigned int q) const
-  {
-    if constexpr(form_kind == FormKind::boundary)
-      {
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting face value from fe_number " << fe_number << std::endl;
-#endif
-        const auto value = form.value(phi, q);
-#ifdef DEBUG_OUTPUT
-        std::cout << "descending" << std::endl;
-#endif
-        Forms<Types...>::evaluate_boundary(phi, q);
-#ifdef DEBUG_OUTPUT
-        std::cout << "expecting face submit from fe_number " << fe_number << std::endl;
-#endif
-        form.submit(phi, q, value);
-      }
-    else
-      Forms<Types...>::evaluate_boundary(phi, q);
-  }
-
-  template <class FEEvaluation>
-  static void
-  integrate(FEEvaluation& phi)
-  {
-    phi.template integrate<fe_number>(integrate_value, integrate_gradient);
-    Forms<Types...>::integrate(phi);
+    return *this;
   }
 
   const FormType&
@@ -883,32 +487,7 @@ public:
     return (*this)*-1.;
   }
 
-protected:
-  template <unsigned int size, typename IntegrationFlags>
-  static /*constexpr*/ bool
-  check_forms(
-    std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
-      container =
-        std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
-  {
-    IntegrationFlags integration_flags = decltype(form.test_data)::integration_flags;
-    const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
-
-    for (unsigned int i = number; i < size; ++i)
-    {
-      const auto& item = container.at(i);
-      if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
-          ((std::get<2>(item)) & integration_flags))
-        return false;
-    }
-
-    container[number - 1] = new_tuple;
-    return Forms<Types...>::template check_forms<size, IntegrationFlags>(container);
-  }
-
 private:
-  const /*static constexpr*/ bool valid =
-    check_forms<number, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>();
   const FormType form;
 };
 

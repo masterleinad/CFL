@@ -19,7 +19,7 @@ namespace CFL
  * and restrict to a subset of numeric types
  *
  */
-template <typename number, typename T>
+  template <typename T, typename number=double>
 class ConstantScaled
 {
   const number factor;
@@ -39,6 +39,12 @@ public:
   {
     return std::to_string(factor) + " " + t.latex(comp...);
   }
+
+  template <typename... Types>
+  auto value (Types... args) const
+  {
+    return factor * t.value(args...);
+  }
 };
 
 /**
@@ -53,8 +59,17 @@ template <typename number, class T>
 auto
 scale(number factor, const T& t)
 {
-  return ConstantScaled<number, T>(factor, t);
+  return ConstantScaled<T, number>(factor, t);
 }
+
+  namespace Traits
+  {
+    template <typename T, typename number>
+    struct fe_function_set_type<ConstantScaled<T, number>>
+    {
+      static const CFL::ObjectType value = fe_function_set_type<T>::value;
+    };
+  }
 } // namespace CFL
 
 #endif

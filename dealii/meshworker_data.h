@@ -41,7 +41,7 @@ namespace CFL
 	for (unsigned int i = 0; i < info.fe_values(test_fev).dofs_per_cell; ++i)
       dinfo.vector(0).block(test.id().block_index)[i]
 	+= e * test.value(i, info, q);
-      }
+     }
       
       
       template <int dim, class Expr, class Test>
@@ -76,7 +76,8 @@ namespace CFL
 	    {
 	      const double e = expr.value(d1, d2, info, q) * info.fe_values(0).JxW(q);
 	      for (unsigned int i = 0; i < info.fe_values(test_fev).dofs_per_cell; ++i)
-		test.store(i, e * test.value(d1, d2, i, info, q));
+	      dinfo.vector(0).block(test.id().block_index)[i]
+		+= e * test.value(d1, d2, i, info, q);
 	    }
       }
 
@@ -93,8 +94,9 @@ namespace CFL
       template <int dim, class FORMS>
       typename std::enable_if<FORMS::number!=0, void>::type
       evaluate(DoFInfo<dim,dim>& dinfo, const IntegrationInfo<dim>& info,
-	       unsigned int q)
+	       const FORMS& form, unsigned int q)
       {
+	evaluate(dinfo, info, form.get_other(), q);
 	evaluate(dinfo, info, form.get_form().test(), form.get_form().expr(), q);
       }
       
@@ -119,7 +121,7 @@ namespace CFL
 	{
 	  for (unsigned int k = 0; k < info.fe_values(0).n_quadrature_points; ++k)
 	    {
-	      evaluate(dinfo, info, form.test(), form.expr(), k);
+	      evaluate(dinfo, info, form, k);
 	    }
 	}
       };
@@ -181,9 +183,9 @@ namespace CFL
 	       ++i)
 	    {
 	      // std::cerr << "Vector " << *i << std::endl;
-	      info_box.cell_selector.add(*i, true, true, false);
-	      info_box.boundary_selector.add(*i, true, true, false);
-	      info_box.face_selector.add(*i, true, true, false);
+	      info_box.cell_selector.add(*i, true, true, true);
+	      info_box.boundary_selector.add(*i, true, true, true);
+	      info_box.face_selector.add(*i, true, true, true);
 	    }
 	  
 	  info_box.add_update_flags_all(update_flags);

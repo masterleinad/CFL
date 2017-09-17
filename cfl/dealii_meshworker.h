@@ -119,6 +119,8 @@ namespace dealii
       friend class TestHessian<order, dim>;
 
     public:
+      /// Remove after reducing Forms
+      static const bool integration_flags = false;
       typedef Traits::Tensor<order, dim> TensorTraits;
 
       constexpr TestFunction(unsigned int fe_index, unsigned int block_index)
@@ -132,11 +134,21 @@ namespace dealii
       }
       
       double
-      value(unsigned int test_function_index,
+      value(unsigned int test_index,
 	    const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
 	    unsigned int quadrature_index) const
       {
-        return ii.fe_values(id().fe_index).shape_value(test_function_index, quadrature_index);
+	static_assert(order==0, "Tensor test function used without tensor coordinate");
+        return ii.fe_values(id().fe_index).shape_value(test_index, quadrature_index);
+      }
+      
+      double
+      value(unsigned int d, unsigned int test_index,
+	    const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
+	    unsigned int quadrature_index) const
+      {
+	static_assert(order==1, "Tensor order and number of tensor coordinates do not match");
+        return ii.fe_values(id().fe_index).shape_value_component(test_index, quadrature_index, d);
       }
     };
 
@@ -147,6 +159,8 @@ namespace dealii
       friend class TestHessian<order, dim>;
 
     public:
+      /// Remove after reducing Forms
+      static const bool integration_flags = false;
       typedef Traits::Tensor<order+1, dim> TensorTraits;
 
       TestGradient(const TestFunction<order,dim>& base)
@@ -160,15 +174,25 @@ namespace dealii
       }
       
       double
-      value(int comp,
-	    unsigned int test_function_index,
+      value(int d,
+	    unsigned int test_index,
 	    const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
 	    unsigned int quadrature_index) const
       {
-        return ii.fe_values(id().fe_index)
-          .shape_grad(test_function_index, quadrature_index)[comp];
+	static_assert(order==0, "Tensor order and number of tensor coordinates do not match");
+        return ii.fe_values(id().fe_index).shape_grad(test_index, quadrature_index)[d];
       }
-    };
+
+      double
+      value(int d1, int d2,
+	    unsigned int test_index,
+	    const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
+	    unsigned int quadrature_index) const
+      {
+	static_assert(order==1, "Tensor order and number of tensor coordinates do not match");
+        return ii.fe_values(id().fe_index).shape_grad_component(test_index, quadrature_index,d2)[d1];
+      }
+};
 
     template <int order, int dim>
     class TestHessian
@@ -176,6 +200,8 @@ namespace dealii
       const TestFunction<order, dim>& base;
 
     public:
+      /// Remove after reducing Forms
+      static const bool integration_flags = false;
       typedef Traits::Tensor<order+2, dim> TensorTraits;
 
       TestHessian(const TestFunction<order,dim>& base)
@@ -194,13 +220,13 @@ namespace dealii
       }
       
       double
-      value(int comp1, int comp2,
-	    unsigned int test_function_index,
+      value(int d1, int d2,
+	    unsigned int test_index,
 	    const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
 	    unsigned int quadrature_index) const
       {
-        return ii.fe_values(id().fe_index)
-          .shape_hessian(test_function_index, quadrature_index)(comp1, comp2);
+	static_assert(order==0, "Tensor order and number of tensor coordinates do not match");
+        return ii.fe_values(id().fe_index).shape_hessian(test_index, quadrature_index)[d1][d2];
       }
     };
 
@@ -332,7 +358,6 @@ namespace dealii
 	    const IntegrationInfo<dim, dim>& info,
 	    unsigned int quadrature_index) const
       {
-        Assert(info != nullptr, ::dealii::ExcInternalError());
         return info.hessians[base.data_index][base.first_component][quadrature_index][d1][d2];
       }
     };
