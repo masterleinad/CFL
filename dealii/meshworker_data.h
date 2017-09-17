@@ -81,6 +81,24 @@ namespace CFL
       }
 
 
+      template <int dim, class FORMS>
+      typename std::enable_if<FORMS::number==0, void>::type
+      evaluate(DoFInfo<dim,dim>& dinfo, const IntegrationInfo<dim>& info,
+	       const FORMS& form, unsigned int q)
+      {
+	evaluate(dinfo, info, form.get_form().test(), form.get_form().expr(), q);
+      }
+	       
+
+      template <int dim, class FORMS>
+      typename std::enable_if<FORMS::number!=0, void>::type
+      evaluate(DoFInfo<dim,dim>& dinfo, const IntegrationInfo<dim>& info,
+	       unsigned int q)
+      {
+	evaluate(dinfo, info, form.get_form().test(), form.get_form().expr(), q);
+      }
+      
+      
       template <int dim, class FORM>
       class MeshWorkerIntegrator : public LocalIntegrator<dim>
       {
