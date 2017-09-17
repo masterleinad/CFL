@@ -227,34 +227,34 @@ run(unsigned int grid_index, unsigned int refine)
   std::vector<FiniteElement<dim>*> fes;
   fes.push_back(&fe_u);
 
-  Base::TestFunction<0, 1, 0> v;
-  auto Dv = grad(v);
-  Base::TestFunctionInteriorFace<0, 1, 0> v_p;
-  Base::TestFunctionExteriorFace<0, 1, 0> v_m;
-  Base::TestNormalGradientInteriorFace<0, 1, 0> Dnv_p;
-  Base::TestNormalGradientExteriorFace<0, 1, 0> Dnv_m;
+  constexpr Base::TestFunction<0, dim, 0> v;
+  constexpr auto Dv = grad(v);
+  constexpr Base::TestFunctionInteriorFace<0, dim, 0> v_p;
+  constexpr Base::TestFunctionExteriorFace<0, dim, 0> v_m;
+  constexpr Base::TestNormalGradientInteriorFace<0, dim, 0> Dnv_p;
+  constexpr Base::TestNormalGradientExteriorFace<0, dim, 0> Dnv_m;
 
-  Base::FEFunction<0, 1, 0> u;
-  auto Du = grad(u);
-  Base::FEFunctionInteriorFace<0, 1, 0> u_p;
-  Base::FEFunctionExteriorFace<0, 1, 0> u_m;
-  Base::FENormalGradientInteriorFace<0, 1, 0> Dnu_p;
-  Base::FENormalGradientExteriorFace<0, 1, 0> Dnu_m;
+  constexpr Base::FEFunction<0, dim, 0> u;
+  constexpr auto Du = grad(u);
+  constexpr Base::FEFunctionInteriorFace<0, dim, 0> u_p;
+  constexpr Base::FEFunctionExteriorFace<0, dim, 0> u_m;
+  constexpr Base::FENormalGradientInteriorFace<0, dim, 0> Dnu_p;
+  constexpr Base::FENormalGradientExteriorFace<0, dim, 0> Dnu_m;
 
-  auto cell = Base::form(Du, Dv);
+  constexpr auto cell = Base::form(Du, Dv);
 
-  auto flux = u_p - u_m;
-  auto flux_grad = Dnu_p - Dnu_m;
+  constexpr auto flux = u_p - u_m;
+  constexpr auto flux_grad = Dnu_p - Dnu_m;
 
-  auto flux1 = -Base::face_form(flux, Dnv_p) + Base::face_form(flux, Dnv_m);
-  auto flux2 =
+  constexpr auto flux1 = -Base::face_form(flux, Dnv_p) + Base::face_form(flux, Dnv_m);
+  constexpr auto flux2 =
     Base::face_form(-flux + .5 * flux_grad, v_p) - Base::face_form(-flux + .5 * flux_grad, v_m);
 
-  auto boundary1 = Base::boundary_form(2. * u_p - Dnu_p, v_p);
-  auto boundary3 = -Base::boundary_form(u_p, Dnv_p);
+  constexpr auto boundary1 = Base::boundary_form(2. * u_p - Dnu_p, v_p);
+  constexpr auto boundary3 = -Base::boundary_form(u_p, Dnv_p);
 
-  auto face = -flux2 + .5 * flux1;
-  auto f = transform(cell + face + boundary1 + boundary3);
+  constexpr auto face = -flux2 + .5 * flux1;
+  constexpr auto f = transform(cell + face + boundary1 + boundary3);
 
   std::tuple<FormKind, unsigned int, IntegrationFlags> tuple =
     std::make_tuple(FormKind::cell, 0, IntegrationFlags());
