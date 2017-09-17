@@ -6,7 +6,7 @@
 #include <deal.II/lac/vector.h>
 
 #include <cfl/cfl.h>
-#include <cfl/dealii.h>
+#include <cfl/dealii_meshworker.h>
 
 using namespace CFL;
 
@@ -17,7 +17,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FE_Q<dim> fe(degree);
   MeshworkerData<dim> data(grid_index, refine, fe);
 
-  ScalarTestFunction<dim> v(0, 0);
+  TestFunction<0, dim> v(0, 0);
   FEFunction<0, dim> u("u", 0);
   auto Dv = grad(v);
   auto Du = grad(u);

@@ -1,5 +1,5 @@
-#ifndef cfl_dealii_h
-#define cfl_dealii_h
+#ifndef cfl_dealii_meshworker_h
+#define cfl_dealii_meshworker_h
 
 #include <cfl/forms.h>
 #include <cfl/traits.h>
@@ -48,56 +48,56 @@ namespace dealii
       unsigned int block_index;
     };
 
-    template <int dim>
-    class ScalarTestFunction;
-    template <int dim>
-    class ScalarTestGradient;
-    template <int dim>
-    class ScalarTestHessian;
+    template <int order, int dim>
+    class TestFunction;
+    template <int order, int dim>
+    class TestGradient;
+    template <int order, int dim>
+    class TestHessian;
 
-    template <int rank, int dim>
+    template <int order, int dim>
     class FEFunction;
-    template <int rank, int dim>
+    template <int order, int dim>
     class FEGradient;
-    template <int rank, int dim>
+    template <int order, int dim>
     class FEHessian;
   }
 }
 
 namespace Traits
 {
-  template <int dim>
-  struct test_function_set_type<dealii::MeshWorker::ScalarTestFunction<dim>>
+  template <int order, int dim>
+  struct test_function_set_type<dealii::MeshWorker::TestFunction<order,dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
-  template <int dim>
-  struct test_function_set_type<dealii::MeshWorker::ScalarTestGradient<dim>>
+  template <int order, int dim>
+  struct test_function_set_type<dealii::MeshWorker::TestGradient<order,dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
-  template <int dim>
-  struct test_function_set_type<dealii::MeshWorker::ScalarTestHessian<dim>>
+  template <int order, int dim>
+  struct test_function_set_type<dealii::MeshWorker::TestHessian<order,dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
-  template <int rank, int dim>
-  struct fe_function_set_type<dealii::MeshWorker::FEFunction<rank, dim>>
+  template <int order, int dim>
+  struct fe_function_set_type<dealii::MeshWorker::FEFunction<order, dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
-  template <int rank, int dim>
-  struct fe_function_set_type<dealii::MeshWorker::FEGradient<rank, dim>>
+  template <int order, int dim>
+  struct fe_function_set_type<dealii::MeshWorker::FEGradient<order, dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
 
-  template <int rank, int dim>
-  struct fe_function_set_type<dealii::MeshWorker::FEHessian<rank, dim>>
+  template <int order, int dim>
+  struct fe_function_set_type<dealii::MeshWorker::FEHessian<order, dim>>
   {
     static const ObjectType value = ObjectType::cell;
   };
@@ -107,24 +107,24 @@ namespace dealii
 {
   namespace MeshWorker
   {
-    template <int dim>
-    class ScalarTestFunction
+    template <int order, int dim>
+    class TestFunction
     {
       /// The constant index data used in local integration
-      TestFunctionIdentifier id;
+      const TestFunctionIdentifier id;
 
       /// Pointer to the DoFInfo object storing the result
       mutable ::dealii::MeshWorker::DoFInfo<dim, dim> const* di;
       /// Pointer to the IntegrationInfo object containing the local data
       mutable ::dealii::MeshWorker::IntegrationInfo<dim, dim> const* ii;
 
-      friend class ScalarTestGradient<dim>;
-      friend class ScalarTestHessian<dim>;
+      friend class TestGradient<order, dim>;
+      friend class TestHessian<order, dim>;
 
     public:
-      typedef Traits::Tensor<0, dim> TensorTraits;
+      typedef Traits::Tensor<order, dim> TensorTraits;
 
-      constexpr ScalarTestFunction(unsigned int fe_index, unsigned int block_index)
+      constexpr TestFunction(unsigned int fe_index, unsigned int block_index)
         : id{ fe_index, block_index }
         , di{ nullptr }
         , ii{ nullptr }
@@ -147,17 +147,17 @@ namespace dealii
       }
     };
 
-    template <int dim>
-    class ScalarTestGradient
+    template <int order, int dim>
+    class TestGradient
     {
-      const ScalarTestFunction<dim>& base;
-      friend class ScalarTestHessian<dim>;
+      const TestFunction<order, dim>& base;
+      friend class TestHessian<order, dim>;
 
     public:
-      typedef Traits::Tensor<1, dim> TensorTraits;
+      typedef Traits::Tensor<order+1, dim> TensorTraits;
 
-      ScalarTestGradient(const ScalarTestFunction<dim>& base)
-        : base(base)
+      TestGradient(const TestFunction<order,dim>& base)
+        : base {base}
       {
       }
 
@@ -177,16 +177,21 @@ namespace dealii
       }
     };
 
-    template <int dim>
-    class ScalarTestHessian
+    template <int order, int dim>
+    class TestHessian
     {
-      const ScalarTestFunction<dim>& base;
+      const TestFunction<order, dim>& base;
 
     public:
-      typedef Traits::Tensor<2, dim> TensorTraits;
+      typedef Traits::Tensor<order+2, dim> TensorTraits;
 
-      ScalarTestHessian(const ScalarTestGradient<dim>& grad)
-        : base(grad.base)
+      TestHessian(const TestFunction<order,dim>& base)
+        : base {base}
+      {
+      }
+
+      TestHessian(const TestGradient<order,dim>& grad)
+        : base {grad.base}
       {
       }
 
@@ -207,21 +212,21 @@ namespace dealii
       }
     };
 
-    template <int dim>
-    ScalarTestGradient<dim>
-    grad(const ScalarTestFunction<dim>& func)
+    template <int order, int dim>
+    TestGradient<order,dim>
+    grad(const TestFunction<order, dim>& func)
     {
-      return ScalarTestGradient<dim>(func);
+      return TestGradient<order, dim>(func);
     }
 
-    template <int dim>
-    ScalarTestHessian<dim>
-    grad(const ScalarTestGradient<dim>& func)
+    template <int order, int dim>
+    TestHessian<order,dim>
+    grad(const TestGradient<order, dim>& func)
     {
-      return ScalarTestHessian<dim>(func);
+      return TestHessian<order, dim>(func);
     }
 
-    template <int rank, int dim>
+    template <int order, int dim>
     class FEFunction
     {
       const std::string data_name;
@@ -229,11 +234,11 @@ namespace dealii
       mutable unsigned int data_index;
       mutable ::dealii::MeshWorker::IntegrationInfo<dim, dim> const* info;
 
-      friend class FEGradient<rank, dim>;
-      friend class FEHessian<rank, dim>;
+      friend class FEGradient<order, dim>;
+      friend class FEHessian<order, dim>;
 
     public:
-      typedef Traits::Tensor<rank, dim> TensorTraits;
+      typedef Traits::Tensor<order, dim> TensorTraits;
 
       FEFunction(const std::string& name, const unsigned int first)
         : data_name(name)
@@ -275,26 +280,98 @@ namespace dealii
           throw std::invalid_argument(std::string("Vector name not found: ") + data_name);
       }
 
-      // TODO: only implemented for scalars yet
-      double
-      evaluate(unsigned int quadrature_index) const
+      
+      double value(unsigned int quadrature_index) const
       {
+	static_assert(order==0, "Scalar used with tensor coordinate");
         Assert(info != nullptr && data_index != ::dealii::numbers::invalid_unsigned_int,
                ::dealii::ExcInternalError());
         return info->values[data_index][first_component][quadrature_index];
       }
+
+
+      double value(unsigned int d, unsigned int quadrature_index) const
+      {
+	static_assert(order==1, "Wrong number of tensor coordinates");
+        Assert(info != nullptr && data_index != ::dealii::numbers::invalid_unsigned_int,
+               ::dealii::ExcInternalError());
+        return info->values[data_index][first_component+d][quadrature_index];
+      }
     };
 
-    template <int rank, int dim>
+    /**
+     * The gradient of a meshworker defined finite element function.
+     *
+     * The gradient is of one tensor order higher than the function
+     * itself, adding an index to the front of the set of tensor
+     * coordinates.
+     */
+    template <int order, int dim>
     class FEGradient
     {
-      const FEFunction<rank, dim>& base;
-      friend class FEHessian<rank, dim>;
+      const FEFunction<order, dim>& base;
+      friend class FEHessian<order, dim>;
 
     public:
-      typedef Traits::Tensor<rank + 1, dim> TensorTraits;
+      typedef Traits::Tensor<order + 1, dim> TensorTraits;
 
-      FEGradient(const FEFunction<rank, dim>& base)
+      constexpr FEGradient(const FEFunction<order, dim>& base)
+        : base(base)
+      {
+      }
+
+      void
+      anchor(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
+             const ::dealii::MeshWorker::LocalIntegrator<dim>& li) const
+      {
+        base.anchor(ii, li);
+      }
+
+
+      double value(unsigned int d, unsigned int quadrature_index) const
+      {
+	static_assert(order==0, "Wrong number of tensor coordinates");
+        Assert(base.info != nullptr, ::dealii::ExcInternalError());
+
+        AssertIndexRange(base.data_index, base.info->gradients.size());
+
+        AssertIndexRange(base.first_component, base.info->gradients[base.data_index].size());
+        AssertIndexRange(quadrature_index,
+                         base.info->gradients[base.data_index][base.first_component].size());
+        AssertIndexRange(d, dim);
+        return base.info->gradients[base.data_index][base.first_component][quadrature_index][d];
+      }
+
+
+      double value(unsigned int d1, unsigned int d2, unsigned int quadrature_index) const
+      {
+	static_assert(order==1, "Wrong number of tensor coordinates");
+        Assert(base.info != nullptr, ::dealii::ExcInternalError());
+
+        AssertIndexRange(base.data_index, base.info->gradients.size());
+
+        AssertIndexRange(base.first_component, base.info->gradients[base.data_index].size());
+        AssertIndexRange(quadrature_index,
+                         base.info->gradients[base.data_index][base.first_component].size());
+        AssertIndexRange(d1, dim);
+        return base.info->gradients[base.data_index][base.first_component+d2][quadrature_index][d1];
+      }
+    };
+
+    template <int order, int dim>
+    class FEHessian
+    {
+      const FEFunction<order, dim>& base;
+
+    public:
+      typedef Traits::Tensor<order + 2, dim> TensorTraits;
+
+      constexpr FEHessian(const FEGradient<order, dim>& grad)
+        : base(grad.base)
+      {
+      }
+
+      constexpr FEHessian(const FEFunction<order, dim>& base)
         : base(base)
       {
       }
@@ -307,63 +384,27 @@ namespace dealii
       }
 
       // TODO: only implemented for scalars yet
-      double
-      evaluate(unsigned int quadrature_index, unsigned int comp) const
-      {
-        Assert(base.info != nullptr, ::dealii::ExcInternalError());
-
-        AssertIndexRange(base.data_index, base.info->gradients.size());
-
-        AssertIndexRange(base.first_component, base.info->gradients[base.data_index].size());
-        AssertIndexRange(quadrature_index,
-                         base.info->gradients[base.data_index][base.first_component].size());
-        AssertIndexRange(comp, dim);
-        return base.info->gradients[base.data_index][base.first_component][quadrature_index][comp];
-      }
-    };
-
-    template <int rank, int dim>
-    class FEHessian
-    {
-      const FEFunction<rank, dim>& base;
-
-    public:
-      typedef Traits::Tensor<rank + 2, dim> TensorTraits;
-
-      FEHessian(const FEGradient<rank, dim>& grad)
-        : base(grad.base)
-      {
-      }
-
-      void
-      anchor(const ::dealii::MeshWorker::IntegrationInfo<dim, dim>& ii,
-             const ::dealii::MeshWorker::LocalIntegrator<dim>& li) const
-      {
-        base.anchor(ii, li);
-      }
-
-      // TODO: only implemented for scalars yet
-      double
-      evaluate(unsigned int quadrature_index, unsigned int comp1, unsigned int comp2) const
+      typename std::enable_if<order==0,double>::type
+      value(unsigned int d1, unsigned int d2, unsigned int quadrature_index) const
       {
         Assert(base.info != nullptr, ::dealii::ExcInternalError());
         return base.info
-          ->hessians[base.data_index][base.first_component][quadrature_index][comp1][comp2];
+          ->hessians[base.data_index][base.first_component][quadrature_index][d1][d2];
       }
     };
 
-    template <int rank, int dim>
-    FEGradient<rank, dim>
-    grad(const FEFunction<rank, dim>& f)
+    template <int order, int dim>
+    FEGradient<order, dim>
+    grad(const FEFunction<order, dim>& f)
     {
-      return FEGradient<rank, dim>(f);
+      return FEGradient<order, dim>(f);
     }
 
-    template <int rank, int dim>
-    FEHessian<rank, dim>
-    grad(const FEGradient<rank, dim>& f)
+    template <int order, int dim>
+    FEHessian<order, dim>
+    grad(const FEGradient<order, dim>& f)
     {
-      return FEHessian<rank, dim>(f);
+      return FEHessian<order, dim>(f);
     }
 
     template <class TEST, class EXPR, FormKind kind_of_form>
@@ -373,7 +414,7 @@ namespace dealii
                                                        TEST::TensorTraits::dim>& ii,
            const ::dealii::MeshWorker::LocalIntegrator<TEST::TensorTraits::dim>& li)
     {
-      form.expr.anchor(ii, li);
+      form.expr().anchor(ii, li);
     }
 
     template <class TEST, class EXPR, FormKind kind_of_form>
@@ -384,7 +425,7 @@ namespace dealii
       const ::dealii::MeshWorker::IntegrationInfo<TEST::TensorTraits::dim, TEST::TensorTraits::dim>&
         ii)
     {
-      form.test.reinit(di, ii);
+      form.test().reinit(di, ii);
     }
 
     template <class T, int dim = T::TensorTraits::dim>

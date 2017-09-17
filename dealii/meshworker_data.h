@@ -14,7 +14,7 @@
 #include <deal.II/meshworker/output.h>
 #include <deal.II/meshworker/simple.h>
 
-#include <cfl/dealii.h>
+#include <cfl/dealii_meshworker.h>
 #include <cfl/forms.h>
 
 #include <string>

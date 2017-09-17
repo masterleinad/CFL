@@ -88,7 +88,7 @@ struct form_evaluate_aux<0, Test, Expr>
   double
   operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
   {
-    return test.evaluate(k, i) * expr.evaluate(k);
+    return test.evaluate(k, i) * expr.value(k);
   }
 };
 
@@ -101,7 +101,7 @@ struct form_evaluate_aux<1, Test, Expr>
     double sum = 0.;
     for (unsigned int d = 0; d < Test::TensorTraits::dim; ++d)
     {
-      sum += test.evaluate(k, i, d) * expr.evaluate(k, d);
+      sum += test.evaluate(k, i, d) * expr.value(d, k);
     }
     return sum;
   }
@@ -156,8 +156,8 @@ class Form final
 {
 public:
   using TestType = Test;
-  const Test test;
-  const Expr expr;
+  const Test test_data;
+  const Expr expr_data;
 
   static constexpr FormKind form_kind = kind_of_form;
 
@@ -169,9 +169,10 @@ public:
   static constexpr bool integrate_gradient_exterior =
     (kind_of_form == FormKind::face) ? Test::integration_flags.gradient_exterior : false;
 
-  Form(Test test_, Expr expr_)
-    : test(std::move(test_))
-    , expr(std::move(expr_))
+  
+  constexpr Form(Test test_, Expr expr_)
+    : test_data(std::move(test_))
+    , expr_data(std::move(expr_))
   {
     static_assert(Traits::test_function_set_type<Test>::value != ObjectType::none,
                   "The first argument must be a test function!");
@@ -194,6 +195,17 @@ public:
         "A boundary form cannot have a test function associated with the neighbor of a cell!");
   }
 
+
+  constexpr const Expr& expr () const
+  {
+    return expr_data;
+  }
+  
+  constexpr const Test& test () const
+  {
+    return test_data;
+  }
+  
   static constexpr void
   get_form_kinds(std::array<bool, 3>& use_objects)
   {
@@ -219,7 +231,7 @@ public:
   std::string
   latex() const
   {
-    return form_latex_aux<Test::TensorTraits::rank, Test, Expr>()(test, expr);
+    return form_latex_aux<Test::TensorTraits::rank, Test, Expr>()(test_data, expr_data);
   }
 
   template <class FEEvaluation>
@@ -270,7 +282,7 @@ public:
   set_evaluation_flags(FEEvaluation& phi) const
   {
     // only to be used if there is only one form!
-    if constexpr(form_kind == FormKind::cell) expr.set_evaluation_flags(phi);
+    if constexpr(form_kind == FormKind::cell) expr_data.set_evaluation_flags(phi);
   }
 
   template <class FEEvaluation>
@@ -279,13 +291,13 @@ public:
   {
     // only to be used if there is only one form!
     if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        expr.set_evaluation_flags(phi);
+        expr_data.set_evaluation_flags(phi);
   }
 
   NumberType
   evaluate(unsigned int k, unsigned int i) const
   {
-    return form_evaluate_aux<Test::TensorTraits::rank, Test, Expr>()(k, i, test, expr);
+    return form_evaluate_aux<Test::TensorTraits::rank, Test, Expr>()(k, i, test_data, expr_data);
   }
 
   template <class FEEvaluation>
@@ -294,7 +306,7 @@ public:
     if constexpr(form_kind == FormKind::cell)
       {
         // only to be used if there is only one form!
-        const auto value = expr.value(phi, q);
+        const auto value = expr_data.value(phi, q);
         Test::submit(phi, q, value);
       }
   }
@@ -305,7 +317,7 @@ public:
     if constexpr(form_kind == FormKind::face)
       {
         // only to be used if there is only one form!
-        const auto value = expr.value(phi, q);
+        const auto value = expr_data.value(phi, q);
         Test::submit(phi, q, value);
       }
   }
@@ -316,7 +328,7 @@ public:
     if constexpr(form_kind == FormKind::boundary)
       {
         // only to be used if there is only one form!
-        const auto value = expr.value(phi, q);
+        const auto value = expr_data.value(phi, q);
         Test::submit(phi, q, value);
       }
   }
@@ -325,7 +337,7 @@ public:
   auto
   value(FEEvaluation& phi, unsigned int q) const
   {
-    return expr.value(phi, q);
+    return expr_data.value(phi, q);
   }
 
   template <class FEEvaluation, typename ValueType>
@@ -360,14 +372,14 @@ public:
   auto
   operator-() const
   {
-    const typename std::remove_reference<decltype(*this)>::type newform(test, -expr);
+    const typename std::remove_reference<decltype(*this)>::type newform(test_data, -expr_data);
     return newform;
   }
 
   auto
   operator*(const double scalar) const
   {
-    const typename std::remove_reference<decltype(*this)>::type newform(test, expr*scalar);
+    const typename std::remove_reference<decltype(*this)>::type newform(test_data, expr_data*scalar);
     return newform;
   }
 };
@@ -540,7 +552,7 @@ public:
   void
   set_evaluation_flags(FEEvaluation& phi) const
   {
-    if constexpr(form_kind == FormKind::cell) form.expr.set_evaluation_flags(phi);
+    if constexpr(form_kind == FormKind::cell) form.expr_data.set_evaluation_flags(phi);
   }
 
   template <class FEEvaluation>
@@ -548,7 +560,7 @@ public:
   set_evaluation_flags_face(FEEvaluation& phi) const
   {
     if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        form.expr.set_evaluation_flags(phi);
+        form.expr_data.set_evaluation_flags(phi);
   }
 
   template <class FEEvaluation>
@@ -620,7 +632,7 @@ protected:
       container =
         std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
   {
-    const IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
+    const IntegrationFlags integration_flags = decltype(form.test_data)::integration_flags;
 
     for (unsigned int i = number; i < size; ++i)
     {
@@ -762,7 +774,7 @@ public:
   void
   set_evaluation_flags(FEEvaluation& phi) const
   {
-    if constexpr(form_kind == FormKind::cell) form.expr.set_evaluation_flags(phi);
+    if constexpr(form_kind == FormKind::cell) form.expr_data.set_evaluation_flags(phi);
     Forms<Types...>::set_evaluation_flags(phi);
   }
 
@@ -771,7 +783,7 @@ public:
   set_evaluation_flags_face(FEEvaluation& phi) const
   {
     if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-        form.expr.set_evaluation_flags(phi);
+        form.expr_data.set_evaluation_flags(phi);
     Forms<Types...>::set_evaluation_flags_face(phi);
   }
 
@@ -879,7 +891,7 @@ protected:
       container =
         std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
   {
-    IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
+    IntegrationFlags integration_flags = decltype(form.test_data)::integration_flags;
     const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
 
     for (unsigned int i = number; i < size; ++i)
