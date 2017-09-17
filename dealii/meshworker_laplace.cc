@@ -9,6 +9,7 @@
 #include <cfl/dealii_meshworker.h>
 
 using namespace CFL;
+using namespace CFL::dealii::MeshWorker;
 
 template <int dim>
 void
@@ -18,7 +19,7 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   MeshworkerData<dim> data(grid_index, refine, fe);
 
   TestFunction<0, dim> v(0, 0);
-  FEFunction<0, dim> u("u", 0);
+  FEFunction<0, dim> u(0, 0);
   auto Dv = grad(v);
   auto Du = grad(u);
   auto f = form(Du, Dv);

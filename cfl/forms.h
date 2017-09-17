@@ -88,7 +88,7 @@ struct form_evaluate_aux<0, Test, Expr>
   double
   operator()(unsigned int k, unsigned int i, const Test& test, const Expr& expr)
   {
-    return test.evaluate(k, i) * expr.value(k);
+    return test.evaluate(k, i) * expr.evaluate(k);
   }
 };
 
@@ -101,7 +101,7 @@ struct form_evaluate_aux<1, Test, Expr>
     double sum = 0.;
     for (unsigned int d = 0; d < Test::TensorTraits::dim; ++d)
     {
-      sum += test.evaluate(k, i, d) * expr.value(d, k);
+      sum += test.evaluate(k, i, d) * expr.evaluate(k, d);
     }
     return sum;
   }
