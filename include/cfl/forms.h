@@ -98,28 +98,6 @@ namespace Base
           "A boundary form cannot have a test function associated with the neighbor of a cell!");
     }
 
-    static constexpr void
-    get_form_kinds(std::array<bool, 3>& use_objects)
-    {
-      switch (form_kind)
-      {
-        case FormKind::cell:
-          use_objects[0] = true;
-          break;
-
-        case FormKind::face:
-          use_objects[1] = true;
-          break;
-
-        case FormKind::boundary:
-          use_objects[2] = true;
-          break;
-
-        default:
-          static_assert("Invalid FormKind!");
-      }
-    }
-
     template <class TestNew, class ExprNew, FormKind kind_new>
     constexpr Forms<Form<Test, Expr, kind_of_form>, Form<TestNew, ExprNew, kind_new>>
     operator+(const Form<TestNew, ExprNew, kind_new>& new_form) const
@@ -260,28 +238,6 @@ namespace Base
                     "You need to construct this with a Form object!");
     }
 
-    static constexpr void
-    get_form_kinds(std::array<bool, 3>& use_objects)
-    {
-      switch (form_kind)
-      {
-        case FormKind::cell:
-          use_objects[0] = true;
-          break;
-
-        case FormKind::face:
-          use_objects[1] = true;
-          break;
-
-        case FormKind::boundary:
-          use_objects[2] = true;
-          break;
-
-        default:
-          static_assert("Invalid FormKind!");
-      }
-    }
-
     constexpr FormType
     get_form() const
     {
@@ -337,29 +293,6 @@ namespace Base
     operator+(const Forms<NewForm>& new_forms) const
     {
       return Forms<NewForm, FormType, Types...>(new_forms.get_form(), *this);
-    }
-
-    static constexpr void
-    get_form_kinds(std::array<bool, 3>& use_objects)
-    {
-      switch (form_kind)
-      {
-        case FormKind::cell:
-          use_objects[0] = true;
-          break;
-
-        case FormKind::face:
-          use_objects[1] = true;
-          break;
-
-        case FormKind::boundary:
-          use_objects[2] = true;
-          break;
-
-        default:
-          static_assert("Invalid FormKind!");
-      }
-      Forms<Types...>::get_form_kinds(use_objects);
     }
 
     constexpr FormType
