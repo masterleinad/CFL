@@ -735,8 +735,9 @@ namespace dealii
        *
        */
       template <typename Number>
-      constexpr typename std::enable_if_t<std::is_arithmetic<Number>::value, Derived<rank, dim, idx>>
-      operator*(const Number scalar_factor_) const
+      constexpr
+        typename std::enable_if_t<std::is_arithmetic<Number>::value, Derived<rank, dim, idx>>
+        operator*(const Number scalar_factor_) const
       {
         return Derived<rank, dim, idx>(scalar_factor * scalar_factor_);
       }
@@ -1443,7 +1444,8 @@ namespace dealii
       }
 
       template <typename Number>
-      constexpr typename std::enable_if_t<std::is_arithmetic<Number>::value, FELiftDivergence<FEFunctionType>>
+      constexpr typename std::enable_if_t<std::is_arithmetic<Number>::value,
+                                          FELiftDivergence<FEFunctionType>>
       operator*(const Number scalar_factor_) const
       {
         return FELiftDivergence<FEFunctionType>(

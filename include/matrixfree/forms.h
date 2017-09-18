@@ -181,6 +181,24 @@ namespace dealii::MatrixFree
     }
   };
 
+  namespace internal
+  {
+    // allow for appending an object to an std::array object.
+    template <typename T, std::size_t N, std::size_t... I>
+    constexpr std::array<T, N + 1>
+    append_aux(std::array<T, N> a, T t, std::index_sequence<I...>)
+    {
+      return std::array<T, N + 1>{ a[I]..., t };
+    }
+
+    template <typename T, std::size_t N>
+    constexpr std::array<T, N + 1>
+    append(std::array<T, N> a, T t)
+    {
+      return append_aux(a, t, std::make_index_sequence<N>());
+    }
+  }
+
   template <typename... Types>
   class Forms;
 
@@ -336,6 +354,31 @@ namespace dealii::MatrixFree
     {
       return form;
     }
+
+  protected:
+    template <unsigned int size, typename IntegrationFlags>
+    static constexpr bool
+    check_forms(
+      std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
+        container = std::array<
+          std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
+    {
+      const IntegrationFlags integration_flags =
+        decltype(std::declval<FormType>().test)::integration_flags;
+
+      for (unsigned int i = number; i < size; ++i)
+      {
+        const auto& item = container.at(i);
+        if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
+            ((std::get<2>(item)) & integration_flags))
+          return false;
+      }
+
+      return true;
+    }
+
+    static_assert(check_forms<number, decltype(FormType::TestType::integration_flags)>(),
+                  "There are multiple forms that try to submit the same information!");
 
   private:
     const FormType form;
@@ -522,6 +565,33 @@ namespace dealii::MatrixFree
     {
       return form;
     }
+
+  protected:
+    template <unsigned int size, typename IntegrationFlags>
+    static constexpr bool
+    check_forms(
+      std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
+        container = std::array<
+          std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
+    {
+      IntegrationFlags integration_flags =
+        decltype(std::declval<FormType>().test)::integration_flags;
+      const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
+
+      for (unsigned int i = number; i < size; ++i)
+      {
+        const auto& item = container.at(i);
+        if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
+            ((std::get<2>(item)) & integration_flags))
+          return false;
+      }
+
+      auto new_container = internal::append(container, new_tuple);
+      return Forms<Types...>::template check_forms<size + 1, IntegrationFlags>(new_container);
+    }
+
+    static_assert(check_forms<number, decltype(FormType::TestType::integration_flags)>(),
+                  "There are multiple forms that try to submit the same information!");
 
   private:
     const FormType form;

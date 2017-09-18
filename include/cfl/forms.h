@@ -72,12 +72,6 @@ namespace Base
     static constexpr FormKind form_kind = kind_of_form;
 
     static constexpr unsigned int fe_number = Test::index;
-    static constexpr bool integrate_value = Test::integration_flags.value;
-    static constexpr bool integrate_value_exterior =
-      (kind_of_form == FormKind::face) ? Test::integration_flags.value_exterior : false;
-    static constexpr bool integrate_gradient = Test::integration_flags.gradient;
-    static constexpr bool integrate_gradient_exterior =
-      (kind_of_form == FormKind::face) ? Test::integration_flags.gradient_exterior : false;
 
     constexpr Form(Test test_, Expr expr_)
       : test(std::move(test_))
@@ -256,21 +250,12 @@ namespace Base
   public:
     static constexpr FormKind form_kind = FormType::form_kind;
 
-    static constexpr bool integrate_value = FormType::integrate_value;
-    static constexpr bool integrate_value_exterior =
-      (form_kind == FormKind::face) ? FormType::integrate_value_exterior : false;
-    static constexpr bool integrate_gradient = FormType::integrate_gradient;
-    static constexpr bool integrate_gradient_exterior =
-      (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
-
     static constexpr unsigned int fe_number = FormType::fe_number;
     static constexpr unsigned int number = 0;
 
     explicit constexpr Forms(const FormType& form_)
       : form(form_)
     {
-      static_assert(valid,
-                    "There are multiple forms that try to submit the same information!");
       static_assert(Traits::is_form<FormType>::value,
                     "You need to construct this with a Form object!");
     }
@@ -303,62 +288,14 @@ namespace Base
       return form;
     }
 
-  protected:
-    template <unsigned int size, typename IntegrationFlags>
-    static constexpr bool
-    check_forms(
-      std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
-        container = std::array<
-          std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
-    {
-      const IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
-
-      for (unsigned int i = number; i < size; ++i)
-      {
-        const auto& item = container.at(i);
-        if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
-            ((std::get<2>(item)) & integration_flags))
-          return false;
-      }
-
-      return true;
-    }
-
-  private:
-    const static constexpr bool valid =
-      check_forms<number, decltype(FormType::TestType::integration_flags)>();
     const FormType form;
   };
-
-  namespace
-  {
-    template <typename T, std::size_t N, std::size_t... I>
-    constexpr std::array<T, N + 1>
-    append_aux(std::array<T, N> a, T t, std::index_sequence<I...>)
-    {
-      return std::array<T, N + 1>{ a[I]..., t };
-    }
-
-    template <typename T, std::size_t N>
-    constexpr std::array<T, N + 1>
-    append(std::array<T, N> a, T t)
-    {
-      return append_aux(a, t, std::make_index_sequence<N>());
-    }
-  }
 
   template <typename FormType, typename... Types>
   class Forms<FormType, Types...> : public Forms<Types...>
   {
   public:
     static constexpr FormKind form_kind = FormType::form_kind;
-
-    static constexpr bool integrate_value = FormType::integrate_value;
-    static constexpr bool integrate_value_exterior =
-      (form_kind == FormKind::face) ? FormType::integrate_value_exterior : false;
-    static constexpr bool integrate_gradient = FormType::integrate_gradient;
-    static constexpr bool integrate_gradient_exterior =
-      (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
 
     static constexpr unsigned int fe_number = FormType::fe_number;
     static constexpr unsigned int number = Forms<Types...>::number + 1;
@@ -367,8 +304,7 @@ namespace Base
       : Forms<Types...>(old_form)
       , form(form_)
     {
-      static_assert(valid, 
-                    "There are multiple forms that try to submit the same information!");
+
       static_assert(Traits::is_form<FormType>::value,
                     "You need to construct this with a Form object!");
     }
@@ -377,8 +313,6 @@ namespace Base
       : Forms<Types...>(old_form...)
       , form(form_)
     {
-      static_assert(valid,
-                    "There are multiple forms that try to submit the same information!");
       static_assert(Traits::is_form<FormType>::value,
                     "You need to construct this with a Form object!");
     }
@@ -448,32 +382,7 @@ namespace Base
       return (*this) * -1.;
     }
 
-  protected:
-    template <unsigned int size, typename IntegrationFlags>
-    static constexpr bool
-    check_forms(
-      std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
-        container = std::array<
-          std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
-    {
-      IntegrationFlags integration_flags = decltype(form.test)::integration_flags;
-      const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
-
-      for (unsigned int i = number; i < size; ++i)
-      {
-        const auto& item = container.at(i);
-        if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
-            ((std::get<2>(item)) & integration_flags))
-          return false;
-      }
-
-      auto new_container = append(container, new_tuple);
-      return Forms<Types...>::template check_forms<size + 1, IntegrationFlags>(new_container);
-    }
-
   private:
-    const static constexpr bool valid =
-      check_forms<0, std::remove_cv_t<decltype(FormType::TestType::integration_flags)>>();
     const FormType form;
   };
 
