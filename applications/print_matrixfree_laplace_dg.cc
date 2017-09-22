@@ -34,13 +34,16 @@ test()
   constexpr auto cell = Base::form(Du, Dv);
 
   constexpr auto flux = u_p - u_m;
+  //constexpr auto optimized_flux = optimize(flux);
   constexpr auto flux_grad = Dnu_p - Dnu_m;
+    constexpr auto tmp_sum = flux+flux;
+  constexpr auto optmized_flux2 = optimize(tmp_sum);
 
   constexpr auto flux1 = -face_form(flux, Dnv_p) + Base::face_form(flux, Dnv_m);
   constexpr auto flux2 =
     Base::face_form(-flux + .5 * flux_grad, v_p) - Base::face_form(-flux + .5 * flux_grad, v_m);
 
-  constexpr auto boundary1 = Base::boundary_form(2. * u_p - Dnu_p, v_p);
+  constexpr auto boundary1 = Base::boundary_form(optimize(u_p + u_p - Dnu_p), v_p);
   constexpr auto boundary3 = -boundary_form(u_p, Dnv_p);
 
   constexpr auto face = -flux2 + .5 * flux1;

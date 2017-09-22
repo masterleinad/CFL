@@ -83,7 +83,7 @@ namespace dealii::MeshWorker
   public:
     typedef Traits::Tensor<0, dim> TensorTraits;
 
-    ScalarTestFunction(unsigned int index)
+    explicit ScalarTestFunction(unsigned int index)
       : index(index)
       , ii(nullptr)
     {
@@ -112,7 +112,7 @@ namespace dealii::MeshWorker
   public:
     typedef Traits::Tensor<1, dim> TensorTraits;
 
-    ScalarTestGradient(const ScalarTestFunction<dim>& base)
+    explicit ScalarTestGradient(const ScalarTestFunction<dim>& base)
       : base(base)
     {
     }
@@ -139,7 +139,7 @@ namespace dealii::MeshWorker
   public:
     typedef Traits::Tensor<2, dim> TensorTraits;
 
-    ScalarTestHessian(const ScalarTestGradient<dim>& grad)
+    explicit ScalarTestHessian(const ScalarTestGradient<dim>& grad)
       : base(grad.base)
     {
     }
@@ -247,7 +247,7 @@ namespace dealii::MeshWorker
   public:
     typedef Traits::Tensor<rank + 1, dim> TensorTraits;
 
-    FEGradient(const FEFunction<rank, dim>& base)
+    explicit FEGradient(const FEFunction<rank, dim>& base)
       : base(base)
     {
     }
@@ -283,7 +283,7 @@ namespace dealii::MeshWorker
   public:
     typedef Traits::Tensor<rank + 2, dim> TensorTraits;
 
-    FEHessian(const FEGradient<rank, dim>& grad)
+    explicit FEHessian(const FEGradient<rank, dim>& grad)
       : base(grad.base)
     {
     }

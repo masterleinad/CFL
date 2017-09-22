@@ -15,24 +15,204 @@ namespace Base
 {
   template <class Derived>
   class TestFunctionBaseBase;
+
   template <class Derived>
   class TestFunctionBase;
+
   template <class Derived>
   class TestFunctionFaceBase;
 
   template <class Derived>
   class FEFunctionBaseBase;
+
   template <class Derived>
   class FEFunctionBase;
+
   template <class Derived>
   class FEFunctionFaceBase;
 
   template <typename... Types>
   class SumFEFunctions;
+
   template <typename... Types>
   class ProductFEFunctions;
+
   template <class FEFunctionType>
   class FELiftDivergence;
+
+  namespace internal::optimize
+  {
+    template <std::size_t... Ns>
+    struct sequence
+    {
+    };
+    template <std::size_t... Ns>
+    struct seq_gen;
+
+    template <std::size_t first, std::size_t second, std::size_t... Ns>
+    struct seq_gen<first, second, Ns...>
+    {
+      static_assert(first <= second, "The end must not be less than the start!");
+      using type1 = sequence<first, second, Ns...>;
+      using type2 = typename seq_gen<first, second - 1, second, Ns...>::type;
+
+      using cond1 = typename std::conditional<first == second - 1, type1, type2>::type;
+      using type = typename std::conditional<first == second, sequence<first>, cond1>::type;
+    };
+
+    template <std::size_t first, std::size_t... Ns>
+    struct seq_gen<first, 0, Ns...>
+    {
+      using type = sequence<0>;
+    };
+
+    template <std::size_t start, std::size_t end>
+    using sequence_t = typename std::conditional<(start > end), sequence<>,
+                                                 typename seq_gen<start, end>::type>::type;
+
+    // allow for appending an object to an std::array object.
+    template <typename T, std::size_t N, std::size_t... I>
+    constexpr std::array<T, N + 1>
+    append_aux(std::array<T, N> a, T t, sequence<I...>)
+    {
+      return std::array<T, N + 1>{ { a[I]..., t } };
+    }
+
+    template <typename T, std::size_t N1, std::size_t... I1, std::size_t N2, std::size_t... I2>
+    constexpr std::array<T, N1 + N2>
+    append_aux(std::array<T, N1> a1, sequence<I1...>, std::array<T, N2> a2, sequence<I1...>)
+    {
+      return std::array<T, N1 + N2>{ { a1[I1]..., a2[I2]... } };
+    }
+
+    template <typename T, std::size_t N>
+    constexpr std::array<T, N + 1>
+    append(std::array<T, N> a, T t)
+    {
+      if constexpr(N == 0)
+        {
+          (void)a;
+          return std::array<T, 1>{ { t } };
+        }
+      else
+        return append_aux(a, t, sequence_t<0, N - 1>());
+    }
+
+    template <typename T, std::size_t N, std::size_t... I>
+    constexpr std::array<T, sizeof...(I)>
+    extract(std::array<T, N> a, sequence<I...>)
+    {
+      return std::array<T, sizeof...(I)>{ { a[I]... } };
+    }
+
+    template <class... Types>
+    class TypeStorage
+    {
+    };
+
+    template <typename T, std::size_t N1, std::size_t N2>
+    constexpr std::array<T, N1 + N2>
+    append(std::array<T, N1> a1, std::array<T, N2> a2)
+    {
+      return append_aux(a1, sequence_t<0, N1 - 1>(), a2, sequence_t<0, N2 - 1>());
+    }
+
+    template <int n, class Type, class... StorageTypes>
+    struct TypeExists;
+
+    template <int n, class Type, class FirstStorageType, class... StorageTypes>
+    struct TypeExists<n, Type, FirstStorageType, StorageTypes...>
+    {
+      using type =
+        typename std::conditional<std::is_same<Type, FirstStorageType>::value,
+                                  std::pair<std::true_type, std::integral_constant<int, n>>,
+                                  typename TypeExists<n + 1, Type, StorageTypes...>::type>::type;
+      static constexpr bool value = decltype(std::declval<type>().first)::value;
+      static constexpr unsigned int position = decltype(std::declval<type>().second)::value;
+    };
+
+    template <int n, class Type>
+    struct TypeExists<n, Type>
+    {
+      using type = std::pair<std::false_type, std::integral_constant<int, n>>;
+      static constexpr bool value = false;
+      static constexpr unsigned int position = n;
+    };
+
+    template <class Type, class... StorageTypes>
+    inline constexpr auto
+    create_list(
+      const SumFEFunctions<Type>& sum,
+      std::pair<TypeStorage<StorageTypes...>, std::array<double, sizeof...(StorageTypes)>> storage)
+    {
+      using ResultType = TypeExists<0, Type, StorageTypes...>;
+      if constexpr(ResultType::value)
+        {
+          constexpr unsigned int i = ResultType::position;
+          storage.second[i] += sum.get_summand().scalar_factor;
+          return std::pair<TypeStorage<StorageTypes...>,
+                           std::array<double, sizeof...(StorageTypes)>>{ {}, storage.second };
+        }
+      else
+      {
+        // no, there doesn't exist such an object yet.
+        double factor = sum.get_summand().scalar_factor;
+        auto new_storage = append(storage.second, factor);
+        return std::pair<TypeStorage<StorageTypes..., Type>,
+                         std::array<double, sizeof...(StorageTypes) + 1>>{ {}, new_storage };
+      }
+    }
+
+    template <class Type, class... Types, class... StorageTypes>
+    constexpr auto
+    create_list(
+      SumFEFunctions<Type, Types...> sum,
+      std::pair<TypeStorage<StorageTypes...>, std::array<double, sizeof...(StorageTypes)>> storage,
+      typename std::enable_if<sizeof...(Types) != 0>::type* = nullptr)
+    {
+      using ResultType = TypeExists<0, Type, StorageTypes...>;
+      if constexpr(ResultType::value)
+        {
+          constexpr unsigned int i = ResultType::position;
+          storage.second[i] += sum.get_summand().scalar_factor;
+          return create_list(
+            static_cast<SumFEFunctions<Types...>>(sum),
+            std::pair<TypeStorage<StorageTypes...>, std::array<double, sizeof...(StorageTypes)>>{
+              {}, storage.second });
+        }
+      else
+      {
+        // no, there doesn't exist such an object yet.
+        double factor = sum.get_summand().scalar_factor;
+        auto new_storage = append(storage.second, factor);
+        return create_list(
+          static_cast<SumFEFunctions<Types...>>(sum),
+          std::pair<TypeStorage<StorageTypes..., Type>,
+                    std::array<double, sizeof...(StorageTypes) + 1>>{ {}, new_storage });
+      }
+    }
+
+    template <class StorageType>
+    inline constexpr auto
+    create_types(std::pair<TypeStorage<StorageType>, std::array<double, 1>> storage)
+    {
+      return StorageType(storage.second[0]);
+    };
+
+    template <class StorageType, class... StorageTypes>
+    inline constexpr auto
+    create_types(std::pair<TypeStorage<StorageType, StorageTypes...>,
+                           std::array<double, sizeof...(StorageTypes) + 1>>
+                   storage)
+    {
+      constexpr std::size_t size = sizeof...(StorageTypes) + 1;
+      auto function = StorageType(storage.second[0]);
+      std::array<double, size - 1> new_values = extract(storage.second, sequence_t<1, size - 1>());
+      auto new_storage =
+        std::pair<TypeStorage<StorageTypes...>, std::array<double, size - 1>>{ {}, new_values };
+      return function + create_types(new_storage);
+    };
+  }
 }
 
 namespace Traits
@@ -979,11 +1159,13 @@ namespace Base
   class SumFEFunctions<FEFunction>
   {
   public:
+    using SummandType = FEFunction;
     using TensorTraits =
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
+    static constexpr unsigned int count = 0;
 
     template <class OtherType>
-    constexpr SumFEFunctions(const SumFEFunctions<OtherType>& f)
+    explicit constexpr SumFEFunctions(const SumFEFunctions<OtherType>& f)
       : summand([&f]() {
         if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
             .get_summand()
@@ -1067,9 +1249,7 @@ namespace Base
     operator-() const
     {
       // create a copy
-      const SumFEFunctions<FEFunction> copy_this(*this);
-      copy_this.multiply_by_scalar(-1.);
-      return copy_this;
+      return (*this) * -1.;
     }
 
     /**
@@ -1097,12 +1277,15 @@ namespace Base
   class SumFEFunctions<FEFunction, Types...> : public SumFEFunctions<Types...>
   {
   public:
+    using SummandType = FEFunction;
     using TensorTraits =
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
     using Base = SumFEFunctions<Types...>;
+    static constexpr unsigned int count = Base::count + 1;
 
     template <class OtherType, typename... OtherTypes,
-              typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr> constexpr SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
+              typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
+    explicit constexpr SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
       : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f))
       , summand([&f]() {
         if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
@@ -1356,6 +1539,18 @@ namespace Base
   operator-(const FEFunction& new_fe_function, const SumFEFunctions<Types...>& old_fe_function)
   {
     return -(old_fe_function - new_fe_function);
+  }
+
+  template <class... Types>
+  constexpr auto
+  optimize(const SumFEFunctions<Types...>& sum)
+  {
+    // construct a list of processed forms and add similar ones.
+    auto list = internal::optimize::create_list(
+      sum, std::pair<internal::optimize::TypeStorage<>, std::array<double, 0>>{});
+
+    // then create a new object from this list and return it.
+    return internal::optimize::create_types(list);
   }
 
   template <class A, class B>

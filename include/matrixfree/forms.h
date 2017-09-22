@@ -44,7 +44,7 @@ namespace dealii::MatrixFree
       (kind_of_form == FormKind::face) ? Test::integration_flags.gradient_exterior : false;
 
     template <class OtherTest, class OtherExpr>
-    constexpr Form(const Base::Form<OtherTest, OtherExpr, kind_of_form, NumberType> f)
+    explicit constexpr Form(const Base::Form<OtherTest, OtherExpr, kind_of_form, NumberType> f)
       : test(transform(f.test))
       , expr(transform(f.expr))
     {
@@ -188,7 +188,7 @@ namespace dealii::MatrixFree
     constexpr std::array<T, N + 1>
     append_aux(std::array<T, N> a, T t, std::index_sequence<I...>)
     {
-      return std::array<T, N + 1>{ a[I]..., t };
+      return std::array<T, N + 1>{ { a[I]..., t } };
     }
 
     template <typename T, std::size_t N>
@@ -219,7 +219,8 @@ namespace dealii::MatrixFree
     static constexpr unsigned int number = 0;
 
     template <class OtherTest, class OtherExpr, typename NumberType>
-    constexpr Forms(const Base::Forms<Base::Form<OtherTest, OtherExpr, form_kind, NumberType>>& f)
+    explicit constexpr Forms(
+      const Base::Forms<Base::Form<OtherTest, OtherExpr, form_kind, NumberType>>& f)
       : form(f.get_form())
     {
     }
@@ -353,17 +354,18 @@ namespace dealii::MatrixFree
     get_form() const
     {
       return form;
+      return form;
     }
 
   protected:
     template <unsigned int size, typename IntegrationFlags>
     static constexpr bool
     check_forms(
-      std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
-        container = std::array<
-          std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
+      const std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>,
+                       size>& container =
+        std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
     {
-      const IntegrationFlags integration_flags =
+      constexpr IntegrationFlags integration_flags =
         decltype(std::declval<FormType>().test)::integration_flags;
 
       for (unsigned int i = number; i < size; ++i)
@@ -401,7 +403,8 @@ namespace dealii::MatrixFree
     static constexpr unsigned int number = Forms<Types...>::number + 1;
 
     template <class OtherType, class... OtherTypes,
-              typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr> constexpr Forms(const Base::Forms<OtherType, OtherTypes...>& f)
+              typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
+    explicit constexpr Forms(const Base::Forms<OtherType, OtherTypes...>& f)
       : Forms<Types...>(static_cast<Base::Forms<OtherTypes...>>(f))
       , form(f.get_form())
     {
@@ -569,13 +572,13 @@ namespace dealii::MatrixFree
     template <unsigned int size, typename IntegrationFlags>
     static constexpr bool
     check_forms(
-      std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>
-        container = std::array<
-          std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
+      const std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>,
+                       size>& container =
+        std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
     {
-      IntegrationFlags integration_flags =
+      constexpr IntegrationFlags integration_flags =
         decltype(std::declval<FormType>().test)::integration_flags;
-      const auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
+      constexpr auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
 
       for (unsigned int i = number; i < size; ++i)
       {
@@ -585,7 +588,7 @@ namespace dealii::MatrixFree
           return false;
       }
 
-      auto new_container = internal::append(container, new_tuple);
+      const auto new_container = internal::append(container, new_tuple);
       return Forms<Types...>::template check_forms<size + 1, IntegrationFlags>(new_container);
     }
 
