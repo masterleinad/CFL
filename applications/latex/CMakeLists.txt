@@ -10,7 +10,6 @@ FOREACH(ccfile ${sources})
   SET(target ${file})
   ADD_EXECUTABLE(${target} ${ccfile})
   SET_TARGET_PROPERTIES(${target} PROPERTIES OUTPUT_NAME ${file})
-  DEAL_II_SETUP_TARGET(${target})
 
   IF(PVS-Analysis)
     pvs_studio_add_target(TARGET analyze_${target} ALL
