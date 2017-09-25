@@ -36,7 +36,34 @@ namespace Base
 
   template <class FEFunctionType>
   class FELiftDivergence;
+}
+namespace Traits
+{
+  /**
+   * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
+   *
+   * Default Trait
+   * @todo Should it be removed? Discuss
+   */
+  template <class T>
+  struct is_fe_function_product
+  {
+    static constexpr bool value = false;
+  };
 
+  /**
+   * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
+   *
+   */
+  template <typename... Types>
+  struct is_fe_function_product<Base::ProductFEFunctions<Types...>>
+  {
+    static constexpr bool value = true;
+  };
+}
+
+namespace Base
+{
   namespace internal::optimize
   {
     template <std::size_t... Ns>
@@ -148,7 +175,7 @@ namespace Base
     create_list(const SumFEFunctions<Type>& sum, std::tuple<StorageTypes...> storage)
     {
       using ResultType = TypeExists<0, Type, StorageTypes...>;
-      if constexpr(ResultType::value)
+      if constexpr(ResultType::value && !Traits::is_fe_function_product<Type>::value)
         {
           constexpr unsigned int i = ResultType::position;
           std::get<i>(storage) += sum.get_summand();
@@ -197,7 +224,7 @@ namespace Base
       if constexpr(i < sizeof...(StorageTypes) - 1)
         return function + create_types<i + 1>(storage);
       else
-      return function;
+        return function;
     }
   }
 }
@@ -413,28 +440,6 @@ namespace Traits
   struct fe_function_set_type<Base::ProductFEFunctions<FirstType, Types...>>
   {
     static constexpr ObjectType value = fe_function_set_type<FirstType>::value;
-  };
-
-  /**
-   * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
-   *
-   * Default Trait
-   * @todo Should it be removed? Discuss
-   */
-  template <class T>
-  struct is_fe_function_product
-  {
-    static constexpr bool value = false;
-  };
-
-  /**
-   * @brief Determine if a given object is of type CFL \ref ProductFEFunctions
-   *
-   */
-  template <typename... Types>
-  struct is_fe_function_product<Base::ProductFEFunctions<Types...>>
-  {
-    static constexpr bool value = true;
   };
 
   /**
@@ -732,7 +737,7 @@ namespace Base
   template <template <int, int, unsigned int> class Derived, int rank, int dim, unsigned int idx>
   class FEFunctionBaseBase<Derived<rank, dim, idx>>
   {
-  protected:
+  public:
     /**
      * Default constructor
      *
@@ -742,7 +747,6 @@ namespace Base
     {
     }
 
-  public:
     using TensorTraits = Traits::Tensor<rank, dim>;
     static constexpr unsigned int index = idx;
     double scalar_factor = 1.;
@@ -1659,6 +1663,13 @@ namespace Base
       return ProductFEFunctions<NewFEFunction, FEFunction>(new_factor, factor);
     }
 
+    //    constexpr auto
+    //    operator+=(const ProductFEFunctions<FEFunction>& other_function)
+    //    {
+    //      factor += other_function.factor;
+    //      return *this;
+    //    };
+
     /**
      * Wrapper around value function of FEFunction
      *
@@ -1752,6 +1763,14 @@ namespace Base
       assert_is_compatible(own_value, other_value);
       return product(own_value, other_value);
     }
+
+    //    constexpr ProductFEFunctions<FEFunction, Types...>&
+    //    operator+=(const ProductFEFunctions<FEFunction, Types...>& other_function)
+    //    {
+    //      factor += other_function.factor;
+    //      Base::operator+=(static_cast<ProductFEFunctions<Types...>>(other_function));
+    //      return *this;
+    //    };
 
     /**
      * Wrapper around set_evaluation_flags of FEFunction

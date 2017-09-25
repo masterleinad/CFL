@@ -1,6 +1,6 @@
 (q+p,\phi)_\Omega
-(q\cdotp,\phi)_\Omega
-(q\cdot4p,\phi)_\Omega
+(q \cdot p,\phi)_\Omega
+(q \cdot 4p,\phi)_\Omega
 (\nabla q+\nabla p,\nabla \phi)_\Omega
 (\nabla \nabla q+\nabla \nabla p,\nabla \nabla \phi)_\Omega
 (\nabla q+u,\nabla \phi)_\Omega

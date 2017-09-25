@@ -31,9 +31,10 @@ test()
   constexpr auto sum2 = optimize(p*p+divu+p*p);
   constexpr auto sum3 = optimize((p+divu+p)*p);
 
-  constexpr auto total_sum = sum2/*+sum2+sum3*/;
-
-  constexpr auto cell = Base::form(total_sum, q);
+  constexpr auto cell1 = Base::form(sum1, q);
+  constexpr auto cell2 = Base::form(sum2, q);
+  constexpr auto cell3 = Base::form(sum3, q);
+  constexpr auto cell = cell1+cell2+cell3;
 
   std::vector<std::string> function_names{"p", "u"};
   std::vector<std::string> test_names{"q", "v"};

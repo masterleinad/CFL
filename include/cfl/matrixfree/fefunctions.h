@@ -730,6 +730,12 @@ namespace dealii
       {
       }
 
+      template <template <int, int, unsigned int> class OtherFunction>
+      constexpr explicit FEFunctionBaseBase(const OtherFunction<rank, dim, idx>& other_function)
+       : scalar_factor(other_function.scalar_factor)
+      {
+      }
+
       /**
        * Allows to scale an FE function with a arithmetic value
        *
