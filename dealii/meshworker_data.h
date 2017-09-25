@@ -82,22 +82,49 @@ namespace CFL
       }
 
 
-      template <int dim, class FORMS>
+      template <FormKind kind,int dim, class FORMS>
       typename std::enable_if<FORMS::number==0, void>::type
       evaluate(DoFInfo<dim,dim>& dinfo, const IntegrationInfo<dim>& info,
 	       const FORMS& form, unsigned int q)
       {
+	if constexpr (FORMS::form_kind == kind)
 	evaluate(dinfo, info, form.get_form().test(), form.get_form().expr(), q);
       }
 	       
 
-      template <int dim, class FORMS>
+      template <FormKind kind,int dim, class FORMS>
       typename std::enable_if<FORMS::number!=0, void>::type
       evaluate(DoFInfo<dim,dim>& dinfo, const IntegrationInfo<dim>& info,
 	       const FORMS& form, unsigned int q)
       {
-	evaluate(dinfo, info, form.get_other(), q);
+	evaluate<kind>(dinfo, info, form.get_other(), q);
+	if constexpr (FORMS::form_kind == kind)
 	evaluate(dinfo, info, form.get_form().test(), form.get_form().expr(), q);
+      }
+      
+      
+      template <FormKind kind,int dim, class FORMS>
+      typename std::enable_if<FORMS::number==0, void>::type
+      evaluate(DoFInfo<dim,dim>& dinfo1, DoFInfo<dim,dim>& dinfo2,
+	       const IntegrationInfo<dim>& info1,
+	       const IntegrationInfo<dim>& info2,
+	       const FORMS& form, unsigned int q)
+      {
+	if constexpr (FORMS::form_kind == kind)
+	evaluate(dinfo1, dinfo2, info1, info2, form.get_form().test(), form.get_form().expr(), q);
+      }
+	       
+
+      template <FormKind kind,int dim, class FORMS>
+      typename std::enable_if<FORMS::number!=0, void>::type
+      evaluate(DoFInfo<dim,dim>& dinfo1, DoFInfo<dim,dim>& dinfo2,
+	       const IntegrationInfo<dim>& info1,
+	       const IntegrationInfo<dim>& info2,
+	       const FORMS& form, unsigned int q)
+      {
+	evaluate<kind>(dinfo1, dinfo2, info1, info2, form.get_other(), q);
+	if constexpr (FORMS::form_kind == kind)
+	evaluate(dinfo1, dinfo2, info1, info2, form.get_form().test(), form.get_form().expr(), q);
       }
       
       
@@ -121,7 +148,26 @@ namespace CFL
 	{
 	  for (unsigned int k = 0; k < info.fe_values(0).n_quadrature_points; ++k)
 	    {
-	      evaluate(dinfo, info, form, k);
+	      evaluate<FormKind::cell>(dinfo, info, form, k);
+	    }
+	}
+	
+	void
+	boundary(DoFInfo<dim>& dinfo, IntegrationInfo<dim>& info) const override
+	{
+	  for (unsigned int k = 0; k < info.fe_values(0).n_quadrature_points; ++k)
+	    {
+	      evaluate<FormKind::boundary>(dinfo, info, form, k);
+	    }
+	}
+	
+	void
+	face(DoFInfo<dim>& dinfo1, DoFInfo<dim>& dinfo2,
+	     IntegrationInfo<dim>& info1, IntegrationInfo<dim>& info2) const override
+	{
+	  for (unsigned int k = 0; k < info1.fe_values(0).n_quadrature_points; ++k)
+	    {
+	      evaluate<FormKind::face>(dinfo1, dinfo2, info1, info2, form, k);
 	    }
 	}
       };
