@@ -732,11 +732,7 @@ namespace Base
   template <template <int, int, unsigned int> class Derived, int rank, int dim, unsigned int idx>
   class FEFunctionBaseBase<Derived<rank, dim, idx>>
   {
-  public:
-    using TensorTraits = Traits::Tensor<rank, dim>;
-    static constexpr unsigned int index = idx;
-    double scalar_factor = 1.;
-
+  protected:
     /**
      * Default constructor
      *
@@ -745,6 +741,11 @@ namespace Base
       : scalar_factor(new_factor)
     {
     }
+
+  public:
+    using TensorTraits = Traits::Tensor<rank, dim>;
+    static constexpr unsigned int index = idx;
+    double scalar_factor = 1.;
 
     constexpr void
     operator+=(const Derived<rank, dim, idx>& other_function)
@@ -793,7 +794,9 @@ namespace Base
   template <class Derived>
   class FEFunctionBase : public FEFunctionBaseBase<Derived>
   {
+  protected:
     using FEFunctionBaseBase<Derived>::FEFunctionBaseBase;
+    using FEFunctionBaseBase<Derived>::operator+=;
   };
 
   /**
@@ -804,7 +807,9 @@ namespace Base
   template <class Derived>
   class FEFunctionFaceBase : public FEFunctionBaseBase<Derived>
   {
+  protected:
     using FEFunctionBaseBase<Derived>::FEFunctionBaseBase;
+    using FEFunctionBaseBase<Derived>::operator+=;
   };
 
   /**
@@ -820,6 +825,7 @@ namespace Base
     using Base = FEFunctionFaceBase<FEFunctionInteriorFace<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
   };
 
   /**
@@ -835,6 +841,7 @@ namespace Base
     using Base = FEFunctionFaceBase<FEFunctionExteriorFace<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
   };
 
   /**
@@ -850,6 +857,7 @@ namespace Base
     using Base = FEFunctionFaceBase<FENormalGradientInteriorFace<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
   };
 
   /**
@@ -865,6 +873,7 @@ namespace Base
     using Base = FEFunctionFaceBase<FENormalGradientExteriorFace<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
   };
 
   /**
@@ -878,6 +887,7 @@ namespace Base
     using Base = FEFunctionBase<FEFunction<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
   };
 
   /**
@@ -892,8 +902,9 @@ namespace Base
     using Base = FEFunctionBase<FEDivergence<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
 
-    explicit FEDivergence(const FEFunction<rank + 1, dim, idx>& fefunction)
+    explicit constexpr FEDivergence(const FEFunction<rank + 1, dim, idx>& fefunction)
       : FEDivergence(fefunction.scalar_factor)
     {
     }
@@ -914,10 +925,17 @@ namespace Base
       Traits::Tensor<FEFunctionType::TensorTraits::rank + 2, FEFunctionType::TensorTraits::dim>;
     static constexpr unsigned int index = FEFunctionType::idx;
 
-    explicit FELiftDivergence(const FEFunctionType fe_function)
+    explicit constexpr FELiftDivergence(const FEFunctionType fe_function)
       : fefunction(std::move(fe_function))
     {
     }
+
+    constexpr FELiftDivergence<FEFunctionType>&
+    operator+=(const FELiftDivergence<FEFunctionType>& other_function)
+    {
+      fefunction += other_function.fefunction;
+      return *this;
+    };
 
     const FEFunctionType&
     get_fefunction() const
@@ -953,6 +971,7 @@ namespace Base
     using Base = FEFunctionBase<FESymmetricGradient<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
   };
 
   /**
@@ -967,6 +986,7 @@ namespace Base
     using Base = FEFunctionBase<FECurl<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
 
     explicit constexpr FECurl(const FEFunction<rank - 1, dim, idx>& fefunction)
       : Base(fefunction.scalar_factor)
@@ -986,6 +1006,7 @@ namespace Base
     using Base = FEFunctionBase<FEGradient<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
 
     explicit constexpr FEGradient(const FEFunction<rank - 1, dim, idx>& fefunction)
       : Base(fefunction.scalar_factor)
@@ -1005,6 +1026,7 @@ namespace Base
     using Base = FEFunctionBase<FELaplacian<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
 
     explicit FELaplacian(const FEGradient<rank + 1, dim, idx>& fe_function)
       : Base(fe_function.scalar_factor)
@@ -1023,6 +1045,7 @@ namespace Base
     using Base = FEFunctionBase<FEDiagonalHessian<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
   };
 
   /**
@@ -1037,6 +1060,7 @@ namespace Base
     using Base = FEFunctionBase<FEHessian<rank, dim, idx>>;
     // inherit constructors
     using Base::Base;
+    using Base::operator+=;
 
     explicit FEHessian(const FEGradient<rank - 1, dim, idx>& fefunction)
       : FEHessian(fefunction.scalar_factor)
@@ -1542,7 +1566,14 @@ namespace Base
     auto list = internal::optimize::create_list(sum, std::tuple<>{});
 
     // then create a new object from this list and return it.
-    return internal::optimize::create_types<0>(list);
+    return internal::optimize::create_types<0>(std::move(list));
+  }
+
+  template <class... Types>
+  constexpr auto
+  optimize(const ProductFEFunctions<Types...>& product)
+  {
+    return product;
   }
 
   template <class A, class B>
@@ -1556,7 +1587,7 @@ namespace Base
   inline auto
   product<std::string, std::string>(const std::string& a, const std::string& b)
   {
-    return a + R"(\cdot)" + b;
+    return a + R"( \cdot )" + b;
   }
 
   /**
@@ -1592,7 +1623,7 @@ namespace Base
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
     static constexpr unsigned int n = 1;
 
-    explicit ProductFEFunctions(FEFunction factor_)
+    explicit constexpr ProductFEFunctions(FEFunction factor_)
       : factor(std::move(factor_))
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
@@ -1600,8 +1631,8 @@ namespace Base
     }
 
     template <class OtherType>
-    ProductFEFunctions(const ProductFEFunctions<OtherType>& f)
-      : factor(f.get_factor().scalar_factor)
+    explicit constexpr ProductFEFunctions(const ProductFEFunctions<OtherType>& f)
+      : factor(f.get_factor())
     {
     }
 
@@ -1654,7 +1685,7 @@ namespace Base
      * Returns the FEFunction object held by this object
      *
      */
-    const FEFunction&
+    constexpr const FEFunction&
     get_factor() const
     {
       return factor;
@@ -1682,7 +1713,7 @@ namespace Base
     }
 
   private:
-    const FEFunction factor;
+    FEFunction factor;
   };
 
   /**
@@ -1701,9 +1732,9 @@ namespace Base
 
     template <class OtherType, typename... OtherTypes,
               typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
-    ProductFEFunctions(const ProductFEFunctions<OtherType, OtherTypes...>& f)
+    explicit constexpr ProductFEFunctions(const ProductFEFunctions<OtherType, OtherTypes...>& f)
       : ProductFEFunctions<Types...>(static_cast<ProductFEFunctions<OtherTypes...>>(f))
-      , factor(f.get_factor().scalar_factor)
+      , factor(f.get_factor())
     {
     }
 
@@ -1734,7 +1765,7 @@ namespace Base
       Base::set_evaluation_flags(phi);
     }
 
-    explicit ProductFEFunctions(const FEFunction factor_, const Types... old_product)
+    constexpr ProductFEFunctions(const FEFunction factor_, const Types... old_product)
       : Base(std::move(old_product...))
       , factor(std::move(factor_))
     {
@@ -1746,7 +1777,8 @@ namespace Base
                     "You can only add tensors of equal rank!");
     }
 
-    ProductFEFunctions(const FEFunction factor_, const ProductFEFunctions<Types...> old_product)
+    constexpr ProductFEFunctions(const FEFunction factor_,
+                                 const ProductFEFunctions<Types...> old_product)
       : Base(std::move(old_product))
       , factor(std::move(factor_))
     {
@@ -1834,14 +1866,14 @@ namespace Base
                                                                      *this);
     }
 
-    const FEFunction&
+    constexpr const FEFunction&
     get_factor() const
     {
       return factor;
     }
 
   private:
-    const FEFunction factor;
+    FEFunction factor;
   };
 
   // fefunc * fefunc

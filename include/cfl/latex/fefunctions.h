@@ -53,6 +53,12 @@ public:
     : scalar_factor(new_factor)
   {
   }
+
+  template <template <int, int, unsigned int> class OtherFunction>
+  constexpr explicit FEFunctionBaseBase(const OtherFunction<rank, dim, idx>& other_function)
+    : scalar_factor(other_function.scalar_factor)
+  {
+  }
 };
 
 /**
@@ -208,7 +214,7 @@ public:
   std::string
   value(const std::vector<std::string>& function_names) const
   {
-    return double_to_string(Base::scalar_factor) + R"(\nabla\cdot )" + function_names[idx] + "^+";
+    return double_to_string(Base::scalar_factor) + R"(\nabla\cdot )" + function_names[idx];
   }
 };
 
@@ -436,6 +442,12 @@ transform(const Base::FELaplacian<ints...>& f)
 {
   return FELaplacian<ints...>(f.scalar_factor);
 }
+
+template <class... Types>
+constexpr auto transform(const Base::SumFEFunctions<Types...>& f);
+
+template <class... Types>
+constexpr auto transform(const Base::ProductFEFunctions<Types...>& f);
 
 template <class... Types>
 constexpr auto

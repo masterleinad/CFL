@@ -115,6 +115,6 @@ IF(RUN_TESTS)
   add_custom_target(all_tests ALL)
   add_custom_command(TARGET all_tests
                      COMMENT "Run tests"
-                     POST_BUILD COMMAND ctest -j --output-on-failure
+                     POST_BUILD COMMAND ctest -j -V --output-on-failure
                     )
 ENDIF()
