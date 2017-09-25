@@ -95,6 +95,13 @@ namespace Base
         return append_aux(a, t, sequence_t<0, N - 1>());
     }
 
+    template <class Type, class... Types>
+    constexpr std::tuple<Types..., Type>
+    append(const std::tuple<Types...>& tuple, const Type& t)
+    {
+      return std::tuple_cat(tuple, std::make_tuple(t));
+    }
+
     template <typename T, std::size_t N, std::size_t... I>
     constexpr std::array<T, sizeof...(I)>
     extract(std::array<T, N> a, sequence<I...>)
@@ -138,76 +145,59 @@ namespace Base
 
     template <class Type, class... StorageTypes>
     inline constexpr auto
-    create_list(
-      const SumFEFunctions<Type>& sum,
-      std::pair<TypeStorage<StorageTypes...>, std::array<double, sizeof...(StorageTypes)>> storage)
+    create_list(const SumFEFunctions<Type>& sum, std::tuple<StorageTypes...> storage)
     {
       using ResultType = TypeExists<0, Type, StorageTypes...>;
       if constexpr(ResultType::value)
         {
           constexpr unsigned int i = ResultType::position;
-          storage.second[i] += sum.get_summand().scalar_factor;
-          return std::pair<TypeStorage<StorageTypes...>,
-                           std::array<double, sizeof...(StorageTypes)>>{ {}, storage.second };
+          std::get<i>(storage) += sum.get_summand();
+          return storage;
         }
       else
       {
         // no, there doesn't exist such an object yet.
-        double factor = sum.get_summand().scalar_factor;
-        auto new_storage = append(storage.second, factor);
-        return std::pair<TypeStorage<StorageTypes..., Type>,
-                         std::array<double, sizeof...(StorageTypes) + 1>>{ {}, new_storage };
+        auto new_storage = append(storage, sum.get_summand());
+        return new_storage;
       }
     }
 
     template <class Type, class... Types, class... StorageTypes>
     constexpr auto
-    create_list(
-      SumFEFunctions<Type, Types...> sum,
-      std::pair<TypeStorage<StorageTypes...>, std::array<double, sizeof...(StorageTypes)>> storage,
-      typename std::enable_if<sizeof...(Types) != 0>::type* = nullptr)
+    create_list(SumFEFunctions<Type, Types...> sum, std::tuple<StorageTypes...> storage,
+                typename std::enable_if<sizeof...(Types) != 0>::type* = nullptr)
     {
       using ResultType = TypeExists<0, Type, StorageTypes...>;
       if constexpr(ResultType::value)
         {
           constexpr unsigned int i = ResultType::position;
-          storage.second[i] += sum.get_summand().scalar_factor;
-          return create_list(
-            static_cast<SumFEFunctions<Types...>>(sum),
-            std::pair<TypeStorage<StorageTypes...>, std::array<double, sizeof...(StorageTypes)>>{
-              {}, storage.second });
+          std::get<i>(storage) += sum.get_summand();
+          return create_list(static_cast<SumFEFunctions<Types...>>(sum), storage);
         }
       else
       {
         // no, there doesn't exist such an object yet.
-        double factor = sum.get_summand().scalar_factor;
-        auto new_storage = append(storage.second, factor);
-        return create_list(
-          static_cast<SumFEFunctions<Types...>>(sum),
-          std::pair<TypeStorage<StorageTypes..., Type>,
-                    std::array<double, sizeof...(StorageTypes) + 1>>{ {}, new_storage });
+        auto new_storage = append(storage, sum.get_summand());
+        return create_list(static_cast<SumFEFunctions<Types...>>(sum), new_storage);
       }
     }
 
-    template <class StorageType>
+    template <int i, class StorageType>
     inline constexpr auto
     create_types(std::pair<TypeStorage<StorageType>, std::array<double, 1>> storage)
     {
       return StorageType(storage.second[0]);
     }
 
-    template <class StorageType, class... StorageTypes>
+    template <int i, class... StorageTypes>
     inline constexpr auto
-    create_types(std::pair<TypeStorage<StorageType, StorageTypes...>,
-                           std::array<double, sizeof...(StorageTypes) + 1>>
-                   storage)
+    create_types(std::tuple<StorageTypes...> storage)
     {
-      constexpr std::size_t size = sizeof...(StorageTypes) + 1;
-      auto function = StorageType(storage.second[0]);
-      std::array<double, size - 1> new_values = extract(storage.second, sequence_t<1, size - 1>());
-      auto new_storage =
-        std::pair<TypeStorage<StorageTypes...>, std::array<double, size - 1>>{ {}, new_values };
-      return function + create_types(new_storage);
+      auto function = std::get<i>(storage);
+      if constexpr(i < sizeof...(StorageTypes) - 1)
+        return function + create_types<i + 1>(storage);
+      else
+      return function;
     }
   }
 }
@@ -745,7 +735,7 @@ namespace Base
   public:
     using TensorTraits = Traits::Tensor<rank, dim>;
     static constexpr unsigned int index = idx;
-    const double scalar_factor = 1.;
+    double scalar_factor = 1.;
 
     /**
      * Default constructor
@@ -755,6 +745,12 @@ namespace Base
       : scalar_factor(new_factor)
     {
     }
+
+    constexpr void
+    operator+=(const Derived<rank, dim, idx>& other_function)
+    {
+      scalar_factor += other_function.scalar_factor;
+    };
 
     /**
      * Allows to scale an FE function with a arithmetic value
@@ -1543,11 +1539,10 @@ namespace Base
   optimize(const SumFEFunctions<Types...>& sum)
   {
     // construct a list of processed forms and add similar ones.
-    auto list = internal::optimize::create_list(
-      sum, std::pair<internal::optimize::TypeStorage<>, std::array<double, 0>>{});
+    auto list = internal::optimize::create_list(sum, std::tuple<>{});
 
     // then create a new object from this list and return it.
-    return internal::optimize::create_types(list);
+    return internal::optimize::create_types<0>(list);
   }
 
   template <class A, class B>
