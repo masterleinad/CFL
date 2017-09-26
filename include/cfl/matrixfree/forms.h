@@ -50,8 +50,9 @@ namespace dealii::MatrixFree
     {
     }
 
-    static constexpr void
-    get_form_kinds(std::array<bool, 3>& use_objects)
+    static constexpr
+    std::array<bool, 3>
+    get_form_kinds(std::array<bool, 3> use_objects = std::array<bool, 3>{})
     {
       switch (form_kind)
       {
@@ -70,6 +71,7 @@ namespace dealii::MatrixFree
         default:
           static_assert("Invalid FormKind!");
       }
+      return use_objects;
     }
 
     template <class FEEvaluation>
@@ -225,8 +227,9 @@ namespace dealii::MatrixFree
     {
     }
 
-    static constexpr void
-    get_form_kinds(std::array<bool, 3>& use_objects)
+    static constexpr
+    std::array<bool, 3>
+    get_form_kinds(std::array<bool, 3> use_objects = std::array<bool, 3>{})
     {
       switch (form_kind)
       {
@@ -245,6 +248,7 @@ namespace dealii::MatrixFree
         default:
           static_assert("Invalid FormKind!");
       }
+      return use_objects;
     }
 
     template <class FEEvaluation>
@@ -410,8 +414,9 @@ namespace dealii::MatrixFree
     {
     }
 
-    static constexpr void
-    get_form_kinds(std::array<bool, 3>& use_objects)
+    static constexpr
+    std::array<bool, 3>
+    get_form_kinds(std::array<bool, 3> use_objects = std::array<bool, 3>{})
     {
       switch (form_kind)
       {
@@ -430,7 +435,7 @@ namespace dealii::MatrixFree
         default:
           static_assert("Invalid FormKind!");
       }
-      Forms<Types...>::get_form_kinds(use_objects);
+      return Forms<Types...>::get_form_kinds(use_objects);
     }
 
     template <class FEEvaluation>

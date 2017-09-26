@@ -1525,113 +1525,8 @@ namespace Base
    *		ProductFEFunctions<FEFunction,FEFunction,FEFunction> --> holds fe_function3
    *   @endverbatim
    */
-  template <class FEFunction>
-  class ProductFEFunctions<FEFunction>
-  {
-  public:
-    using TensorTraits =
-      Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
-    static constexpr unsigned int n = 1;
-
-    explicit constexpr ProductFEFunctions(FEFunction factor_)
-      : factor(std::move(factor_))
-    {
-      static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                    "You need to construct this with a FEFunction object!");
-    }
-
-    template <class OtherType>
-    explicit constexpr ProductFEFunctions(const ProductFEFunctions<OtherType>& f)
-      : factor(f.get_factor())
-    {
-    }
-
-    // prodfefunc * fefunc
-    /**
-     * Operator overloading to multiply a ProductFEFunctions with an FEFunction
-     *
-     */
-    template <class NewFEFunction,
-              typename std::enable_if<
-                Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none &&
-                  Traits::fe_function_set_type<NewFEFunction>::value ==
-                    Traits::fe_function_set_type<FEFunction>::value,
-                ProductFEFunctions<NewFEFunction, FEFunction>>::type* unused = nullptr>
-    constexpr ProductFEFunctions<NewFEFunction, FEFunction> operator*(
-      const NewFEFunction& new_factor) const
-    {
-      static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
-                    "Only FEFunction objects can be added!");
-      static_assert(TensorTraits::dim == NewFEFunction::TensorTraits::dim,
-                    "You can only add tensors of equal dimension!");
-      static_assert(TensorTraits::rank == NewFEFunction::TensorTraits::rank,
-                    "You can only add tensors of equal rank!");
-      return ProductFEFunctions<NewFEFunction, FEFunction>(new_factor, factor);
-    }
-
-    //    constexpr auto
-    //    operator+=(const ProductFEFunctions<FEFunction>& other_function)
-    //    {
-    //      factor += other_function.factor;
-    //      return *this;
-    //    };
-
-    /**
-     * Wrapper around value function of FEFunction
-     *
-     */
-    template <class... ParameterTypes>
-    auto
-    value(const ParameterTypes&... parameters) const
-    {
-      return factor.value(parameters...);
-    }
-
-    /**
-     * Wrapper around set_evaluation_flags function of FEFunction
-     *
-     */
-    template <class FEEvaluation>
-    static void
-    set_evaluation_flags(FEEvaluation& phi)
-    {
-      FEFunction::set_evaluation_flags(phi);
-    }
-
-    /**
-     * Returns the FEFunction object held by this object
-     *
-     */
-    constexpr const FEFunction&
-    get_factor() const
-    {
-      return factor;
-    }
-
-    // prodfefunc * number
-    /**
-     * Multiply all components of ProductFEFunctions with a scalar factor
-     *
-     */
-    template <typename Number,
-              typename std::enable_if<std::is_arithmetic<Number>::value>::type* = nullptr> constexpr auto operator*(const Number scalar_factor) const
-    {
-      return ProductFEFunctions<FEFunction>(factor * scalar_factor);
-    }
-
-    /**
-     * Unary minus operator overloading to get -ProductFEFunctions
-     *
-     */
-    constexpr ProductFEFunctions<FEFunction>
-    operator-() const
-    {
-      return (*this) * -1.;
-    }
-
-  private:
-    FEFunction factor;
-  };
+  template <>
+  class ProductFEFunctions<>{};
 
   /**
    * @brief Class to provide Product of FE Functions.
@@ -1645,7 +1540,7 @@ namespace Base
     using TensorTraits =
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
     using Base = ProductFEFunctions<Types...>;
-    static constexpr unsigned int n = Base::n + 1;
+    static constexpr unsigned int n = sizeof...(Types)==0?0:Base::n + 1;
 
     template <class OtherType, typename... OtherTypes,
               typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
@@ -1665,9 +1560,16 @@ namespace Base
     value(const ParameterTypes&... parameters) const
     {
       const auto own_value = factor.value(parameters...);
-      const auto other_value = Base::value(parameters...);
-      assert_is_compatible(own_value, other_value);
-      return product(own_value, other_value);
+      if constexpr(sizeof...(Types)!=0)
+      {
+        const auto other_value = Base::value(parameters...);
+        assert_is_compatible(own_value, other_value);
+        return product(own_value, other_value);
+      }
+      else
+      {
+        return own_value;
+      }
     }
 
     //    constexpr ProductFEFunctions<FEFunction, Types...>&
@@ -1687,19 +1589,22 @@ namespace Base
     set_evaluation_flags(FEEvaluation& phi)
     {
       FEFunction::set_evaluation_flags(phi);
-      Base::set_evaluation_flags(phi);
+      if constexpr (sizeof...(Types)!=0)
+        Base::set_evaluation_flags(phi);
     }
 
-    constexpr ProductFEFunctions(const FEFunction factor_, const Types... old_product)
-      : Base(std::move(old_product...))
-      , factor(std::move(factor_))
+    constexpr ProductFEFunctions(const FEFunction &factor_, const Types&... old_product)
+      : Base(old_product...)
+      , factor(factor_)
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                     "You need to construct this with a FEFunction object!");
-      static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                    "You can only add tensors of equal dimension!");
-      static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                    "You can only add tensors of equal rank!");
+      if constexpr (sizeof...(Types)!=0)
+        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
+                      "You can only add tensors of equal dimension!");
+      if constexpr (sizeof...(Types)!=0)
+        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
+                      "You can only add tensors of equal rank!");
     }
 
     constexpr ProductFEFunctions(const FEFunction factor_,
@@ -1709,10 +1614,12 @@ namespace Base
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                     "You need to construct this with a FEFunction object!");
-      static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                    "You can only add tensors of equal dimension!");
-      static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                    "You can only add tensors of equal rank!");
+      if constexpr (sizeof...(Types)!=0)
+        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
+                      "You can only add tensors of equal dimension!");
+      if constexpr (sizeof...(Types)!=0)
+        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
+                      "You can only add tensors of equal rank!");
     }
 
     // prodfefunc * fefunc
