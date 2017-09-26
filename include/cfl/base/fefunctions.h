@@ -1176,118 +1176,8 @@ namespace Base
    *		SumFEFunctions<FEFunction,FEFunction,FEFunction> --> holds fe_function3
    *   @endverbatim
    */
-  template <class FEFunction>
-  class SumFEFunctions<FEFunction>
-  {
-  public:
-    using SummandType = FEFunction;
-    using TensorTraits =
-      Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
-    static constexpr unsigned int count = 0;
-
-    template <class OtherType>
-    explicit constexpr SumFEFunctions(const SumFEFunctions<OtherType>& f)
-      : summand([&f]() {
-        if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
-            .get_summand()
-            .scalar_factor;
-        else
-          return f.get_summand();
-      }())
-    {
-    }
-
-    explicit constexpr SumFEFunctions(const FEFunction summand_)
-      : summand(std::move(summand_))
-    {
-      static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-                    "You need to construct this with a FEFunction object!");
-    }
-
-    /**
-     * Operator overloading to create a SumFEFunctions from
-     * two FEFunction objects
-     *
-     */
-    template <class NewFEFunction>
-    constexpr auto
-    operator+(const NewFEFunction& new_summand) const
-    {
-      static_assert(Traits::fe_function_set_type<NewFEFunction>::value != ObjectType::none,
-                    "Only FEFunction objects can be added!");
-      static_assert(TensorTraits::dim == NewFEFunction::TensorTraits::dim,
-                    "You can only add tensors of equal dimension!");
-      static_assert(TensorTraits::rank == NewFEFunction::TensorTraits::rank,
-                    "You can only add tensors of equal rank!");
-      return SumFEFunctions<NewFEFunction, FEFunction>(new_summand, summand);
-    }
-
-    /**
-     * Operator overloading to create a SumFEFunctions from
-     * two FEFunction objects
-     *
-     */
-    template <class NewFEFunction>
-    constexpr auto
-    operator-(const NewFEFunction& new_summand) const
-    {
-      return operator+(-new_summand);
-    }
-
-    template <class... ParameterTypes>
-    auto
-    value(const ParameterTypes&... parameters) const
-    {
-      return summand.value(parameters...);
-    }
-
-    /**
-     * Wrapper around set_evaluation_flags function of FEFunction
-     *
-     */
-    template <class FEEvaluation>
-    static void
-    set_evaluation_flags(FEEvaluation& phi)
-    {
-      FEFunction::set_evaluation_flags(phi);
-    }
-
-    /**
-     * Returns the FEFunction object held by this object
-     *
-     */
-    constexpr FEFunction
-    get_summand() const
-    {
-      return summand;
-    }
-
-    /**
-     * Unary minus operator overloading to get -SumFEFunctions
-     *
-     */
-    constexpr SumFEFunctions<FEFunction>
-    operator-() const
-    {
-      // create a copy
-      return (*this) * -1.;
-    }
-
-    /**
-     * Scale all FEFunctions of SumFEFunctions by a scalar factor
-     *
-     */
-    template <typename Number>
-    constexpr
-      typename std::enable_if<std::is_arithmetic<Number>::value, SumFEFunctions<FEFunction>>::type
-      operator*(const Number scalar_factor) const
-    {
-      return SumFEFunctions<FEFunction>(summand * scalar_factor);
-    }
-
-  private:
-    const FEFunction summand;
-  };
+  template<>
+  class SumFEFunctions<>{};
 
   /**
    * @brief Class to provide Sum of FE Functions.
@@ -1302,21 +1192,25 @@ namespace Base
     using TensorTraits =
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
     using Base = SumFEFunctions<Types...>;
-    static constexpr unsigned int count = Base::count + 1;
+    static constexpr unsigned int count = sizeof...(Types)?0:Base::count + 1;
 
     template <class OtherType, typename... OtherTypes,
               typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
     explicit constexpr SumFEFunctions(const SumFEFunctions<OtherType, OtherTypes...>& f)
       : SumFEFunctions<Types...>(static_cast<SumFEFunctions<OtherTypes...>>(f))
-      , summand([&f]() {
-        if constexpr(std::is_base_of<FEFunctionBaseBase<OtherType>, OtherType>::value) return f
-            .get_summand()
-            .scalar_factor;
-        else
-          return f.get_summand();
-      }())
+      , summand(f.get_summand())
     {
     }
+
+//    explicit constexpr SumFEFunctions
+//      (FEFunction summand_)
+//      : summand(std::move(summand_))
+//    {
+//      static_assert(sizeof...(Types)==0,
+//                    "This conversion operator can only be used if there i sonly one summand!");
+//      static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
+//                    "You need to construct this with a FEFunction object!");
+//    }
 
     /**
      * Actual evaluation of sum of the FE Function values in a Matrix Free
@@ -1327,10 +1221,15 @@ namespace Base
     auto
     value(const ParameterTypes&... parameters) const
     {
-      const auto own_value = summand.value(parameters...);
-      const auto other_value = Base::value(parameters...);
-      assert_is_compatible(own_value, other_value);
-      return sum(own_value, other_value);
+      if constexpr (sizeof...(Types)!=0)
+      {
+        const auto own_value = summand.value(parameters...);
+        const auto other_value = Base::value(parameters...);
+        assert_is_compatible(own_value, other_value);
+        return sum(own_value, other_value);
+      }
+      else
+        return summand.value(parameters...);
     }
 
     /**
@@ -1342,19 +1241,23 @@ namespace Base
     set_evaluation_flags(FEEvaluation& phi)
     {
       FEFunction::set_evaluation_flags(phi);
-      Base::set_evaluation_flags(phi);
+      if constexpr (sizeof...(Types)!=0)
+        Base::set_evaluation_flags(phi);
     }
 
-    explicit constexpr SumFEFunctions(const FEFunction summand_, const Types... old_sum)
-      : Base(std::move(old_sum...))
+    explicit constexpr SumFEFunctions
+      (FEFunction summand_, const Types&... old_sum)
+      : Base(old_sum...)
       , summand(std::move(summand_))
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                     "You need to construct this with a FEFunction object!");
-      static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                    "You can only add tensors of equal dimension!");
-      static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                    "You can only add tensors of equal rank!");
+      if constexpr (sizeof...(Types))
+        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
+                      "You can only add tensors of equal dimension!");
+      if constexpr (sizeof...(Types))
+        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
+                      "You can only add tensors of equal rank!");
     }
 
     constexpr SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
@@ -1451,8 +1354,11 @@ namespace Base
                                       SumFEFunctions<FEFunction, Types...>>::type
     operator*(const Number scalar_factor) const
     {
-      return SumFEFunctions<FEFunction, Types...>(
-        summand * scalar_factor, static_cast<SumFEFunctions<Types...>>(*this) * scalar_factor);
+      if constexpr (sizeof...(Types)!=0)
+        return SumFEFunctions<FEFunction, Types...>(
+          summand * scalar_factor, static_cast<SumFEFunctions<Types...>>(*this) * scalar_factor);
+      else
+        return SumFEFunctions<FEFunction>(summand * scalar_factor);
     }
 
     /**
