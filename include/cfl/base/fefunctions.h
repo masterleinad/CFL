@@ -1176,8 +1176,10 @@ namespace Base
    *		SumFEFunctions<FEFunction,FEFunction,FEFunction> --> holds fe_function3
    *   @endverbatim
    */
-  template<>
-  class SumFEFunctions<>{};
+  template <>
+  class SumFEFunctions<>
+  {
+  };
 
   /**
    * @brief Class to provide Sum of FE Functions.
@@ -1192,7 +1194,7 @@ namespace Base
     using TensorTraits =
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
     using Base = SumFEFunctions<Types...>;
-    static constexpr unsigned int count = sizeof...(Types)?0:Base::count + 1;
+    static constexpr unsigned int count = sizeof...(Types) ? 0 : Base::count + 1;
 
     template <class OtherType, typename... OtherTypes,
               typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
@@ -1201,16 +1203,6 @@ namespace Base
       , summand(f.get_summand())
     {
     }
-
-//    explicit constexpr SumFEFunctions
-//      (FEFunction summand_)
-//      : summand(std::move(summand_))
-//    {
-//      static_assert(sizeof...(Types)==0,
-//                    "This conversion operator can only be used if there i sonly one summand!");
-//      static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
-//                    "You need to construct this with a FEFunction object!");
-//    }
 
     /**
      * Actual evaluation of sum of the FE Function values in a Matrix Free
@@ -1221,13 +1213,13 @@ namespace Base
     auto
     value(const ParameterTypes&... parameters) const
     {
-      if constexpr (sizeof...(Types)!=0)
-      {
-        const auto own_value = summand.value(parameters...);
-        const auto other_value = Base::value(parameters...);
-        assert_is_compatible(own_value, other_value);
-        return sum(own_value, other_value);
-      }
+      if constexpr(sizeof...(Types) != 0)
+        {
+          const auto own_value = summand.value(parameters...);
+          const auto other_value = Base::value(parameters...);
+          assert_is_compatible(own_value, other_value);
+          return sum(own_value, other_value);
+        }
       else
         return summand.value(parameters...);
     }
@@ -1241,23 +1233,25 @@ namespace Base
     set_evaluation_flags(FEEvaluation& phi)
     {
       FEFunction::set_evaluation_flags(phi);
-      if constexpr (sizeof...(Types)!=0)
-        Base::set_evaluation_flags(phi);
+      if constexpr(sizeof...(Types) != 0) { Base::set_evaluation_flags(phi); }
     }
 
-    explicit constexpr SumFEFunctions
-      (FEFunction summand_, const Types&... old_sum)
+    explicit constexpr SumFEFunctions(FEFunction summand_, const Types&... old_sum)
       : Base(old_sum...)
       , summand(std::move(summand_))
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                     "You need to construct this with a FEFunction object!");
-      if constexpr (sizeof...(Types))
-        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-      if constexpr (sizeof...(Types))
-        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
+      if constexpr(sizeof...(Types))
+        {
+          static_assert(TensorTraits::dim == Base::TensorTraits::dim,
+                        "You can only add tensors of equal dimension!");
+        }
+      if constexpr(sizeof...(Types))
+        {
+          static_assert(TensorTraits::rank == Base::TensorTraits::rank,
+                        "You can only add tensors of equal rank!");
+        }
     }
 
     constexpr SumFEFunctions(const FEFunction& summand_, const SumFEFunctions<Types...>& old_sum)
@@ -1354,9 +1348,11 @@ namespace Base
                                       SumFEFunctions<FEFunction, Types...>>::type
     operator*(const Number scalar_factor) const
     {
-      if constexpr (sizeof...(Types)!=0)
-        return SumFEFunctions<FEFunction, Types...>(
-          summand * scalar_factor, static_cast<SumFEFunctions<Types...>>(*this) * scalar_factor);
+      if constexpr(sizeof...(Types) != 0)
+        {
+          return SumFEFunctions<FEFunction, Types...>(
+            summand * scalar_factor, static_cast<SumFEFunctions<Types...>>(*this) * scalar_factor);
+        }
       else
         return SumFEFunctions<FEFunction>(summand * scalar_factor);
     }
@@ -1526,7 +1522,9 @@ namespace Base
    *   @endverbatim
    */
   template <>
-  class ProductFEFunctions<>{};
+  class ProductFEFunctions<>
+  {
+  };
 
   /**
    * @brief Class to provide Product of FE Functions.
@@ -1540,7 +1538,7 @@ namespace Base
     using TensorTraits =
       Traits::Tensor<FEFunction::TensorTraits::rank, FEFunction::TensorTraits::dim>;
     using Base = ProductFEFunctions<Types...>;
-    static constexpr unsigned int n = sizeof...(Types)==0?0:Base::n + 1;
+    static constexpr unsigned int n = sizeof...(Types) == 0 ? 0 : Base::n + 1;
 
     template <class OtherType, typename... OtherTypes,
               typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
@@ -1560,16 +1558,14 @@ namespace Base
     value(const ParameterTypes&... parameters) const
     {
       const auto own_value = factor.value(parameters...);
-      if constexpr(sizeof...(Types)!=0)
-      {
-        const auto other_value = Base::value(parameters...);
-        assert_is_compatible(own_value, other_value);
-        return product(own_value, other_value);
-      }
+      if constexpr(sizeof...(Types) != 0)
+        {
+          const auto other_value = Base::value(parameters...);
+          assert_is_compatible(own_value, other_value);
+          return product(own_value, other_value);
+        }
       else
-      {
         return own_value;
-      }
     }
 
     //    constexpr ProductFEFunctions<FEFunction, Types...>&
@@ -1589,22 +1585,25 @@ namespace Base
     set_evaluation_flags(FEEvaluation& phi)
     {
       FEFunction::set_evaluation_flags(phi);
-      if constexpr (sizeof...(Types)!=0)
-        Base::set_evaluation_flags(phi);
+      if constexpr(sizeof...(Types) != 0) { Base::set_evaluation_flags(phi); }
     }
 
-    constexpr ProductFEFunctions(const FEFunction &factor_, const Types&... old_product)
+    constexpr ProductFEFunctions(const FEFunction& factor_, const Types&... old_product)
       : Base(old_product...)
       , factor(factor_)
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                     "You need to construct this with a FEFunction object!");
-      if constexpr (sizeof...(Types)!=0)
-        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-      if constexpr (sizeof...(Types)!=0)
-        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
+      if constexpr(sizeof...(Types) != 0)
+        {
+          static_assert(TensorTraits::dim == Base::TensorTraits::dim,
+                        "You can only add tensors of equal dimension!");
+        }
+      if constexpr(sizeof...(Types) != 0)
+        {
+          static_assert(TensorTraits::rank == Base::TensorTraits::rank,
+                        "You can only add tensors of equal rank!");
+        }
     }
 
     constexpr ProductFEFunctions(const FEFunction factor_,
@@ -1614,12 +1613,16 @@ namespace Base
     {
       static_assert(Traits::fe_function_set_type<FEFunction>::value != ObjectType::none,
                     "You need to construct this with a FEFunction object!");
-      if constexpr (sizeof...(Types)!=0)
-        static_assert(TensorTraits::dim == Base::TensorTraits::dim,
-                      "You can only add tensors of equal dimension!");
-      if constexpr (sizeof...(Types)!=0)
-        static_assert(TensorTraits::rank == Base::TensorTraits::rank,
-                      "You can only add tensors of equal rank!");
+      if constexpr(sizeof...(Types) != 0)
+        {
+          static_assert(TensorTraits::dim == Base::TensorTraits::dim,
+                        "You can only add tensors of equal dimension!");
+        }
+      if constexpr(sizeof...(Types) != 0)
+        {
+          static_assert(TensorTraits::rank == Base::TensorTraits::rank,
+                        "You can only add tensors of equal rank!");
+        }
     }
 
     // prodfefunc * fefunc
