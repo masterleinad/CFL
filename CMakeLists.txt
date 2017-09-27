@@ -28,6 +28,7 @@ OPTION(COMPONENT_LATEX "Build LaTeX backend?" ON)
 CMAKE_DEPENDENT_OPTION(COMPONENT_DEAL_II_MATRIXFREE "Build MatrixFree backend?" OFF "deal.II_FOUND" OFF)
 CMAKE_DEPENDENT_OPTION(COMPONENT_DEAL_II_MESHWORKER "Build MeshWorker backend?" OFF "deal.II_FOUND" OFF)
 OPTION(RUN_TESTS "Run tests after build?" OFF)
+OPTION(BUILD_DOCUMENTATION "Build doxygen documentation?" OFF)
 
 IF(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   MESSAGE(STATUS "Setting build type to 'Debug' as none was specified.")
@@ -89,7 +90,9 @@ IF(COMPONENT_DEAL_II_MESHWORKER)
   ADD_SUBDIRECTORY(applications/meshworker)
 ENDIF()
 
-ADD_SUBDIRECTORY(doc)
+IF(BUILD_DOCUMENTATION)
+  ADD_SUBDIRECTORY(doc)
+ENDIF()
 
 # Enable testing and descent into tests/ subdirectory:
 INCLUDE_DIRECTORIES(third_party/include) #for boost test
