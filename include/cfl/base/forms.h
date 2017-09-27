@@ -220,30 +220,9 @@ namespace Base
   template <typename... Types>
   class Forms;
 
-  template <typename FormType>
-  class Forms<FormType>
-  {
-  public:
-    static constexpr FormKind form_kind = FormType::form_kind;
-
-    static constexpr unsigned int fe_number = FormType::fe_number;
-    static constexpr unsigned int number = 0;
-
-    explicit constexpr Forms(const FormType& form_)
-      : form(form_)
-    {
-      static_assert(Traits::is_form<FormType>::value,
-                    "You need to construct this with a Form object!");
-    }
-
-    constexpr FormType
-    get_form() const
-    {
-      return form;
-    }
-
-    const FormType form;
-  };
+  template<>
+  class Forms<>
+  {};
 
   template <typename FormType, typename... Types>
   class Forms<FormType, Types...> : public Forms<Types...>
