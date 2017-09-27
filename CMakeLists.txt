@@ -94,6 +94,8 @@ IF(BUILD_DOCUMENTATION)
   ADD_SUBDIRECTORY(doc)
 ENDIF()
 
+ADD_SUBDIRECTORY(tests/support)
+
 # Enable testing and descent into tests/ subdirectory:
 INCLUDE_DIRECTORIES(third_party/include) #for boost test
 ENABLE_TESTING()

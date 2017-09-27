@@ -1,0 +1,18 @@
+# ninja log v5
+9	2826	0	CMakeFiles/boost_test.dir/cpp_main.cpp.o	3756f45e637bf8c2
+10	3079	0	CMakeFiles/boost_test.dir/debug.cpp.o	2f9347c29192ae3b
+10	4443	0	CMakeFiles/boost_test.dir/compiler_log_formatter.cpp.o	5dc8d0116257139e
+11	4460	0	CMakeFiles/boost_test.dir/plain_report_formatter.cpp.o	ea3036efe693837d
+14	4581	0	CMakeFiles/boost_test.dir/xml_report_formatter.cpp.o	b83f6ba308ea6b76
+14	4629	0	CMakeFiles/boost_test.dir/xml_log_formatter.cpp.o	44a57300126bc4e9
+12	4635	0	CMakeFiles/boost_test.dir/results_collector.cpp.o	48b958f44fc6e9dd
+13	4646	0	CMakeFiles/boost_test.dir/unit_test_monitor.cpp.o	9cbe4bc719162974
+13	4666	0	CMakeFiles/boost_test.dir/unit_test_log.cpp.o	daed1c9f45fb924a
+9	4690	0	CMakeFiles/boost_test.dir/results_reporter.cpp.o	6134755287660957
+12	4702	0	CMakeFiles/boost_test.dir/progress_monitor.cpp.o	694bd68d16eff693
+12	4826	0	CMakeFiles/boost_test.dir/test_tools.cpp.o	b2cdb8652c822805
+10	4920	0	CMakeFiles/boost_test.dir/execution_monitor.cpp.o	62c135139f65722f
+11	4921	0	CMakeFiles/boost_test.dir/test_main.cpp.o	95c30d627d17e707
+10	4934	0	CMakeFiles/boost_test.dir/framework.cpp.o	e383e9680a229e18
+13	5090	0	CMakeFiles/boost_test.dir/unit_test_main.cpp.o	10e7dacbd9fa3b47
+14	9926	0	CMakeFiles/boost_test.dir/unit_test_parameters.cpp.o	e7c1fd6260693e1a
