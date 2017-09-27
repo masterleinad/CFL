@@ -50,8 +50,7 @@ namespace dealii::MatrixFree
     {
     }
 
-    static constexpr
-    std::array<bool, 3>
+    static constexpr std::array<bool, 3>
     get_form_kinds(std::array<bool, 3> use_objects = std::array<bool, 3>{})
     {
       switch (form_kind)
@@ -204,190 +203,12 @@ namespace dealii::MatrixFree
   template <typename... Types>
   class Forms;
 
-  template <typename FormType>
-  class Forms<FormType>
+  template <>
+  class Forms<>
   {
   public:
-    static constexpr FormKind form_kind = FormType::form_kind;
-
-    static constexpr bool integrate_value = FormType::integrate_value;
-    static constexpr bool integrate_value_exterior =
-      (form_kind == FormKind::face) ? FormType::integrate_value_exterior : false;
-    static constexpr bool integrate_gradient = FormType::integrate_gradient;
-    static constexpr bool integrate_gradient_exterior =
-      (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
-
-    static constexpr unsigned int fe_number = FormType::fe_number;
-    static constexpr unsigned int number = 0;
-
-    template <class OtherTest, class OtherExpr, typename NumberType>
-    explicit constexpr Forms(
-      const Base::Forms<Base::Form<OtherTest, OtherExpr, form_kind, NumberType>>& f)
-      : form(f.get_form())
-    {
-    }
-
-    static constexpr
-    std::array<bool, 3>
-    get_form_kinds(std::array<bool, 3> use_objects = std::array<bool, 3>{})
-    {
-      switch (form_kind)
-      {
-        case FormKind::cell:
-          use_objects[0] = true;
-          break;
-
-        case FormKind::face:
-          use_objects[1] = true;
-          break;
-
-        case FormKind::boundary:
-          use_objects[2] = true;
-          break;
-
-        default:
-          static_assert("Invalid FormKind!");
-      }
-      return use_objects;
-    }
-
-    template <class FEEvaluation>
-    static void
-    set_integration_flags(FEEvaluation& phi)
-    {
-      if constexpr(form_kind == FormKind::cell)
-          phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
-    }
-
-    template <class FEEvaluation>
-    static void
-    set_integration_flags_face(FEEvaluation& phi)
-    {
-      if constexpr(form_kind == FormKind::face)
-          phi.template set_integration_flags_face_and_boundary<fe_number>(
-            integrate_value,
-            integrate_value_exterior,
-            integrate_gradient,
-            integrate_gradient_exterior);
-    }
-
-    template <class FEEvaluation>
-    static void
-    set_integration_flags_boundary(FEEvaluation& phi)
-    {
-      if constexpr(form_kind == FormKind::boundary)
-          phi.template set_integration_flags_face_and_boundary<fe_number>(
-            integrate_value,
-            integrate_value_exterior,
-            integrate_gradient,
-            integrate_gradient_exterior);
-    }
-
-    template <class FEEvaluation>
-    void
-    set_evaluation_flags(FEEvaluation& phi) const
-    {
-      if constexpr(form_kind == FormKind::cell) form.expr.set_evaluation_flags(phi);
-    }
-
-    template <class FEEvaluation>
-    void
-    set_evaluation_flags_face(FEEvaluation& phi) const
-    {
-      if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
-          form.expr.set_evaluation_flags(phi);
-    }
-
-    template <class FEEvaluation>
-    void evaluate([[maybe_unused]] FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
-    {
-      if constexpr(form_kind == FormKind::cell)
-        {
-#ifdef DEBUG_OUTPUT
-          std::cout << "expecting cell value from fe_number " << fe_number << std::endl;
-#endif
-          const auto value = form.value(phi, q);
-#ifdef DEBUG_OUUTPUT
-          std::cout << "expecting cell submit from fe_number " << fe_number << std::endl;
-#endif
-          form.submit(phi, q, value);
-        }
-    }
-
-    template <class FEEvaluation>
-    void evaluate_face([[maybe_unused]] FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
-    {
-      if constexpr(form_kind == FormKind::face)
-        {
-#ifdef DEBUG_OUTPUT
-          std::cout << "expecting face value from fe_number " << fe_number << std::endl;
-#endif
-          const auto value = form.value(phi, q);
-#ifdef DEBUG_OUUTPUT
-          std::cout << "expecting face submit from fe_number " << fe_number << std::endl;
-#endif
-          form.submit(phi, q, value);
-        }
-    }
-
-    template <class FEEvaluation>
-    void evaluate_boundary([[maybe_unused]] FEEvaluation& phi,
-                           [[maybe_unused]] unsigned int q) const
-    {
-      if constexpr(form_kind == FormKind::boundary)
-        {
-#ifdef DEBUG_OUTPUT
-          std::cout << "expecting face value from fe_number " << fe_number << std::endl;
-#endif
-          const auto value = form.value(phi, q);
-#ifdef DEBUG_OUUTPUT
-          std::cout << "expecting face submit from fe_number " << fe_number << std::endl;
-#endif
-          form.submit(phi, q, value);
-        }
-    }
-
-    template <class FEEvaluation>
-    static void
-    integrate(FEEvaluation& phi)
-    {
-      phi.template integrate<fe_number>(integrate_value, integrate_gradient);
-    }
-
-    const FormType&
-    get_form() const
-    {
-      return form;
-      return form;
-    }
-
-  protected:
-    template <unsigned int size, typename IntegrationFlags>
-    static constexpr bool
-    check_forms(
-      const std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>,
-                       size>& container =
-        std::array<std::tuple<FormKind, unsigned int, std::remove_cv_t<IntegrationFlags>>, size>{})
-    {
-      constexpr IntegrationFlags integration_flags =
-        decltype(std::declval<FormType>().test)::integration_flags;
-
-      for (unsigned int i = number; i < size; ++i)
-      {
-        const auto& item = container.at(i);
-        if (std::get<0>(item) == form_kind && std::get<1>(item) == fe_number &&
-            ((std::get<2>(item)) & integration_flags))
-          return false;
-      }
-
-      return true;
-    }
-
-    static_assert(check_forms<number, decltype(FormType::TestType::integration_flags)>(),
-                  "There are multiple forms that try to submit the same information!");
-
-  private:
-    const FormType form;
+    static constexpr unsigned int number = 0; // unused
+    explicit constexpr Forms(const Base::Forms<>&){};
   };
 
   template <typename FormType, typename... Types>
@@ -404,7 +225,7 @@ namespace dealii::MatrixFree
       (form_kind == FormKind::face) ? FormType::integrate_gradient_exterior : false;
 
     static constexpr unsigned int fe_number = FormType::fe_number;
-    static constexpr unsigned int number = Forms<Types...>::number + 1;
+    static constexpr unsigned int number = sizeof...(Types) == 0 ? 0 : Forms<Types...>::number + 1;
 
     template <class OtherType, class... OtherTypes,
               typename std::enable_if<sizeof...(OtherTypes) == sizeof...(Types)>::type* = nullptr>
@@ -414,8 +235,7 @@ namespace dealii::MatrixFree
     {
     }
 
-    static constexpr
-    std::array<bool, 3>
+    static constexpr std::array<bool, 3>
     get_form_kinds(std::array<bool, 3> use_objects = std::array<bool, 3>{})
     {
       switch (form_kind)
@@ -435,7 +255,9 @@ namespace dealii::MatrixFree
         default:
           static_assert("Invalid FormKind!");
       }
-      return Forms<Types...>::get_form_kinds(use_objects);
+      if constexpr(sizeof...(Types) != 0) return Forms<Types...>::get_form_kinds(use_objects);
+      else
+        return use_objects;
     }
 
     template <class FEEvaluation>
@@ -444,7 +266,8 @@ namespace dealii::MatrixFree
     {
       if constexpr(form_kind == FormKind::cell)
           phi.template set_integration_flags<fe_number>(integrate_value, integrate_gradient);
-      Forms<Types...>::set_integration_flags(phi);
+
+      if constexpr(sizeof...(Types) != 0) Forms<Types...>::set_integration_flags(phi);
     }
 
     template <class FEEvaluation>
@@ -457,7 +280,8 @@ namespace dealii::MatrixFree
             integrate_value_exterior,
             integrate_gradient,
             integrate_gradient_exterior);
-      Forms<Types...>::set_integration_flags_face(phi);
+
+      if constexpr(sizeof...(Types) != 0) Forms<Types...>::set_integration_flags_face(phi);
     }
 
     template <class FEEvaluation>
@@ -470,7 +294,8 @@ namespace dealii::MatrixFree
             integrate_value_exterior,
             integrate_gradient,
             integrate_gradient_exterior);
-      Forms<Types...>::set_integration_flags_boundary(phi);
+
+      if constexpr(sizeof...(Types) != 0) Forms<Types...>::set_integration_flags_boundary(phi);
     }
 
     template <class FEEvaluation>
@@ -478,7 +303,8 @@ namespace dealii::MatrixFree
     set_evaluation_flags(FEEvaluation& phi) const
     {
       if constexpr(form_kind == FormKind::cell) form.expr.set_evaluation_flags(phi);
-      Forms<Types...>::set_evaluation_flags(phi);
+
+      if constexpr(sizeof...(Types) != 0) Forms<Types...>::set_evaluation_flags(phi);
     }
 
     template <class FEEvaluation>
@@ -487,12 +313,13 @@ namespace dealii::MatrixFree
     {
       if constexpr(form_kind == FormKind::face || form_kind == FormKind::boundary)
           form.expr.set_evaluation_flags(phi);
-      Forms<Types...>::set_evaluation_flags_face(phi);
+
+      if constexpr(sizeof...(Types) != 0) Forms<Types...>::set_evaluation_flags_face(phi);
     }
 
     template <class FEEvaluation>
     void
-    evaluate(FEEvaluation& phi, unsigned int q) const
+    evaluate(FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
     {
       if constexpr(form_kind == FormKind::cell)
         {
@@ -500,17 +327,19 @@ namespace dealii::MatrixFree
           std::cout << "expecting cell value from fe_number " << fe_number << std::endl;
 #endif
           const auto value = form.value(phi, q);
+          if constexpr(sizeof...(Types) != 0)
+            {
 #ifdef DEBUG_OUTPUT
-          std::cout << "descending" << std::endl;
+              std::cout << "descending" << std::endl;
 #endif
-          Forms<Types...>::evaluate(phi, q);
+              Forms<Types...>::evaluate(phi, q);
+            }
 #ifdef DEBUG_OUTPUT
           std::cout << "expecting cell submit from fe_number " << fe_number << std::endl;
 #endif
           form.submit(phi, q, value);
         }
-      else
-        Forms<Types...>::evaluate(phi, q);
+      else if constexpr(sizeof...(Types) != 0) Forms<Types...>::evaluate(phi, q);
     }
 
     template <class FEEvaluation>
@@ -523,22 +352,24 @@ namespace dealii::MatrixFree
           std::cout << "expecting face value from fe_number " << fe_number << std::endl;
 #endif
           const auto value = form.value(phi, q);
+          if constexpr(sizeof...(Types) != 0)
+            {
 #ifdef DEBUG_OUTPUT
-          std::cout << "descending" << std::endl;
+              std::cout << "descending" << std::endl;
 #endif
-          Forms<Types...>::evaluate_face(phi, q);
+              Forms<Types...>::evaluate_face(phi, q);
+            }
 #ifdef DEBUG_OUTPUT
           std::cout << "expecting face submit from fe_number " << fe_number << std::endl;
 #endif
           form.submit(phi, q, value);
         }
-      else
-        Forms<Types...>::evaluate_face(phi, q);
+      else if constexpr(sizeof...(Types) != 0) Forms<Types...>::evaluate_face(phi, q);
     }
 
     template <class FEEvaluation>
     void
-    evaluate_boundary(FEEvaluation& phi, unsigned int q) const
+    evaluate_boundary(FEEvaluation& phi, [[maybe_unused]] unsigned int q) const
     {
       if constexpr(form_kind == FormKind::boundary)
         {
@@ -546,17 +377,19 @@ namespace dealii::MatrixFree
           std::cout << "expecting face value from fe_number " << fe_number << std::endl;
 #endif
           const auto value = form.value(phi, q);
+          if constexpr(sizeof...(Types) != 0)
+            {
 #ifdef DEBUG_OUTPUT
-          std::cout << "descending" << std::endl;
+              std::cout << "descending" << std::endl;
 #endif
-          Forms<Types...>::evaluate_boundary(phi, q);
+              Forms<Types...>::evaluate_boundary(phi, q);
+            }
 #ifdef DEBUG_OUTPUT
           std::cout << "expecting face submit from fe_number " << fe_number << std::endl;
 #endif
           form.submit(phi, q, value);
         }
-      else
-        Forms<Types...>::evaluate_boundary(phi, q);
+      else if constexpr(sizeof...(Types) != 0) Forms<Types...>::evaluate_boundary(phi, q);
     }
 
     template <class FEEvaluation>
@@ -564,10 +397,10 @@ namespace dealii::MatrixFree
     integrate(FEEvaluation& phi)
     {
       phi.template integrate<fe_number>(integrate_value, integrate_gradient);
-      Forms<Types...>::integrate(phi);
+      if constexpr(sizeof...(Types) != 0) Forms<Types...>::integrate(phi);
     }
 
-    const FormType&
+    constexpr const FormType&
     get_form() const
     {
       return form;
@@ -583,7 +416,6 @@ namespace dealii::MatrixFree
     {
       constexpr IntegrationFlags integration_flags =
         decltype(std::declval<FormType>().test)::integration_flags;
-      constexpr auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
 
       for (unsigned int i = number; i < size; ++i)
       {
@@ -593,8 +425,14 @@ namespace dealii::MatrixFree
           return false;
       }
 
-      const auto new_container = internal::append(container, new_tuple);
-      return Forms<Types...>::template check_forms<size + 1, IntegrationFlags>(new_container);
+      if constexpr(sizeof...(Types) != 0)
+        {
+          constexpr auto new_tuple = std::make_tuple(form_kind, fe_number, integration_flags);
+          const auto new_container = internal::append(container, new_tuple);
+          return Forms<Types...>::template check_forms<size + 1, IntegrationFlags>(new_container);
+        }
+      else
+        return true;
     }
 
     static_assert(check_forms<number, decltype(FormType::TestType::integration_flags)>(),

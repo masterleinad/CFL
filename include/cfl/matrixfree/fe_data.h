@@ -257,14 +257,14 @@ namespace CFL::dealii::MatrixFree
  *   @endverbatim
 */
 template <>
-  class FEDatas<>
-  {
-    public:
-    static constexpr unsigned int n=0;//unused
-    static constexpr unsigned int max_degree=0;//unused
-    static constexpr unsigned int contains_cell_data=false;
-    static constexpr unsigned int contains_face_data=false;
-  };
+class FEDatas<>
+{
+public:
+  static constexpr unsigned int n = 0;          // unused
+  static constexpr unsigned int max_degree = 0; // unused
+  static constexpr unsigned int contains_cell_data = false;
+  static constexpr unsigned int contains_face_data = false;
+};
 
 /**
  * @brief Class to provide FEEvaluation services in the scope of CFL
@@ -280,22 +280,25 @@ public:
   using NumberType = typename FEData::NumberType;
   using Base = FEDatas<Types...>;
   static constexpr unsigned int fe_number = FEData::fe_number;
-  static constexpr unsigned int max_degree = sizeof...(Types)==0?FEData::max_degree:Base::max_degree;
-  static constexpr unsigned int n = sizeof...(Types)==0?1: Base::n + 1;
-  static constexpr bool contains_face_data = CFL::Traits::is_fe_data_face<FEData>::value || Base::contains_face_data;
-  static constexpr bool contains_cell_data = CFL::Traits::is_fe_data<FEData>::value || Base::contains_cell_data;
+  static constexpr unsigned int max_degree =
+    sizeof...(Types) == 0 ? FEData::max_degree : Base::max_degree;
+  static constexpr unsigned int n = sizeof...(Types) == 0 ? 1 : Base::n + 1;
+  static constexpr bool contains_face_data =
+    CFL::Traits::is_fe_data_face<FEData>::value || Base::contains_face_data;
+  static constexpr bool contains_cell_data =
+    CFL::Traits::is_fe_data<FEData>::value || Base::contains_cell_data;
 
   FEDatas(FEData fe_data_, FEDatas<Types...> fe_datas_)
     : FEDatas<Types...>(fe_datas_)
     , fe_data(std::move(fe_data_))
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(CFL::Traits::is_fe_data<FEData>::value)
-        Base::template check_uniqueness<fe_number>();
-      else
-        Base::template check_uniqueness_face<fe_number>();
-    }
+    if constexpr(sizeof...(Types) != 0)
+      {
+        if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+            Base::template check_uniqueness<fe_number>();
+        else
+          Base::template check_uniqueness_face<fe_number>();
+      }
     //    std::cout << "Constructor4" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
@@ -308,13 +311,13 @@ public:
     : Base(fe_datas_...)
     , fe_data(std::move(fe_data_))
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(CFL::Traits::is_fe_data<FEData>::value)
-        Base::template check_uniqueness<fe_number>();
-      else
-        Base::template check_uniqueness_face<fe_number>();
-    }
+    if constexpr(sizeof...(Types) != 0)
+      {
+        if constexpr(CFL::Traits::is_fe_data<FEData>::value)
+            Base::template check_uniqueness<fe_number>();
+        else
+          Base::template check_uniqueness_face<fe_number>();
+      }
     //    std::cout << "Constructor3" << std::endl;
     static_assert(FEData::max_degree == FEDatas::max_degree,
                   "The maximum degree must be the same for all FiniteElements!");
@@ -327,13 +330,12 @@ public:
   static constexpr unsigned int
   rank()
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern)
-      return TensorTraits::rank;
-      else
-      return Base::template rank<fe_number_extern>();
-    }
+    if constexpr(sizeof...(Types) != 0)
+      {
+        if constexpr(fe_number == fe_number_extern) return TensorTraits::rank;
+        else
+          return Base::template rank<fe_number_extern>();
+      }
     else
     {
       static_assert(fe_number == fe_number_extern, "Component not found!");
@@ -367,8 +369,7 @@ public:
     }
     initialized = true;
 
-    if constexpr (sizeof...(Types)!=0)
-      Base::initialize(mf);
+    if constexpr(sizeof...(Types) != 0) Base::initialize(mf);
   }
 
   template <typename Cell>
@@ -383,8 +384,7 @@ public:
         Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
         fe_data.fe_evaluation->reinit(cell);
       }
-    if constexpr (sizeof...(Types)!=0)
-      Base::reinit(cell);
+    if constexpr(sizeof...(Types) != 0) Base::reinit(cell);
   }
 
   template <typename Face>
@@ -400,8 +400,7 @@ public:
         fe_data.fe_evaluation_interior->reinit(face);
         fe_data.fe_evaluation_exterior->reinit(face);
       }
-    if constexpr (sizeof...(Types)!=0)
-      Base::reinit_face(face);
+    if constexpr(sizeof...(Types) != 0) Base::reinit_face(face);
   }
 
   template <typename Face>
@@ -418,8 +417,7 @@ public:
                ::dealii::ExcInternalError());
         fe_data.fe_evaluation_interior->reinit(face);
       }
-    if constexpr(sizeof...(Types)!=0)
-      Base::reinit_boundary(face);
+    if constexpr(sizeof...(Types) != 0) Base::reinit_boundary(face);
   }
 
   template <typename VectorType>
@@ -427,19 +425,18 @@ public:
   read_dof_values(const VectorType& vector)
   {
     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
-    {
+      {
 #ifdef DEBUG_OUTPUT
-      std::cout << "Read cell DoF values " << fe_number << std::endl;
+        std::cout << "Read cell DoF values " << fe_number << std::endl;
 #endif
-      Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
+        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
 
-      if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
-        fe_data.fe_evaluation->read_dof_values(vector.block(fe_number));
-      else
-        fe_data.fe_evaluation->read_dof_values(vector);
-    }
-    if constexpr(sizeof...(Types)!=0)
-      Base::read_dof_values(vector);
+        if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+            fe_data.fe_evaluation->read_dof_values(vector.block(fe_number));
+        else
+          fe_data.fe_evaluation->read_dof_values(vector);
+      }
+    if constexpr(sizeof...(Types) != 0) Base::read_dof_values(vector);
   }
 
   template <typename VectorType, bool interior = true, bool exterior = true>
@@ -470,8 +467,8 @@ public:
           }
       }
 
-    if constexpr(sizeof...(Types)!=0)
-      Base::template read_dof_values_face<VectorType, interior, exterior>(vector);
+    if constexpr(sizeof...(Types) != 0)
+        Base::template read_dof_values_face<VectorType, interior, exterior>(vector);
   }
 
   template <typename VectorType>
@@ -479,21 +476,20 @@ public:
   distribute_local_to_global(VectorType& vector)
   {
     if constexpr(CFL::Traits::is_fe_data<FEData>::value)
-    {
-      if (integrate_values | integrate_gradients)
       {
+        if (integrate_values | integrate_gradients)
+        {
 #ifdef DEBUG_OUTPUT
-        std::cout << "Distribute cell DoF values " << fe_number << std::endl;
+          std::cout << "Distribute cell DoF values " << fe_number << std::endl;
 #endif
-        Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
-        if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
-          fe_data.fe_evaluation->distribute_local_to_global(vector.block(fe_number));
-        else
-          fe_data.fe_evaluation->distribute_local_to_global(vector);
+          Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
+          if constexpr(CFL::Traits::is_block_vector<VectorType>::value)
+              fe_data.fe_evaluation->distribute_local_to_global(vector.block(fe_number));
+          else
+            fe_data.fe_evaluation->distribute_local_to_global(vector);
+        }
       }
-    }
-    if constexpr(sizeof...(Types)!=0)
-      Base::distribute_local_to_global(vector);
+    if constexpr(sizeof...(Types) != 0) Base::distribute_local_to_global(vector);
   }
 
   template <typename VectorType, bool interior = true, bool exterior = true>
@@ -524,8 +520,8 @@ public:
               fe_data.fe_evaluation_exterior->distribute_local_to_global(vector);
           }
       }
-    if constexpr(sizeof...(Types)!=0)
-    Base::template distribute_local_to_global_face<VectorType, interior, exterior>(vector);
+    if constexpr(sizeof...(Types) != 0)
+        Base::template distribute_local_to_global_face<VectorType, interior, exterior>(vector);
   }
 
   void
@@ -540,8 +536,7 @@ public:
         Assert(fe_data.evaluation_is_initialized(), ::dealii::ExcInternalError());
         fe_data.fe_evaluation->evaluate(evaluate_values, evaluate_gradients, evaluate_hessians);
       }
-    if constexpr (sizeof...(Types)!=0)
-      Base::evaluate();
+    if constexpr(sizeof...(Types) != 0) Base::evaluate();
   }
 
   template <bool interior = true, bool exterior = true>
@@ -563,8 +558,7 @@ public:
             fe_data.fe_evaluation_exterior->evaluate(evaluate_values, evaluate_gradients);
       }
 
-    if constexpr(sizeof...(Types)!=0)
-      Base::template evaluate_face<interior, exterior>();
+    if constexpr(sizeof...(Types) != 0) Base::template evaluate_face<interior, exterior>();
   }
 
   void
@@ -581,8 +575,7 @@ public:
           fe_data.fe_evaluation->integrate(integrate_values, integrate_gradients);
         }
       }
-    if constexpr (sizeof...(Types)!=0)
-      Base::integrate();
+    if constexpr(sizeof...(Types) != 0) Base::integrate();
   }
 
   void
@@ -609,30 +602,30 @@ public:
                                                     integrate_gradients_exterior);
         }
       }
-    if constexpr (sizeof...(Types)!=0)
-      Base::integrate_face();
+    if constexpr(sizeof...(Types) != 0) Base::integrate_face();
   }
 
   template <unsigned int fe_number_extern>
   void
   set_integration_flags(bool integrate_value, bool integrate_gradient)
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
-        integrate_values |= integrate_value;
-        integrate_gradients |= integrate_gradient;
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
+            integrate_values |= integrate_value;
+            integrate_gradients |= integrate_gradient;
 #ifdef DEBUG_OUTPUT
-        std::cout << "integrate cell value: " << fe_number << " " << integrate_values << " "
-                  << integrate_value << std::endl;
-        std::cout << "integrate cell gradients: " << fe_number << " " << integrate_gradients << " "
-                  << integrate_gradient << std::endl;
+            std::cout << "integrate cell value: " << fe_number << " " << integrate_values << " "
+                      << integrate_value << std::endl;
+            std::cout << "integrate cell gradients: " << fe_number << " " << integrate_gradients
+                      << " " << integrate_gradient << std::endl;
 #endif
+          }
+        else
+          Base::template set_integration_flags<fe_number_extern>(integrate_value,
+                                                                 integrate_gradient);
       }
-      else
-      Base::template set_integration_flags<fe_number_extern>(integrate_value, integrate_gradient);
-    }
     else
     {
       static_assert(fe_number == fe_number_extern, "Component not found!");
@@ -641,9 +634,9 @@ public:
       integrate_gradients |= integrate_gradient;
 #ifdef DEBUG_OUTPUT
       std::cout << "integrate cell value: " << fe_number << " " << integrate_values << " "
-              << integrate_value << std::endl;
-    std::cout << "integrate cell gradients: " << fe_number << " " << integrate_gradients << " "
-              << integrate_gradient << std::endl;
+                << integrate_value << std::endl;
+      std::cout << "integrate cell gradients: " << fe_number << " " << integrate_gradients << " "
+                << integrate_gradient << std::endl;
 #endif
     }
   }
@@ -658,8 +651,7 @@ public:
         integrate_gradients = false;
         integrate_gradients_exterior = false;
       }
-    if constexpr(sizeof...(Types)!=0)
-      Base::reset_integration_flags_face_and_boundary();
+    if constexpr(sizeof...(Types) != 0) Base::reset_integration_flags_face_and_boundary();
   }
 
   template <unsigned int fe_number_extern>
@@ -667,32 +659,33 @@ public:
   set_integration_flags_face_and_boundary(bool integrate_value, bool integrate_value_exterior,
                                           bool integrate_gradient, bool integrate_gradient_exterior)
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(CFL::Traits::is_fe_data_face<FEData>::value && fe_number == fe_number_extern)
+    if constexpr(sizeof...(Types) != 0)
       {
-        integrate_values |= integrate_value;
-        integrate_values_exterior |= integrate_value_exterior;
-        integrate_gradients |= integrate_gradient;
-        integrate_gradients_exterior |= integrate_gradient_exterior;
+        if constexpr(CFL::Traits::is_fe_data_face<FEData>::value && fe_number == fe_number_extern)
+          {
+            integrate_values |= integrate_value;
+            integrate_values_exterior |= integrate_value_exterior;
+            integrate_gradients |= integrate_gradient;
+            integrate_gradients_exterior |= integrate_gradient_exterior;
 #ifdef DEBUG_OUTPUT
-        std::cout << "integrate face value: " << fe_number << " " << integrate_values << " "
-                  << integrate_value_exterior << std::endl;
-        std::cout << "integrate face value exterior: " << fe_number << " "
-                  << integrate_values_exterior << " " << integrate_value_exterior << std::endl;
-        std::cout << "integrate face gradients: " << fe_number << " " << integrate_gradients << " "
-                  << integrate_gradient << std::endl;
-        std::cout << "integrate face gradients exterior: " << fe_number << " "
-                  << integrate_gradients_exterior << " " << integrate_gradient_exterior
-                  << std::endl;
+            std::cout << "integrate face value: " << fe_number << " " << integrate_values << " "
+                      << integrate_value_exterior << std::endl;
+            std::cout << "integrate face value exterior: " << fe_number << " "
+                      << integrate_values_exterior << " " << integrate_value_exterior << std::endl;
+            std::cout << "integrate face gradients: " << fe_number << " " << integrate_gradients
+                      << " " << integrate_gradient << std::endl;
+            std::cout << "integrate face gradients exterior: " << fe_number << " "
+                      << integrate_gradients_exterior << " " << integrate_gradient_exterior
+                      << std::endl;
 #endif
+          }
+        else
+          Base::template set_integration_flags_face_and_boundary<fe_number_extern>(
+            integrate_value,
+            integrate_value_exterior,
+            integrate_gradient,
+            integrate_gradient_exterior);
       }
-      else
-      Base::template set_integration_flags_face_and_boundary<fe_number_extern>(integrate_value,
-                                                                               integrate_value_exterior,
-                                                                               integrate_gradient,
-                                                                               integrate_gradient_exterior);
-    }
     else
     {
       static_assert(fe_number == fe_number_extern, "Component not found!");
@@ -703,13 +696,13 @@ public:
       integrate_gradients_exterior |= integrate_gradient_exterior;
 #ifdef DEBUG_OUTPUT
       std::cout << "integrate face value: " << fe_number << " " << integrate_values << " "
-              << integrate_value_exterior << std::endl;
-    std::cout << "integrate face value exterior: " << fe_number << " " << integrate_values_exterior
-              << " " << integrate_value_exterior << std::endl;
-    std::cout << "integrate face gradients: " << fe_number << " " << integrate_gradients << " "
-              << integrate_gradient << std::endl;
-    std::cout << "integrate face gradients exterior: " << fe_number << " "
-              << integrate_gradients_exterior << " " << integrate_gradient_exterior << std::endl;
+                << integrate_value_exterior << std::endl;
+      std::cout << "integrate face value exterior: " << fe_number << " "
+                << integrate_values_exterior << " " << integrate_value_exterior << std::endl;
+      std::cout << "integrate face gradients: " << fe_number << " " << integrate_gradients << " "
+                << integrate_gradient << std::endl;
+      std::cout << "integrate face gradients exterior: " << fe_number << " "
+                << integrate_gradients_exterior << " " << integrate_gradient_exterior << std::endl;
 #endif
     }
   }
@@ -718,27 +711,28 @@ public:
   void
   set_evaluation_flags(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(CFL::Traits::is_fe_data<FEData>::value && fe_number == fe_number_extern)
+    if constexpr(sizeof...(Types) != 0)
       {
-        evaluate_values |= evaluate_value;
-        evaluate_gradients |= evaluate_gradient;
-        evaluate_hessians |= evaluate_hessian;
+        if constexpr(CFL::Traits::is_fe_data<FEData>::value && fe_number == fe_number_extern)
+          {
+            evaluate_values |= evaluate_value;
+            evaluate_gradients |= evaluate_gradient;
+            evaluate_hessians |= evaluate_hessian;
 #ifdef DEBUG_OUTPUT
-        std::cout << "evaluate cell value: " << fe_number << " " << evaluate_values << " "
-                  << evaluate_value << std::endl;
-        std::cout << "evaluate cell gradients: " << fe_number << " " << evaluate_gradients << " "
-                  << evaluate_gradient << std::endl;
-        std::cout << "evaluate cell hessian: " << fe_number << " " << evaluate_hessians << " "
-                  << evaluate_hessian << std::endl;
+            std::cout << "evaluate cell value: " << fe_number << " " << evaluate_values << " "
+                      << evaluate_value << std::endl;
+            std::cout << "evaluate cell gradients: " << fe_number << " " << evaluate_gradients
+                      << " " << evaluate_gradient << std::endl;
+            std::cout << "evaluate cell hessian: " << fe_number << " " << evaluate_hessians << " "
+                      << evaluate_hessian << std::endl;
 #endif
+          }
+        else
+        {
+          Base::template set_evaluation_flags<fe_number_extern>(
+            evaluate_value, evaluate_gradient, evaluate_hessian);
+        }
       }
-      else
-      {
-        Base::template set_evaluation_flags<fe_number_extern>(evaluate_value, evaluate_gradient, evaluate_hessian);
-      }
-    }
     else
     {
       static_assert(CFL::Traits::is_fe_data<FEData>::value, "Component not found!");
@@ -748,11 +742,11 @@ public:
       evaluate_hessians |= evaluate_hessian;
 #ifdef DEBUG_OUTPUT
       std::cout << "evaluate cell value: " << fe_number << " " << evaluate_values << " "
-              << evaluate_value << std::endl;
-    std::cout << "evaluate cell gradients: " << fe_number << " " << evaluate_gradients << " "
-              << evaluate_gradient << std::endl;
-    std::cout << "evaluate cell hessian: " << fe_number << " " << evaluate_hessians << " "
-              << evaluate_hessian << std::endl;
+                << evaluate_value << std::endl;
+      std::cout << "evaluate cell gradients: " << fe_number << " " << evaluate_gradients << " "
+                << evaluate_gradient << std::endl;
+      std::cout << "evaluate cell hessian: " << fe_number << " " << evaluate_hessians << " "
+                << evaluate_hessian << std::endl;
 #endif
     }
   }
@@ -761,27 +755,28 @@ public:
   void
   set_evaluation_flags_face(bool evaluate_value, bool evaluate_gradient, bool evaluate_hessian)
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(CFL::Traits::is_fe_data_face<FEData>::value && fe_number == fe_number_extern)
+    if constexpr(sizeof...(Types) != 0)
       {
-        evaluate_values |= evaluate_value;
-        evaluate_gradients |= evaluate_gradient;
-        evaluate_hessians |= evaluate_hessian;
+        if constexpr(CFL::Traits::is_fe_data_face<FEData>::value && fe_number == fe_number_extern)
+          {
+            evaluate_values |= evaluate_value;
+            evaluate_gradients |= evaluate_gradient;
+            evaluate_hessians |= evaluate_hessian;
 #ifdef DEBUG_OUTPUT
-        std::cout << "evaluate face value: " << fe_number << " " << evaluate_values << " "
-                  << evaluate_value << std::endl;
-        std::cout << "evaluate face gradients: " << fe_number << " " << evaluate_gradients << " "
-                  << evaluate_gradient << std::endl;
-        std::cout << "evaluate face hessian: " << fe_number << " " << evaluate_hessians << " "
-                  << evaluate_hessian << std::endl;
+            std::cout << "evaluate face value: " << fe_number << " " << evaluate_values << " "
+                      << evaluate_value << std::endl;
+            std::cout << "evaluate face gradients: " << fe_number << " " << evaluate_gradients
+                      << " " << evaluate_gradient << std::endl;
+            std::cout << "evaluate face hessian: " << fe_number << " " << evaluate_hessians << " "
+                      << evaluate_hessian << std::endl;
 #endif
+          }
+        else
+        {
+          Base::template set_evaluation_flags_face<fe_number_extern>(
+            evaluate_value, evaluate_gradient, evaluate_hessian);
+        }
       }
-      else
-      {
-        Base::template set_evaluation_flags_face<fe_number_extern>(evaluate_value, evaluate_gradient, evaluate_hessian);
-      }
-    }
     else
     {
       static_assert(CFL::Traits::is_fe_data_face<FEData>::value, "Must be face object!");
@@ -791,11 +786,11 @@ public:
       evaluate_hessians |= evaluate_hessian;
 #ifdef DEBUG_OUTPUT
       std::cout << "evaluate face value: " << fe_number << " " << evaluate_values << " "
-              << evaluate_value << std::endl;
-    std::cout << "evaluate face gradients: " << fe_number << " " << evaluate_gradients << " "
-              << evaluate_gradient << std::endl;
-    std::cout << "evaluate face hessian: " << fe_number << " " << evaluate_hessians << " "
-              << evaluate_hessian << std::endl;
+                << evaluate_value << std::endl;
+      std::cout << "evaluate face gradients: " << fe_number << " " << evaluate_gradients << " "
+                << evaluate_gradient << std::endl;
+      std::cout << "evaluate face hessian: " << fe_number << " " << evaluate_hessians << " "
+                << evaluate_hessian << std::endl;
 #endif
     }
   }
@@ -804,18 +799,18 @@ public:
   static constexpr unsigned int
   get_n_q_points()
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(CFL::Traits::is_fe_data<FEData>::value
-                   /*&& fe_number_extern == fe_number*/)
-        return FEData::FEEvaluationType::static_n_q_points;
-      else
-        return Base::template get_n_q_points<fe_number_extern>();
-    }
+    if constexpr(sizeof...(Types) != 0)
+      {
+        if constexpr(CFL::Traits::is_fe_data<FEData>::value
+                    /*&& fe_number_extern == fe_number*/) return FEData::FEEvaluationType::
+            static_n_q_points;
+        else
+          return Base::template get_n_q_points<fe_number_extern>();
+      }
     else
     {
       static_assert(CFL::Traits::is_fe_data<FEData>::value, "Component not found!");
-      //static_assert(fe_number_extern == fe_number, "Component not found!");
+      // static_assert(fe_number_extern == fe_number, "Component not found!");
       return FEData::FEEvaluationType::static_n_q_points;
     }
   }
@@ -824,19 +819,18 @@ public:
   static constexpr unsigned int
   get_n_q_points_face()
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(CFL::Traits::is_fe_data_face<FEData>::value && fe_number_extern == fe_number)
-        return FEData::FEEvaluationType::static_n_q_points;
-      else
-        return Base::template get_n_q_points_face<fe_number_extern>();
-    }
+    if constexpr(sizeof...(Types) != 0)
+      {
+        if constexpr(CFL::Traits::is_fe_data_face<FEData>::value &&
+                    fe_number_extern ==
+                      fe_number) return FEData::FEEvaluationType::static_n_q_points;
+        else
+          return Base::template get_n_q_points_face<fe_number_extern>();
+      }
     else
     {
-      static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
-                    "Component not found!");
-      static_assert(fe_number_extern == fe_number,
-                    "Component not found!");
+      static_assert(CFL::Traits::is_fe_data_face<FEData>::value, "Component not found!");
+      static_assert(fe_number_extern == fe_number, "Component not found!");
       return FEData::FEEvaluationType::static_n_q_points;
     }
   }
@@ -845,18 +839,18 @@ public:
   auto
   get_gradient(unsigned int q) const
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "get gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        return fe_data.fe_evaluation->get_gradient(q);
+            return fe_data.fe_evaluation->get_gradient(q);
+          }
+        else
+          return Base::template get_gradient<fe_number_extern>(q);
       }
-      else
-      return Base::template get_gradient<fe_number_extern>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -871,21 +865,20 @@ public:
   auto
   get_normal_gradient(unsigned int q) const
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get normal gradient FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "get normal gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        if constexpr(interior)
-        return fe_data.fe_evaluation_interior->get_normal_gradient(q);
+            if constexpr(interior) return fe_data.fe_evaluation_interior->get_normal_gradient(q);
+            else
+              return -(fe_data.fe_evaluation_exterior->get_normal_gradient(q));
+          }
         else
-        return -(fe_data.fe_evaluation_exterior->get_normal_gradient(q));
+          return Base::template get_normal_gradient<fe_number_extern, interior>(q);
       }
-      else
-      return Base::template get_normal_gradient<fe_number_extern, interior>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -894,7 +887,7 @@ public:
       static_assert(fe_number == fe_number_extern, "Component not found!");
       if constexpr(interior) return fe_data.fe_evaluation_interior->get_normal_gradient(q);
       else
-      return -(fe_data.fe_evaluation_exterior->get_normal_gradient(q));
+        return -(fe_data.fe_evaluation_exterior->get_normal_gradient(q));
     }
   }
 
@@ -902,18 +895,18 @@ public:
   auto
   get_symmetric_gradient(unsigned int q) const
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "get symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        return fe_data.fe_evaluation->get_symmetric_gradient(q);
+            return fe_data.fe_evaluation->get_symmetric_gradient(q);
+          }
+        else
+          return Base::template get_symmetric_gradient<fe_number_extern>(q);
       }
-      else
-      return Base::template get_symmetric_gradient<fe_number_extern>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -928,18 +921,18 @@ public:
   auto
   get_divergence(unsigned int q) const
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get divergence FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "get divergence FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        return fe_data.fe_evaluation->get_divergence(q);
+            return fe_data.fe_evaluation->get_divergence(q);
+          }
+        else
+          return Base::template get_divergence<fe_number_extern>(q);
       }
-      else
-      return Base::template get_divergence<fe_number_extern>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -954,18 +947,18 @@ public:
   auto
   get_laplacian(unsigned int q) const
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get laplacian FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "get laplacian FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        return fe_data.fe_evaluation->get_laplacian(q);
+            return fe_data.fe_evaluation->get_laplacian(q);
+          }
+        else
+          return Base::template get_laplacian<fe_number_extern>(q);
       }
-      else
-      return Base::template get_laplacian<fe_number_extern>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -980,18 +973,18 @@ public:
   auto
   get_hessian_diagonal(unsigned int q) const
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get hessian_diagonal FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "get hessian_diagonal FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        return fe_data.fe_evaluation->get_hessian_diagonal(q);
+            return fe_data.fe_evaluation->get_hessian_diagonal(q);
+          }
+        else
+          return Base::template get_hessian_diagonal<fe_number_extern>(q);
       }
-      else
-      return Base::template get_hessian_diagonal<fe_number_extern>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -1006,18 +999,18 @@ public:
   auto
   get_hessian(unsigned int q) const
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get hessian FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "get hessian FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        return fe_data.fe_evaluation->get_hessian(q);
+            return fe_data.fe_evaluation->get_hessian(q);
+          }
+        else
+          return Base::template get_hessian<fe_number_extern>(q);
       }
-      else
-      return Base::template get_hessian<fe_number_extern>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -1032,18 +1025,18 @@ public:
   auto
   get_value(unsigned int q) const
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "get value FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        return fe_data.fe_evaluation->get_value(q);
+            return fe_data.fe_evaluation->get_value(q);
+          }
+        else
+          return Base::template get_value<fe_number_extern>(q);
       }
-      else
-      return Base::template get_value<fe_number_extern>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -1062,34 +1055,35 @@ public:
   auto
   get_face_value(unsigned int q) const
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "get face value FEDatas " << fe_number << " " << q << " " << interior << ": ";
+            std::cout << "get face value FEDatas " << fe_number << " " << q << " " << interior
+                      << ": ";
 
 #endif
-        if constexpr(interior)
-        {
-          const auto value = fe_data.fe_evaluation_interior->get_value(q);
+            if constexpr(interior)
+              {
+                const auto value = fe_data.fe_evaluation_interior->get_value(q);
 #ifdef DEBUG_OUTPUT
-          std::cout << value[0] << " " << value[1] << std::endl;
+                std::cout << value[0] << " " << value[1] << std::endl;
 #endif
-          return value;
-        }
+                return value;
+              }
+            else
+            {
+              const auto value = fe_data.fe_evaluation_exterior->get_value(q);
+#ifdef DEBUG_OUTPUT
+              std::cout << value[0] << " " << value[1] << std::endl;
+#endif
+              return value;
+            }
+          }
         else
-        {
-          const auto value = fe_data.fe_evaluation_exterior->get_value(q);
-#ifdef DEBUG_OUTPUT
-          std::cout << value[0] << " " << value[1] << std::endl;
-#endif
-          return value;
-        }
+          return Base::template get_face_value<fe_number_extern, interior>(q);
       }
-      else
-      return Base::template get_face_value<fe_number_extern, interior>(q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -1099,13 +1093,13 @@ public:
                     "This function can only be called for FEDataFace objects!");
       static_assert(fe_number == fe_number_extern, "Component not found!");
       if constexpr(interior)
-      {
-        const auto value = fe_data.fe_evaluation_interior->get_value(q);
+        {
+          const auto value = fe_data.fe_evaluation_interior->get_value(q);
 #ifdef DEBUG_OUTPUT
-        std::cout << value[0] << " " << value[1] << std::endl;
+          std::cout << value[0] << " " << value[1] << std::endl;
 #endif
-        return value;
-      }
+          return value;
+        }
       else
       {
         const auto value = fe_data.fe_evaluation_exterior->get_value(q);
@@ -1121,25 +1115,25 @@ public:
   void
   submit_curl(const ValueType& value, unsigned int q)
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit curl FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "submit curl FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        fe_data.fe_evaluation->submit_curl(value, q);
+            fe_data.fe_evaluation->submit_curl(value, q);
+          }
+        else
+          Base::template submit_curl<fe_number_extern, ValueType>(value, q);
       }
-      else
-      Base::template submit_curl<fe_number_extern, ValueType>(value, q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
       std::cout << "submit curl FEDatas " << fe_number << " " << q << std::endl;
-    for (unsigned int i = 0; i < 2; ++i)
-      std::cout << " " << value[i][0];
-    std::cout << std::endl;
+      for (unsigned int i = 0; i < 2; ++i)
+        std::cout << " " << value[i][0];
+      std::cout << std::endl;
 #endif
       static_assert(CFL::Traits::is_fe_data<FEData>::value,
                     "This function can only be called for FEData objects!");
@@ -1152,25 +1146,25 @@ public:
   void
   submit_divergence(const ValueType& value, unsigned int q)
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit divergence FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "submit divergence FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        fe_data.fe_evaluation->submit_divergence(value, q);
+            fe_data.fe_evaluation->submit_divergence(value, q);
+          }
+        else
+          Base::template submit_divergence<fe_number_extern, ValueType>(value, q);
       }
-      else
-      Base::template submit_divergence<fe_number_extern, ValueType>(value, q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
       std::cout << "submit divergence FEDatas " << fe_number << " " << q << std::endl;
-    for (unsigned int i = 0; i < 2; ++i)
-      std::cout << " " << value[i][0];
-    std::cout << std::endl;
+      for (unsigned int i = 0; i < 2; ++i)
+        std::cout << " " << value[i][0];
+      std::cout << std::endl;
 #endif
       static_assert(CFL::Traits::is_fe_data<FEData>::value,
                     "This function can only be called for FEData objects!");
@@ -1183,25 +1177,25 @@ public:
   void
   submit_symmetric_gradient(const ValueType& value, unsigned int q)
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "submit symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        fe_data.fe_evaluation->submit_symmetric_gradient(value, q);
+            fe_data.fe_evaluation->submit_symmetric_gradient(value, q);
+          }
+        else
+          Base::template submit_symmetric_gradient<fe_number_extern, ValueType>(value, q);
       }
-      else
-      Base::template submit_symmetric_gradient<fe_number_extern, ValueType>(value, q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
       std::cout << "submit symmetric gradient FEDatas " << fe_number << " " << q << std::endl;
-    for (unsigned int i = 0; i < 2; ++i)
-      std::cout << " " << value[i][0];
-    std::cout << std::endl;
+      for (unsigned int i = 0; i < 2; ++i)
+        std::cout << " " << value[i][0];
+      std::cout << std::endl;
 #endif
       static_assert(CFL::Traits::is_fe_data<FEData>::value,
                     "This function can only be called for FEData objects!");
@@ -1214,18 +1208,18 @@ public:
   void
   submit_gradient(const ValueType& value, unsigned int q)
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "submit gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        fe_data.fe_evaluation->submit_gradient(value, q);
+            fe_data.fe_evaluation->submit_gradient(value, q);
+          }
+        else
+          Base::template submit_gradient<fe_number_extern, ValueType>(value, q);
       }
-      else
-      Base::template submit_gradient<fe_number_extern, ValueType>(value, q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -1242,18 +1236,18 @@ public:
   void
   submit_value(const ValueType& value, unsigned int q)
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit value FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "submit value FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        fe_data.fe_evaluation->submit_value(value, q);
+            fe_data.fe_evaluation->submit_value(value, q);
+          }
+        else
+          Base::template submit_value<fe_number_extern, ValueType>(value, q);
       }
-      else
-      Base::template submit_value<fe_number_extern, ValueType>(value, q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -1270,21 +1264,20 @@ public:
   void
   submit_face_value(const ValueType& value, unsigned int q)
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit face value FEDatas " << fe_number << " " << q << std::endl;
+            std::cout << "submit face value FEDatas " << fe_number << " " << q << std::endl;
 #endif
-        if constexpr(interior)
-        fe_data.fe_evaluation_interior->submit_value(value, q);
+            if constexpr(interior) fe_data.fe_evaluation_interior->submit_value(value, q);
+            else
+              fe_data.fe_evaluation_exterior->submit_value(value, q);
+          }
         else
-        fe_data.fe_evaluation_exterior->submit_value(value, q);
+          Base::template submit_face_value<fe_number_extern, interior, ValueType>(value, q);
       }
-      else
-      Base::template submit_face_value<fe_number_extern, interior, ValueType>(value, q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -1295,7 +1288,7 @@ public:
       static_assert(fe_number == fe_number_extern, "Component not found!");
       if constexpr(interior) fe_data.fe_evaluation_interior->submit_value(value, q);
       else
-      fe_data.fe_evaluation_exterior->submit_value(value, q);
+        fe_data.fe_evaluation_exterior->submit_value(value, q);
     }
   }
 
@@ -1303,21 +1296,20 @@ public:
   void
   submit_normal_gradient(const ValueType& value, unsigned int q)
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+    if constexpr(sizeof...(Types) != 0)
       {
+        if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
+          {
 #ifdef DEBUG_OUTPUT
-        std::cout << "submit normal gradient " << fe_number << " " << q << std::endl;
+            std::cout << "submit normal gradient " << fe_number << " " << q << std::endl;
 #endif
-        if constexpr(interior)
-        fe_data.fe_evaluation_interior->submit_normal_gradient(value, q);
+            if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_gradient(value, q);
+            else
+              fe_data.fe_evaluation_exterior->submit_normal_gradient(-value, q);
+          }
         else
-        fe_data.fe_evaluation_exterior->submit_normal_gradient(-value, q);
+          Base::template submit_normal_gradient<fe_number_extern, interior, ValueType>(value, q);
       }
-      else
-      Base::template submit_normal_gradient<fe_number_extern, interior, ValueType>(value, q);
-    }
     else
     {
 #ifdef DEBUG_OUTPUT
@@ -1328,7 +1320,7 @@ public:
       static_assert(fe_number == fe_number_extern, "Component not found!");
       if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_gradient(value, q);
       else
-      fe_data.fe_evaluation_exterior->submit_normal_gradient(-value, q);
+        fe_data.fe_evaluation_exterior->submit_normal_gradient(-value, q);
     }
   }
 
@@ -1336,13 +1328,12 @@ public:
   const auto&
   get_fe_data() const
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern)
-      return fe_data;
-      else
-      return Base::template get_fe_data<fe_number_extern>();
-    }
+    if constexpr(sizeof...(Types) != 0)
+      {
+        if constexpr(fe_number == fe_number_extern) return fe_data;
+        else
+          return Base::template get_fe_data<fe_number_extern>();
+      }
     else
     {
       static_assert(CFL::Traits::is_fe_data<FEData>::value,
@@ -1356,13 +1347,13 @@ public:
   const auto&
   get_fe_data_face() const
   {
-    if constexpr (sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern && CFL::Traits::is_fe_data_face<FEData>::value)
-      return fe_data;
-      else
-      return Base::template get_fe_data_face<fe_number_extern>();
-    }
+    if constexpr(sizeof...(Types) != 0)
+      {
+        if constexpr(fe_number == fe_number_extern &&
+                    CFL::Traits::is_fe_data_face<FEData>::value) return fe_data;
+        else
+          return Base::template get_fe_data_face<fe_number_extern>();
+      }
     else
     {
       static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
@@ -1382,10 +1373,9 @@ public:
   unsigned int
   dofs_per_cell() const
   {
-    if (sizeof...(Types)!=0)
+    if (sizeof...(Types) != 0)
     {
-      if constexpr(fe_number == fe_number_extern)
-        return fe_data.fe_evaluation->dofs_per_cell;
+      if constexpr(fe_number == fe_number_extern) return fe_data.fe_evaluation->dofs_per_cell;
       else
         return Base::template dofs_per_cell<fe_number_extern>();
     }
@@ -1400,13 +1390,13 @@ public:
   static constexpr unsigned int
   tensor_dofs_per_cell()
   {
-    if constexpr(sizeof...(Types)!=0)
-    {
-      if constexpr(fe_number == fe_number_extern)
-        return FEData::FEEvaluationType::tensor_dofs_per_cell;
-      else
-        return Base::template tensor_dofs_per_cell<fe_number_extern>();
-    }
+    if constexpr(sizeof...(Types) != 0)
+      {
+        if constexpr(fe_number ==
+                    fe_number_extern) return FEData::FEEvaluationType::tensor_dofs_per_cell;
+        else
+          return Base::template tensor_dofs_per_cell<fe_number_extern>();
+      }
     else
     {
       static_assert(fe_number == fe_number_extern, "Component not found!");
@@ -1418,11 +1408,11 @@ public:
   auto
   begin_dof_values() const
   {
-    if (sizeof...(Types)!=0) {
-      if constexpr(fe_number == fe_number_extern)
-        return fe_data.fe_evaluation->begin_dof_values();
+    if (sizeof...(Types) != 0)
+    {
+      if constexpr(fe_number == fe_number_extern) return fe_data.fe_evaluation->begin_dof_values();
       else
-      return Base::template begin_dof_values<fe_number_extern>();
+        return Base::template begin_dof_values<fe_number_extern>();
     }
     else
     {
@@ -1474,8 +1464,7 @@ protected:
   {
     static_assert(!CFL::Traits::is_fe_data<FEData>::value || fe_number != fe_number_extern,
                   "The fe_numbers have to be unique!");
-    if constexpr (sizeof...(Types)!=0)
-      Base::template check_uniqueness<fe_number_extern>();
+    if constexpr(sizeof...(Types) != 0) Base::template check_uniqueness<fe_number_extern>();
   }
 
   template <unsigned int fe_number_extern>
@@ -1485,8 +1474,7 @@ protected:
     static_assert(!CFL::Traits::is_fe_data_face<FEData>::value || fe_number != fe_number_extern,
                   "The fe_numbers have to be unique!");
 
-    if constexpr (sizeof...(Types)!=0)
-      Base::template check_uniqueness_face<fe_number_extern>();
+    if constexpr(sizeof...(Types) != 0) Base::template check_uniqueness_face<fe_number_extern>();
   }
 
 private:

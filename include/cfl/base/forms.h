@@ -220,9 +220,10 @@ namespace Base
   template <typename... Types>
   class Forms;
 
-  template<>
+  template <>
   class Forms<>
-  {};
+  {
+  };
 
   template <typename FormType, typename... Types>
   class Forms<FormType, Types...> : public Forms<Types...>
