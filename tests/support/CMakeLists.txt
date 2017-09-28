@@ -1,6 +1,6 @@
 ADD_DEFINITIONS(-DBOOST_TEST_DYN_LINK)
 
-INCLUDE_DIRECTORIES(include)
+INCLUDE_DIRECTORIES(include .)
 SET(src_boost_test
 #  libs/boost/test/src/cpp_main.cpp
   libs/boost/test/src/compiler_log_formatter.cpp

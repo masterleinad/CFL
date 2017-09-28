@@ -1179,6 +1179,7 @@ namespace Base
   template <>
   class SumFEFunctions<>
   {
+      static constexpr unsigned int count = 0; //unused
   };
 
   /**
