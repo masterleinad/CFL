@@ -6,10 +6,12 @@
 #include "meshworker_data.h"
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/lac/vector.h>
-
+#include <cfl/meshworker/forms.h>
 #include <cfl/meshworker/fefunctions.h>
 
 using namespace CFL;
+using namespace CFL::dealii::MeshWorker;
+using namespace ::dealii;
 
 template <int dim>
 void
@@ -18,11 +20,11 @@ run(unsigned int grid_index, unsigned int refine, unsigned int degree)
   FE_Q<dim> fe(degree);
   MeshworkerData<dim> data(grid_index, refine, fe);
 
-  ScalarTestFunction<dim> v(0);
-  FEFunction<0, dim> u("u", 0);
+  TestFunction<0, dim> v(0, 0);
+  FEFunction<0, dim> u(0, 0);
   auto Dv = grad(v);
   auto Du = grad(u);
-  auto f = Base::form(Du, Dv);
+  auto f = 3.*CFL::dealii::MeshWorker::form(Du, Dv) - CFL::dealii::MeshWorker::form(u,v) + CFL::dealii::MeshWorker::form(grad(Du), grad(Dv));
 
   Vector<double> x_new, x_old;
   Vector<double> b;
@@ -52,6 +54,8 @@ int
 main(int argc, char* argv[])
 {
   deallog.depth_console(10);
+  ::dealii::MultithreadInfo::set_thread_limit((argc > 1) ? atoi(argv[1]) : 1);
+  std::cout << ::dealii::MultithreadInfo::n_threads() << std::endl;
   try
   {
     run<2>(0, 0, 1);

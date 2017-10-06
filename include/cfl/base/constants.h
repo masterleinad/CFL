@@ -2,7 +2,7 @@
 #ifndef cfl_constants_h
 #define cfl_constants_h
 
-#include <cfl/traits.h>
+#include <cfl/base/traits.h>
 #include <string>
 
 namespace CFL
