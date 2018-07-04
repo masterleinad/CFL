@@ -372,7 +372,7 @@ public:
     safed_vectors.reinit(dst);
     for (unsigned int i = 0; i < dst.n_blocks(); ++i)
     {
-      AssertIndexRange(i, dst.n_blocks());
+      Assert(i < dst.n_blocks(), ::dealii::ExcInternalError());
       if (nonlinear_components[i])
         safed_vectors.block(i) = dst.block(i);
     }
