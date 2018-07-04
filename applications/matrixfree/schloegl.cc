@@ -127,7 +127,7 @@ private:
   DoFHandler<dim> dof_handler;
 
   SparsityPattern sp;
-  ConstraintMatrix constraints;
+  AffineConstraints<double> constraints;
   SparseMatrix<double> system_matrix;
   Vector<double> system_rhs;
   Vector<double> solution;
