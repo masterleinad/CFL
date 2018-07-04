@@ -28,8 +28,8 @@ class MatrixFreeData
   dealii::Triangulation<dim> tr;
   std::vector<std::unique_ptr<dealii::DoFHandler<dim>>> dh_ptr_vector;
   std::vector<const dealii::DoFHandler<dim>*> dh_const_ptr_vector;
-  std::vector<std::unique_ptr<dealii::ConstraintMatrix>> constraint_ptr_vector;
-  std::vector<const dealii::ConstraintMatrix*> constraint_const_ptr_vector;
+  std::vector<std::unique_ptr<dealii::AffineConstraints<double>>> constraint_ptr_vector;
+  std::vector<const dealii::AffineConstraints<double>*> constraint_const_ptr_vector;
   std::vector<dealii::Quadrature<1>> quadrature_vector;
   std::shared_ptr<dealii::MatrixFree<dim, double>> mf;
   std::shared_ptr<FEDatas> fe_datas;
@@ -66,7 +66,7 @@ public:
       dh_ptr_vector[i]->initialize(tr, *(fe[i]));
       dh_const_ptr_vector.push_back(dh_ptr_vector[i].get());
       // dh_vector[i].initialize_local_block_info();
-      constraint_ptr_vector.push_back(std::make_unique<dealii::ConstraintMatrix>());
+      constraint_ptr_vector.push_back(std::make_unique<dealii::AffineConstraints<double>>());
       constraint_const_ptr_vector.push_back(constraint_ptr_vector[i].get());
       quadrature_vector.push_back(dealii::QGauss<1>(fe[i]->degree + 1));
     }

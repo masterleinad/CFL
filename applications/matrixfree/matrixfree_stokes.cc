@@ -35,7 +35,7 @@ test(unsigned int refine, unsigned int degree,
   FESystem<dim> fe(fe_u_scal, dim, fe_p, 1);
   DoFHandler<dim> dof(tria);
   dof.distribute_dofs(fe);
-  ConstraintMatrix constraints;
+  AffineConstraints<double> constraints;
   constraints.close();
 
   MappingQ<dim, dim> mapping(degree);

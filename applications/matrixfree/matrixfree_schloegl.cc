@@ -160,7 +160,7 @@ private:
 
   DoFHandler<dim> dof_handler;
 
-  std::vector<ConstraintMatrix> constraints;
+  std::vector<AffineConstraints<double>> constraints;
   MatrixFree<dim, double> system_mf_storage;
   using SystemMatrixType =
     MatrixFreeIntegrator<dim, LinearAlgebra::distributed::BlockVector<double>, FormSystem,
@@ -258,7 +258,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
     std::vector<const DoFHandler<dim>*> dh_pointers;
     dh_pointers.push_back(&dof_handler);
     dh_pointers.push_back(&dof_handler);
-    std::vector<const ConstraintMatrix*> constraints_pointers;
+    std::vector<const AffineConstraints<double>*> constraints_pointers;
     constraints_pointers.push_back(&(constraints[0]));
     constraints_pointers.push_back(&(constraints[1]));
 
@@ -304,7 +304,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
   {
     IndexSet relevant_dofs;
     DoFTools::extract_locally_relevant_level_dofs(dof_handler, level, relevant_dofs);
-    std::vector<ConstraintMatrix> level_constraints(2);
+    std::vector<AffineConstraints<double>> level_constraints(2);
     level_constraints[0].reinit(relevant_dofs);
     level_constraints[0].add_lines(mg_constrained_dofs[0].get_boundary_indices(level));
     level_constraints[0].close();
@@ -321,7 +321,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, FormSystem, FormRHS>::setup_sys
     std::vector<const DoFHandler<dim>*> dh_pointers;
     dh_pointers.push_back(&dof_handler);
     dh_pointers.push_back(&dof_handler);
-    std::vector<const ConstraintMatrix*> constraints_pointers;
+    std::vector<const AffineConstraints<double>*> constraints_pointers;
     constraints_pointers.push_back(&(level_constraints[0]));
     constraints_pointers.push_back(&(level_constraints[1]));
 

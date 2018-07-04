@@ -96,7 +96,7 @@ private:
   FE_Q<dim> fe;
   DoFHandler<dim> dof_handler;
 
-  ConstraintMatrix constraints;
+  AffineConstraints<double> constraints;
   MatrixFree<dim, double> system_mf_storage;
   typedef MatrixFreeIntegrator<dim, LinearAlgebra::distributed::Vector<double>, Form, FEDatasSystem>
     SystemMatrixType;
@@ -203,7 +203,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
   {
     IndexSet relevant_dofs;
     DoFTools::extract_locally_relevant_level_dofs(dof_handler, level, relevant_dofs);
-    ConstraintMatrix level_constraints;
+    AffineConstraints<double> level_constraints;
     level_constraints.reinit(relevant_dofs);
     level_constraints.add_lines(mg_constrained_dofs.get_boundary_indices(level));
     level_constraints.close();
