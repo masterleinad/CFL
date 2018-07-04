@@ -379,7 +379,7 @@ namespace dealii
       static constexpr IntegrationFlags integration_flags{ false, false, true, false };
 
       /**
-       * Wrapper around submit_normal_gradient function of FEEvaluation
+       * Wrapper around submit_normal_derivative function of FEEvaluation
        *
        */
       template <class FEEvaluation, typename ValueType>
@@ -396,7 +396,7 @@ namespace dealii
         std::cout << "submit TestNormalGradientInteriorFace " << Base::index << " " << q
                   << std::endl;
 #endif
-        phi.template submit_normal_gradient<Base::index, true>(value, q);
+        phi.template submit_normal_derivative<Base::index, true>(value, q);
       }
     };
 
@@ -414,7 +414,7 @@ namespace dealii
       static constexpr IntegrationFlags integration_flags{ false, false, false, true };
 
       /**
-       * Wrapper around submit_normal_gradient function of FEEvaluation
+       * Wrapper around submit_normal_derivative function of FEEvaluation
        *
        */
       template <class FEEvaluation, typename ValueType>
@@ -431,7 +431,7 @@ namespace dealii
         std::cout << "submit TestNormalGradientExteriorFace " << Base::index << " " << q
                   << std::endl;
 #endif
-        phi.template submit_normal_gradient<Base::index, false>(value, q);
+        phi.template submit_normal_derivative<Base::index, false>(value, q);
       }
     };
 
@@ -893,7 +893,7 @@ namespace dealii
       value(const FEDatas& phi, unsigned int q) const
       {
         const auto value =
-          Base::scalar_factor * phi.template get_normal_gradient<Base::index, true>(q);
+          Base::scalar_factor * phi.template get_normal_derivative<Base::index, true>(q);
         std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
         return value;
       }
@@ -935,7 +935,7 @@ namespace dealii
       value(const FEDatas& phi, unsigned int q) const
       {
         const auto value =
-          Base::scalar_factor * phi.template get_normal_gradient<Base::index, false>(q);
+          Base::scalar_factor * phi.template get_normal_derivative<Base::index, false>(q);
         std::cout << "scalar factor: " << Base::scalar_factor << std::endl;
         return value;
       }
