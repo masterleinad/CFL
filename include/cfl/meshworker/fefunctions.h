@@ -8,9 +8,6 @@
  */
 namespace CFL
 {
-#define AssertIndexRange(index, range)                                                             \
-  Assert((index) < (range), ::dealii::ExcIndexRange((index), 0, (range)))
-
 namespace dealii::MeshWorker
 {
   template <int dim>
@@ -265,12 +262,11 @@ namespace dealii::MeshWorker
     {
       Assert(base.info != nullptr, ::dealii::ExcInternalError());
 
-      AssertIndexRange(base.data_index, base.info->gradients.size());
+      Assert(base.data_index < base.info->gradients.size(), ::dealii::ExcInternalError());
 
-      AssertIndexRange(base.first_component, base.info->gradients[base.data_index].size());
-      AssertIndexRange(quadrature_index,
-                       base.info->gradients[base.data_index][base.first_component].size());
-      AssertIndexRange(comp, dim);
+      Assert(base.first_component < base.info->gradients[base.data_index].size(), ::dealii::ExcInternalError());
+      Assert(quadrature_index < base.info->gradients[base.data_index][base.first_component].size(), ::dealii::ExcInternalError());
+      Assert(comp < dim, ::dealii::ExcInternalError());
       return base.info->gradients[base.data_index][base.first_component][quadrature_index][comp];
     }
   };
