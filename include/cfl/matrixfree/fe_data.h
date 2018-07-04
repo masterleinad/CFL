@@ -863,7 +863,7 @@ public:
 
   template <unsigned int fe_number_extern, bool interior>
   auto
-  get_normal_gradient(unsigned int q) const
+  get_normal_derivative(unsigned int q) const
   {
     if constexpr(sizeof...(Types) != 0)
       {
@@ -872,12 +872,12 @@ public:
 #ifdef DEBUG_OUTPUT
             std::cout << "get normal gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
-            if constexpr(interior) return fe_data.fe_evaluation_interior->get_normal_gradient(q);
+            if constexpr(interior) return fe_data.fe_evaluation_interior->get_normal_derivative(q);
             else
-              return -(fe_data.fe_evaluation_exterior->get_normal_gradient(q));
+              return -(fe_data.fe_evaluation_exterior->get_normal_derivative(q));
           }
         else
-          return Base::template get_normal_gradient<fe_number_extern, interior>(q);
+          return Base::template get_normal_derivative<fe_number_extern, interior>(q);
       }
     else
     {
@@ -885,9 +885,9 @@ public:
       std::cout << "get normal gradient FEDatas " << fe_number << " " << q << std::endl;
 #endif
       static_assert(fe_number == fe_number_extern, "Component not found!");
-      if constexpr(interior) return fe_data.fe_evaluation_interior->get_normal_gradient(q);
+      if constexpr(interior) return fe_data.fe_evaluation_interior->get_normal_derivative(q);
       else
-        return -(fe_data.fe_evaluation_exterior->get_normal_gradient(q));
+        return -(fe_data.fe_evaluation_exterior->get_normal_derivative(q));
     }
   }
 
@@ -1294,7 +1294,7 @@ public:
 
   template <unsigned int fe_number_extern, bool interior, typename ValueType>
   void
-  submit_normal_gradient(const ValueType& value, unsigned int q)
+  submit_normal_derivative(const ValueType& value, unsigned int q)
   {
     if constexpr(sizeof...(Types) != 0)
       {
@@ -1303,12 +1303,12 @@ public:
 #ifdef DEBUG_OUTPUT
             std::cout << "submit normal gradient " << fe_number << " " << q << std::endl;
 #endif
-            if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_gradient(value, q);
+            if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_derivative(value, q);
             else
-              fe_data.fe_evaluation_exterior->submit_normal_gradient(-value, q);
+              fe_data.fe_evaluation_exterior->submit_normal_derivative(-value, q);
           }
         else
-          Base::template submit_normal_gradient<fe_number_extern, interior, ValueType>(value, q);
+          Base::template submit_normal_derivative<fe_number_extern, interior, ValueType>(value, q);
       }
     else
     {
@@ -1318,9 +1318,9 @@ public:
       static_assert(CFL::Traits::is_fe_data_face<FEData>::value,
                     "This function can only be called for FEDataFace objects!");
       static_assert(fe_number == fe_number_extern, "Component not found!");
-      if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_gradient(value, q);
+      if constexpr(interior) fe_data.fe_evaluation_interior->submit_normal_derivative(value, q);
       else
-        fe_data.fe_evaluation_exterior->submit_normal_gradient(-value, q);
+        fe_data.fe_evaluation_exterior->submit_normal_derivative(-value, q);
     }
   }
 
