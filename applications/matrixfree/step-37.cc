@@ -37,7 +37,6 @@
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/grid/tria.h>
 #include <deal.II/grid/tria_accessor.h>
-#include <deal.II/grid/tria_boundary_lib.h>
 #include <deal.II/grid/tria_iterator.h>
 
 #include <deal.II/multigrid/mg_coarse.h>
@@ -152,7 +151,7 @@ LaplaceProblem<dim, FEDatasSystem, FEDatasLevel, Form>::setup_system()
   mg_matrices.clear_elements();
 
   dof_handler.distribute_dofs(fe);
-  dof_handler.distribute_mg_dofs(fe);
+  dof_handler.distribute_mg_dofs();
 
   pcout << "Number of degrees of freedom: " << dof_handler.n_dofs() << std::endl;
 

@@ -147,7 +147,7 @@ Schloegl<dim>::Schloegl()
 template <int dim>
 Schloegl<dim>::~Schloegl()
 {
-  tria.set_manifold(0);
+  tria.reset_manifold(0);
 }
 
 template <int dim>
