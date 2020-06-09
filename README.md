@@ -91,9 +91,8 @@ integrate([&] {
 - Functions (exp, sin, cos,...) of FEFunctions or coordinates
 - Cell-wise parameters (mean value, penalty)
 
+## Current functionality:
 
-~~~~
-Current functionality:
 - Describe forms in a backend-agnostic way using FEFunction, FETestFunction and similar objects.
 - Face forms, cell forms and boundary forms possible.
 - Sums and products of FEFunction objects are possible, no common subexpression elimination.
