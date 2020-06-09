@@ -90,3 +90,16 @@ integrate([&] {
 - LaTeX backend
 - Functions (exp, sin, cos,...) of FEFunctions or coordinates
 - Cell-wise parameters (mean value, penalty)
+
+
+~~~~
+Current functionality:
+- Describe forms in a backend-agnostic way using FEFunction, FETestFunction and similar objects.
+- Face forms, cell forms and boundary forms possible.
+- Sums and products of FEFunction objects are possible, no common subexpression elimination.
+- Backend-speficic data gathered in FEData objects.
+- Constants are explcitly strored with the FEFunction objects, no other coefficients currently posssible
+- Forms in abstract shape can be transformed into backend-specific shape by a call to `transform`.
+- Backend specific integrator objects take the (backend-) Form objects and FEData objects as input and implement a matrix-vector multiplication (or print the form for the LaTex backend) given additional input data like mesh, constraints, etc.
+- Sum support for evaluating nonlinear forms available (at least for the MatrixFree backend) by specifying which components to take from the vmult input and which from a previous initialization.
+- No automatic differentiation.
